@@ -16,16 +16,16 @@
     "format": "prettier --check . -w"
   },
   "devDependencies": {
-    "eslint": "^8.34.0",
+    "eslint": "^8.42.0",
     "eslint-config-turbo": "latest",
-    "turbo": "^1.8.3",
-    "prettier": "2.7.1",
-    "@typescript-eslint/eslint-plugin": "^5.52.0",
-    "@typescript-eslint/parser": "^5.52.0",
-    "eslint-config-next": "^13.1.6",
-    "eslint-plugin-formatjs": "^4.6.0",
+    "turbo": "^1.10.1",
+    "prettier": "2.8.8",
+    "@typescript-eslint/eslint-plugin": "^5.59.8",
+    "@typescript-eslint/parser": "^5.59.8",
+    "eslint-config-next": "^13.4.4",
+    "eslint-plugin-formatjs": "^4.10.1",
     "eslint-plugin-simple-import-sort": "^10.0.0",
-    "eslint-plugin-unicorn": "^45.0.2",
+    "eslint-plugin-unicorn": "^47.0.0",
     "eslint-plugin-unused-imports": "^2.0.0"
   }
 }
