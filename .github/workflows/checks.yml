@@ -13,15 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v3
-      - name: setup-node
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
           cache: "pnpm"
-          cache-dependency-path: "package-lock.json"
-      - name: install
-        run: pnpm i
-      - name: build
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build lib
         run: pnpm build
