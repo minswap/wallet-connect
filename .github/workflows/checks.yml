@@ -1,10 +1,10 @@
 name: Lib Checks
 
 on:
-  pull_request:
+  push:
     branches:
       - main
-  push:
+  pull_request:
     branches:
       - main
 
@@ -17,13 +17,12 @@ jobs:
         uses: actions/checkout@v3
       - uses: pnpm/action-setup@v2
         with:
-          version: 7
+          version: 8.6.0
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
           cache: "pnpm"
-          cache-dependency-path: './pnpm-lock.yaml'
       - name: Install dependencies
         run: pnpm install
       - name: Build lib

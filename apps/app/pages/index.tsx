@@ -16,8 +16,7 @@ export default function Index() {
       qrcode: true
     });
     const enabledApi = await walletConnectConnector.enable();
-    // eslint-disable-next-line no-console
-    console.log('enabledApi', enabledApi);
+    console.info('enabledApi', enabledApi);
   };
 
   return (
