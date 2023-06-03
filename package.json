@@ -1,0 +1,31 @@
+{
+  "repository": "https://github.com/minswap/wallet-connect.git",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "start": "turbo run start",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "prettier": "prettier --check .",
+    "format": "prettier --check . -w"
+  },
+  "devDependencies": {
+    "eslint": "^8.34.0",
+    "eslint-config-turbo": "latest",
+    "turbo": "^1.8.3",
+    "prettier": "2.7.1",
+    "@typescript-eslint/eslint-plugin": "^5.52.0",
+    "@typescript-eslint/parser": "^5.52.0",
+    "eslint-config-next": "^13.1.6",
+    "eslint-plugin-formatjs": "^4.6.0",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
+    "eslint-plugin-unicorn": "^45.0.2",
+    "eslint-plugin-unused-imports": "^2.0.0"
+  }
+}

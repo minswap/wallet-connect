@@ -1,0 +1,54 @@
+{
+  "name": "@minswap/wallet-connect",
+  "description": "Wallet connect integration for Cardano DApps",
+  "version": "1.0.0",
+  "author": "Parichay <parichay@minswap.org>",
+  "homepage": "https://github.com/minswap/wallet-connect/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/minswap/wallet-connect.git"
+  },
+  "bugs": {
+    "url": "https://github.com/minswap/wallet-connect/issues"
+  },
+  "license": "Apache-2.0",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/wallet-connect.js",
+  "module": "./dist/wallet-connect.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "tsc && vite build && tsc --emitDeclarationOnly",
+    "test": "vitest",
+    "preview": "vite preview",
+    "lint": "eslint src/**/*.ts",
+    "prettier": "prettier --check .",
+    "format": "prettier --check . -w",
+    "prepublishOnly": "npm run build",
+    "pkg": "npm run build && cd dist && npm run pack && cd .."
+  },
+  "keywords": [
+    "wallet",
+    "cardano",
+    "web3",
+    "crypto",
+    "walletconnect"
+  ],
+  "dependencies": {
+    "@minswap/tiny-invariant": "^1.2.0",
+    "@walletconnect/types": "^2.7.7",
+    "@walletconnect/universal-provider": "^2.7.0",
+    "@web3modal/standalone": "2.3.7",
+    "bs58": "5.0.0",
+    "buffer": "^6.0.3"
+  },
+  "devDependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
+    "typescript": "4.6.4",
+    "vite": "3.1.0",
+    "vitest": "^0.24.3"
+  }
+}

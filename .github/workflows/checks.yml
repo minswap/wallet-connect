@@ -1,0 +1,27 @@
+name: Lib Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup-node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: "pnpm"
+          cache-dependency-path: "package-lock.json"
+      - name: install
+        run: pnpm i
+      - name: build
+        run: pnpm build
