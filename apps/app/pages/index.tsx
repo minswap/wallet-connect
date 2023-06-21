@@ -1,7 +1,23 @@
 import { ProtocolMagic, WalletConnectConnector } from '@minswap/wallet-connect';
+import { EnabledAPI } from '@minswap/wallet-connect/dist/types/cip30';
 import { Layout, Page } from '@vercel/examples-ui';
+import { useState } from 'react';
+
+import styles from '../styles/index.module.css';
+
+function removeItemFromLocalStorage(regex: RegExp) {
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && regex.test(key)) {
+      localStorage.removeItem(key);
+    }
+  }
+}
 
 export default function Index() {
+  const [wc, setWc] = useState<WalletConnectConnector | null>(null);
+  const [enabledApi, setEnabledApi] = useState<EnabledAPI | null>(null);
+
   const initWc = async () => {
     const walletConnectConnector = await WalletConnectConnector.init({
       chain: ProtocolMagic.MAINNET,
@@ -17,11 +33,35 @@ export default function Index() {
     });
     const enabledApi = await walletConnectConnector.enable();
     console.info('enabledApi', enabledApi);
+    setWc(walletConnectConnector);
+    setEnabledApi(enabledApi);
+  };
+
+  const getBalance = async () => {
+    if (!enabledApi) return;
+    console.info('fetching balance');
+    const bal = await enabledApi.getBalance();
+    console.info('bal', bal);
+  };
+
+  const disconnectWc = async () => {
+    if (!wc) return;
+    await wc.disconnect();
+    removeItemFromLocalStorage(/wc@2*/);
+    setEnabledApi(null);
+    setWc(null);
   };
 
   return (
     <Page>
-      <button onClick={initWc}>Test</button>
+      <div className={styles.container}>
+        {wc && <div>Connected!</div>}
+        <div className={styles.buttonContainer}>
+          <button onClick={initWc}>Init</button>
+          <button onClick={getBalance}>Balance</button>
+          <button onClick={disconnectWc}>Disconnect</button>
+        </div>
+      </div>
     </Page>
   );
 }

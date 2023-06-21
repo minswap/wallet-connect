@@ -1,4 +1,4 @@
-import { Web3Modal } from '@web3modal/standalone';
+import { WalletConnectModal } from '@walletconnect/modal';
 
 import { chainToId } from '../defaults';
 import { Chain } from '../types/chain';
@@ -34,7 +34,7 @@ export const getCardanoNamespace = (chain: Chain) => {
 export const getWeb3Modal = (projectId: string, chain: Chain) => {
   const chainID = chainToId(chain);
   try {
-    return new Web3Modal({
+    return new WalletConnectModal({
       walletConnectVersion: 2,
       projectId: projectId,
       standaloneChains: [chainID],

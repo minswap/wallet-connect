@@ -1,4 +1,4 @@
-import { type Web3Modal } from '@web3modal/standalone';
+import { type WalletConnectModal } from '@walletconnect/modal';
 
 import { ProtocolMagic } from '../defaults';
 
@@ -15,7 +15,7 @@ export type WalletConnectOpts = {
   relayerRegion: string;
   metadata: WalletConnectAppMetadata;
   qrcode?: boolean;
-  modal?: Web3Modal;
+  modal?: WalletConnectModal;
 };
 
 /*

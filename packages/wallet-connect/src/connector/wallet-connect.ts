@@ -1,7 +1,7 @@
 import invariant from '@minswap/tiny-invariant';
+import { WalletConnectModal } from '@walletconnect/modal';
 import { SessionTypes, SignClientTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
-import { Web3Modal } from '@web3modal/standalone';
 
 import { protocolMagicToChain } from '../defaults/chains';
 import { DEFAULT_LOGGER } from '../defaults/constants';
@@ -13,7 +13,7 @@ import { getCardanoNamespace, getWeb3Modal } from '../utils/wallet-connect';
 import type { Connector } from './base';
 
 export class WalletConnectConnector implements Connector {
-  private modal: Web3Modal | undefined;
+  private modal: WalletConnectModal | undefined;
   private enabled = false;
 
   private chain: Chain | undefined;
@@ -95,7 +95,7 @@ export class WalletConnectConnector implements Connector {
       projectId: opts.projectId,
       metadata: opts.metadata
     });
-    let modal: Web3Modal | undefined;
+    let modal: WalletConnectModal | undefined;
     if (opts.qrcode) {
       modal = getWeb3Modal(opts.projectId, chain);
     }
