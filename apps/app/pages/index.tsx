@@ -19,22 +19,26 @@ export default function Index() {
   const [enabledApi, setEnabledApi] = useState<EnabledAPI | null>(null);
 
   const initWc = async () => {
-    const walletConnectConnector = await WalletConnectConnector.init({
-      chain: ProtocolMagic.MAINNET,
-      projectId: process.env['NEXT_PUBLIC_WC_PROJECT_ID'] ?? '97b4dbc5d1f1492a20c9e5d4d7047d63',
-      relayerRegion: 'wss://relay.walletconnect.com',
-      metadata: {
-        description: 'The first multi-pool decentralized exchange on Cardano.',
-        name: 'Minswap DEX',
-        icons: [''], // TODO: check why icon doesn't work
-        url: process.env['NEXT_PUBLIC_URL'] ?? 'https://app.minswap.org'
-      },
-      qrcode: true
-    });
-    const enabledApi = await walletConnectConnector.enable();
-    console.info('enabledApi', enabledApi);
-    setWc(walletConnectConnector);
-    setEnabledApi(enabledApi);
+    try {
+      const walletConnectConnector = await WalletConnectConnector.init({
+        chain: ProtocolMagic.MAINNET,
+        projectId: process.env['NEXT_PUBLIC_WC_PROJECT_ID'] ?? '97b4dbc5d1f1492a20c9e5d4d7047d63',
+        relayerRegion: 'wss://relay.walletconnect.com',
+        metadata: {
+          description: 'The first multi-pool decentralized exchange on Cardano.',
+          name: 'Minswap DEX',
+          icons: [''], // TODO: check why icon doesn't work
+          url: process.env['NEXT_PUBLIC_URL'] ?? 'https://app.minswap.org'
+        },
+        qrcode: true
+      });
+      const enabledApi = await walletConnectConnector.enable();
+      console.info('enabledApi', enabledApi);
+      setWc(walletConnectConnector);
+      setEnabledApi(enabledApi);
+    } catch (error) {
+      console.error('error', error);
+    }
   };
 
   const getBalance = async () => {
@@ -45,11 +49,16 @@ export default function Index() {
   };
 
   const disconnectWc = async () => {
-    if (!wc) return;
-    await wc.disconnect();
-    removeItemFromLocalStorage(/wc@2*/);
+    let i = 0;
+    while (i < 5) {
+      // retry 5 times to remove all wc@2* keys
+      removeItemFromLocalStorage(/wc@2*/);
+      i++;
+    }
     setEnabledApi(null);
     setWc(null);
+    if (!wc) return;
+    await wc.disconnect();
   };
 
   return (

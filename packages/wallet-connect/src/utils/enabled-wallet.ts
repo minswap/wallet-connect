@@ -1,6 +1,5 @@
 import UniversalProvider from '@walletconnect/universal-provider';
 
-import { Chain, chainToId } from '..';
 import type { Cbor, DataSignature, EnabledAPI, Paginate } from '../types/cip30';
 
 /**
@@ -13,9 +12,9 @@ export class EnabledWalletEmulator implements EnabledAPI {
   private _provider: UniversalProvider;
   private _chainId: string;
 
-  constructor(provider: UniversalProvider, chain: Chain) {
+  constructor(provider: UniversalProvider, chainId: string) {
     this._provider = provider;
-    this._chainId = chainToId(chain);
+    this._chainId = chainId;
   }
 
   async getNetworkId() {

@@ -1,10 +1,10 @@
 import invariant from '@minswap/tiny-invariant';
 import { WalletConnectModal } from '@walletconnect/modal';
-import { SessionTypes, SignClientTypes } from '@walletconnect/types';
+import { SessionTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
-import { protocolMagicToChain } from '../defaults/chains';
-import { DEFAULT_LOGGER } from '../defaults/constants';
+import { chainToId, protocolMagicToChain } from '../defaults/chains';
+import { DEFAULT_LOGGER, STORAGE_KEY } from '../defaults/constants';
 import { Chain } from '../types/chain';
 import { EnabledAPI } from '../types/cip30';
 import { WalletConnectOpts } from '../types/wallet-connect';
@@ -12,11 +12,13 @@ import { EnabledWalletEmulator } from '../utils/enabled-wallet';
 import { getCardanoNamespace, getWeb3Modal } from '../utils/wallet-connect';
 import type { Connector } from './base';
 
+// Designed to support only one chain upon initialization
 export class WalletConnectConnector implements Connector {
   private modal: WalletConnectModal | undefined;
   private enabled = false;
 
   private chain: Chain | undefined;
+  private chainId: string | undefined;
   private address = '';
 
   private provider: UniversalProvider | undefined;
@@ -33,57 +35,37 @@ export class WalletConnectConnector implements Connector {
     chain: Chain;
   } & Pick<WalletConnectOpts, 'qrcode' | 'modal'>) {
     this.chain = chain;
+    this.chainId = chainToId(chain);
     this.provider = provider;
     this.modal = modal;
     this.qrcode = Boolean(qrcode);
     this.registerEventListeners();
   }
 
+  private onDisplayUri = (uri: string) => {
+    console.info('display_uri', uri);
+    if (this.qrcode) {
+      this.modal?.closeModal();
+      void this.modal?.openModal({ uri });
+    }
+  };
+
+  private onDisconnect = () => {
+    console.info('disconnect');
+    this.reset();
+  };
+
   private registerEventListeners() {
     if (!this.provider) return;
-    // Subscribe to session event
-    this.provider.on(
-      'session_event',
-      (payload: SignClientTypes.EventArguments['session_event']) => {
-        // eslint-disable-next-line no-console
-        console.log('session_event', payload);
-      }
-    );
+    this.provider.on('session_delete', this.onDisconnect);
+    this.provider.on('display_uri', this.onDisplayUri);
+  }
 
-    // Subscribe to session update
-    this.provider.on(
-      'session_update',
-      (payload: SignClientTypes.EventArguments['session_update']) => {
-        // eslint-disable-next-line no-console
-        console.log('session_update', payload);
-      }
-    );
-
-    // Subscribe to session delete
-    this.provider.on(
-      'session_delete',
-      (payload: SignClientTypes.EventArguments['session_delete']) => {
-        // eslint-disable-next-line no-console
-        console.log('session_delete', payload);
-        this.reset();
-      }
-    );
-
-    // Subscribe to session ping
-    this.provider.on('session_ping', (payload: SignClientTypes.EventArguments['session_ping']) => {
-      // eslint-disable-next-line no-console
-      console.log('session_ping', payload);
-    });
-
-    this.provider.on('display_uri', (uri: string) => {
-      if (this.qrcode) {
-        // to refresh the QR we have to close the modal and open it again
-        // until proper API is provided by web3modal
-        this.modal?.closeModal();
-        void this.modal?.openModal({ uri });
-      }
-      // TODO: emit uri event to be handled by the UI
-    });
+  private removeListeners() {
+    console.info('remove listeners');
+    if (!this.provider) return;
+    this.provider.removeListener('session_delete', this.onDisconnect);
+    this.provider.removeListener('display_uri', this.onDisplayUri);
   }
 
   static async init(opts: WalletConnectOpts) {
@@ -102,11 +84,11 @@ export class WalletConnectConnector implements Connector {
     return new WalletConnectConnector({ qrcode: opts.qrcode, provider, modal, chain });
   }
 
-  private populateSessionVars(session: SessionTypes.Struct) {
-    invariant(this.provider, 'Provider not initialized. Call init() first');
-    invariant(this.chain, 'Chain not set. Call init() first');
-    this.enabledApi = new EnabledWalletEmulator(this.provider, this.chain);
-    const address = session.namespaces?.cip34?.accounts[0]?.split(':')[2];
+  private async loadPersistedSession() {
+    invariant(this.provider?.session, 'Provider not initialized. Call init() first');
+    invariant(this.chainId, 'Chain not set. Call init() first');
+    this.enabledApi = new EnabledWalletEmulator(this.provider, this.chainId);
+    const address = this.provider.session.namespaces?.cip34?.accounts[0]?.split(':')[2];
     if (address) {
       this.address = address;
       this.enabled = true;
@@ -115,14 +97,23 @@ export class WalletConnectConnector implements Connector {
 
   public async enable() {
     this.reset();
-    if (!this.provider?.session) {
+    const lastChainConnected = await this.provider?.client.core.storage.getItem(
+      `${STORAGE_KEY}/chainId`
+    );
+    console.info('lastChainConnected', lastChainConnected);
+    if (!this.provider?.session || lastChainConnected !== this.chainId) {
       await this.connect();
     } else {
-      this.populateSessionVars(this.provider.session);
+      this.loadPersistedSession();
     }
     if (!this.provider) throw new Error('Provider not initialized');
     if (!this.enabledApi) throw new Error('Enabled API not initialized');
     return this.enabledApi;
+  }
+
+  private persist() {
+    if (!this.provider?.session) return;
+    this.provider.client.core.storage.setItem(`${STORAGE_KEY}/chainId`, this.chainId);
   }
 
   /**
@@ -146,9 +137,10 @@ export class WalletConnectConnector implements Connector {
         if (this.qrcode) {
           this.modal?.subscribeModal(state => {
             if (!state.open && !this.provider?.session) {
+              // the modal was closed so reject the promise
               this.provider?.abortPairingAttempt();
               this.reset();
-              reject(new Error('Connection request reset. Please try again.'));
+              reject(new Error('Connection aborted by user.'));
             }
           });
         }
@@ -166,7 +158,8 @@ export class WalletConnectConnector implements Connector {
           });
       });
       if (!session) return;
-      this.populateSessionVars(session);
+      this.persist();
+      this.loadPersistedSession();
     } catch (error) {
       this.provider?.logger.error(error);
       throw error;
@@ -177,14 +170,20 @@ export class WalletConnectConnector implements Connector {
 
   public async disconnect(): Promise<void> {
     if (this.provider?.session) {
-      await this.provider?.disconnect();
+      try {
+        await this.provider.disconnect();
+      } catch (error) {
+        // bc wagmi throws only this error
+        if (!/No matching key/i.test((error as Error).message)) throw error;
+      } finally {
+        this.removeListeners();
+        this.reset();
+        this.address = '';
+      }
     }
-    this.reset();
-    this.address = '';
   }
 
   private reset() {
-    this.enabledApi = undefined;
     this.enabled = false;
     this.enabledApi = undefined;
     this.address = '';
