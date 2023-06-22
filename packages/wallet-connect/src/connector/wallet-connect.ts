@@ -173,7 +173,7 @@ export class WalletConnectConnector implements Connector {
       try {
         await this.provider.disconnect();
       } catch (error) {
-        // bc wagmi throws only this error
+        // bc wagmi does this
         if (!/No matching key/i.test((error as Error).message)) throw error;
       } finally {
         this.removeListeners();
