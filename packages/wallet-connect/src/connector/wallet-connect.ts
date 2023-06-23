@@ -1,6 +1,6 @@
 import invariant from '@minswap/tiny-invariant';
 import { WalletConnectModal } from '@walletconnect/modal';
-import { SessionTypes } from '@walletconnect/types';
+import { PairingTypes, SessionTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
 import { chainToId, protocolMagicToChain } from '../defaults/chains';
@@ -55,8 +55,18 @@ export class WalletConnectConnector implements Connector {
     this.reset();
   };
 
+  private onSessionPing = (args: unknown) => {
+    console.info('session_ping', args);
+  };
+
+  private onSessionEvent = (args: unknown) => {
+    console.info('session_event', args);
+  };
+
   private registerEventListeners() {
     if (!this.provider) return;
+    this.provider.on('session_event', this.onSessionEvent);
+    this.provider.on('session_ping', this.onSessionPing);
     this.provider.on('session_delete', this.onDisconnect);
     this.provider.on('display_uri', this.onDisplayUri);
   }
@@ -64,6 +74,8 @@ export class WalletConnectConnector implements Connector {
   private removeListeners() {
     console.info('remove listeners');
     if (!this.provider) return;
+    this.provider.removeListener('session_event', this.onSessionEvent);
+    this.provider.removeListener('session_ping', this.onSessionPing);
     this.provider.removeListener('session_delete', this.onDisconnect);
     this.provider.removeListener('display_uri', this.onDisplayUri);
   }
@@ -95,13 +107,27 @@ export class WalletConnectConnector implements Connector {
     }
   }
 
+  private getSessionPair(pairingTopic: string | undefined): PairingTypes.Struct | undefined {
+    const pairings = this.getProvider()?.client?.pairing.getAll({ active: true });
+    return pairings?.find(pairing => pairing.topic === pairingTopic);
+  }
+
   public async enable() {
     this.reset();
+    // if there is a session already persisted, check if the current chain id is same as the presently tried to connect
     const lastChainConnected = await this.provider?.client.core.storage.getItem(
       `${STORAGE_KEY}/chainId`
     );
     console.info('lastChainConnected', lastChainConnected);
-    if (!this.provider?.session || lastChainConnected !== this.chainId) {
+    const session = this.provider?.session;
+    // sometimes (when signing) pairing is gone when wallet is not connected, so we restabilish pairing
+    const pairingTopic = session?.pairingTopic;
+    const pair = this.getSessionPair(pairingTopic);
+    if (!session || !pair || lastChainConnected !== this.chainId) {
+      if (session) {
+        // disconnect to remove the session when pairing doesn't exist
+        this.disconnect();
+      }
       await this.connect();
     } else {
       this.loadPersistedSession();
@@ -139,6 +165,7 @@ export class WalletConnectConnector implements Connector {
             if (!state.open && !this.provider?.session) {
               // the modal was closed so reject the promise
               this.provider?.abortPairingAttempt();
+              this.provider?.cleanupPendingPairings({ deletePairings: true });
               this.reset();
               reject(new Error('Connection aborted by user.'));
             }
@@ -171,8 +198,10 @@ export class WalletConnectConnector implements Connector {
   public async disconnect(): Promise<void> {
     if (this.provider?.session) {
       try {
+        this.provider.client.core.storage.removeItem(`${STORAGE_KEY}/chainId`);
         await this.provider.disconnect();
       } catch (error) {
+        console.info('disconnect error', (error as Error).message);
         // bc wagmi does this
         if (!/No matching key/i.test((error as Error).message)) throw error;
       } finally {
