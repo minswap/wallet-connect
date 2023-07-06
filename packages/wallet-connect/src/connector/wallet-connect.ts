@@ -4,12 +4,7 @@ import { PairingTypes, SessionTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
 import { chainToId, protocolMagicToChain } from '../defaults/chains';
-import {
-  BASE_ADDRESS_KEY,
-  CHAIN_ID_KEY,
-  DEFAULT_LOGGER,
-  STAKE_ADDRESS_KEY
-} from '../defaults/constants';
+import { BASE_ADDRESS_KEY, CHAIN_ID_KEY, DEFAULT_LOGGER } from '../defaults/constants';
 import { TRpc } from '../types';
 import { Chain } from '../types/chain';
 import { EnabledAPI } from '../types/cip30';
@@ -113,11 +108,14 @@ export class WalletConnectConnector implements Connector {
   private async loadPersistedSession() {
     invariant(this.provider?.session, 'Provider not initialized. Call init() first');
     invariant(this.chainId, 'Chain not set. Call init() first');
-    this.enabledApi = await new EnabledWalletEmulator({
+    const stakeAddress = this.provider.session.namespaces?.cip34?.accounts[0]?.split(':')[2];
+    this.enabledApi = new EnabledWalletEmulator({
       provider: this.provider,
       chainId: this.chainId,
-      rpc: this.rpc
-    }).loadAddresses();
+      rpc: this.rpc,
+      stakeAddress
+    });
+    await (this.enabledApi as EnabledWalletEmulator).loadBaseAddress();
     this.enabled = true;
   }
 
@@ -211,7 +209,6 @@ export class WalletConnectConnector implements Connector {
       try {
         this.provider.client.core.storage.removeItem(CHAIN_ID_KEY);
         this.provider.client.core.storage.removeItem(BASE_ADDRESS_KEY);
-        this.provider.client.core.storage.removeItem(STAKE_ADDRESS_KEY);
         await this.provider.disconnect();
       } catch (error) {
         console.info('disconnect error', (error as Error).message);

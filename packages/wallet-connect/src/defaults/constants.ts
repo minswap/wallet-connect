@@ -8,4 +8,3 @@ export const STORAGE_KEY = `${PROTOCOL}@${WC_VERSION}:${CONTEXT}:`;
 
 export const CHAIN_ID_KEY = `${STORAGE_KEY}/chainId`;
 export const BASE_ADDRESS_KEY = `${STORAGE_KEY}/baseAddr`;
-export const STAKE_ADDRESS_KEY = `${STORAGE_KEY}/stakeAddr`;

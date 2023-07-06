@@ -2,7 +2,7 @@ import invariant from '@minswap/tiny-invariant';
 import UniversalProvider from '@walletconnect/universal-provider';
 
 import { chainIdToNetowrkInfo as chainIdToNetworkInfo, NetworkInfo } from '../defaults';
-import { BASE_ADDRESS_KEY, STAKE_ADDRESS_KEY } from '../defaults/constants';
+import { BASE_ADDRESS_KEY } from '../defaults/constants';
 import { NetworkID, TRpc } from '../types';
 import type {
   Cbor,
@@ -40,9 +40,10 @@ export class EnabledWalletEmulator implements EnabledAPI {
     this._chainId = params.chainId;
     this._networkInfo = chainIdToNetworkInfo(params.chainId);
     this._rpc = params.rpc;
+    this._stakeAddress = params.stakeAddress;
   }
 
-  public async loadAddresses() {
+  public async loadBaseAddress() {
     const baseAddress = await this._provider?.client.core.storage.getItem(BASE_ADDRESS_KEY);
     if (baseAddress) {
       this._baseAddress = baseAddress;
@@ -71,22 +72,6 @@ export class EnabledWalletEmulator implements EnabledAPI {
         }
       }
     }
-    const stakeAddress = await this._provider?.client.core.storage.getItem(STAKE_ADDRESS_KEY);
-    if (stakeAddress) {
-      this._stakeAddress = stakeAddress;
-    } else {
-      const rewardAddress = await timeoutPromise(this._getRewardAddress(), 15000).catch(err => {
-        if (err === TIMEOUT_ERR_MESSAGE) {
-          return '';
-        }
-        throw err;
-      });
-      if (rewardAddress && rewardAddress.length > 0) {
-        this._stakeAddress = rewardAddress;
-        await this._provider?.client.core.storage.setItem(STAKE_ADDRESS_KEY, this._stakeAddress);
-      }
-    }
-    return this;
   }
 
   async _getNetworkId() {
@@ -109,9 +94,10 @@ export class EnabledWalletEmulator implements EnabledAPI {
 
   async getUtxos() {
     invariant(this._rpc, 'RPC must be defined');
-    invariant(this._baseAddress, 'Base address must be defined');
+    invariant(this._stakeAddress, 'Stake address must be defined');
     return this._rpc.getUtxos({
-      addr: this._baseAddress,
+      // TODO: use stake address but stake address is of invalid format
+      addr: this._stakeAddress,
       network: this._networkInfo.networkId
     });
   }
@@ -122,9 +108,9 @@ export class EnabledWalletEmulator implements EnabledAPI {
 
   async getBalance() {
     invariant(this._rpc, 'RPC must be defined');
-    invariant(this._baseAddress, 'Base address must be defined');
+    invariant(this._stakeAddress, 'Base address must be defined');
     return this._rpc.getBalance({
-      addr: this._baseAddress,
+      addr: this._stakeAddress,
       network: this._networkInfo.networkId
     });
   }

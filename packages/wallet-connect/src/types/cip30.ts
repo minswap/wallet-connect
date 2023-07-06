@@ -66,6 +66,5 @@ export interface EnabledWalletEmulatorParams {
   provider: UniversalProvider;
   chainId: string;
   rpc: TRpc;
-  baseAddress?: Cbor<'base_addr'>;
-  stakeAddress?: Cbor<'reward_addr'>;
+  stakeAddress: Cbor<'reward_addr'>;
 }
