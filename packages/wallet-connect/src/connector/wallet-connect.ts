@@ -117,7 +117,7 @@ export class WalletConnectConnector implements Connector {
       provider: this.provider,
       chainId: this.chainId,
       rpc: this.rpc
-    }).persistAddressesIfRequired();
+    }).loadAddresses();
     this.enabled = true;
   }
 

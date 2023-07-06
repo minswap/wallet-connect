@@ -42,7 +42,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
     this._rpc = params.rpc;
   }
 
-  public async persistAddressesIfRequired() {
+  public async loadAddresses() {
     const baseAddress = await this._provider?.client.core.storage.getItem(BASE_ADDRESS_KEY);
     if (baseAddress) {
       this._baseAddress = baseAddress;
