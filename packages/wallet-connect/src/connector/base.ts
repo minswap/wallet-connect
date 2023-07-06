@@ -6,6 +6,5 @@ export interface Connector {
   enable: () => Promise<EnabledAPI>;
   isEnabled: () => Promise<boolean>;
   disconnect: () => Promise<void>;
-  getAddress: () => string;
   getProvider: () => UniversalProvider | undefined;
 }

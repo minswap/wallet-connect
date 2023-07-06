@@ -2,6 +2,7 @@ import { ProtocolMagic, WalletConnectConnector } from '@minswap/wallet-connect';
 import { EnabledAPI } from '@minswap/wallet-connect/dist/types/cip30';
 import { Layout, Page } from '@vercel/examples-ui';
 import { useState } from 'react';
+import { WalletConnectRpc } from 'utils';
 
 import styles from '../styles/index.module.css';
 
@@ -16,7 +17,7 @@ const removeItemFromLocalStorage = (regex: RegExp) => {
 
 const TIMEOUT_ERR_MESSAGE = 'request timed out!';
 
-const timeoutPromise = (fn: Promise<string | void>, ms = 5000) => {
+const timeoutPromise = (fn: Promise<any>, ms = 5000) => {
   return new Promise((resolve, reject) => {
     fn.then(res => resolve(res));
     setTimeout(() => reject(TIMEOUT_ERR_MESSAGE), ms);
@@ -41,7 +42,8 @@ export default function Index() {
           icons: [''], // TODO: check why icon doesn't work
           url: process.env['NEXT_PUBLIC_URL'] ?? 'https://app.minswap.org'
         },
-        qrcode: true
+        qrcode: true,
+        rpc: new WalletConnectRpc()
       });
       const enabledApi = await walletConnectConnector.enable();
       console.info('enabledApi', enabledApi);
@@ -68,6 +70,24 @@ export default function Index() {
       }
     });
     console.info('bal', bal);
+  };
+
+  const getAddress = async () => {
+    if (!enabledApi) return;
+    console.info('fetching address');
+    const addr = await timeoutPromise(
+      enabledApi.getUsedAddresses().catch((err: unknown) => {
+        // when request times out, client throws an error with empty message. we should ignore it as we are timing out the request ourselves.
+        if ((err as Error).message) {
+          throw err;
+        }
+      })
+    ).catch(err => {
+      if (err === TIMEOUT_ERR_MESSAGE) {
+        console.info(TIMEOUT_ERR_MESSAGE);
+      }
+    });
+    console.info('addr', addr);
   };
 
   const signTx = async () => {
@@ -114,6 +134,7 @@ export default function Index() {
         <div className={styles.buttonContainer}>
           <button onClick={initWc}>Init</button>
           <button onClick={getBalance}>Balance</button>
+          <button onClick={getAddress}>Address</button>
           <button onClick={signTx}>Sign Tx</button>
           <button onClick={getPairings}>Pairings</button>
           <button onClick={disconnectWc}>Disconnect</button>

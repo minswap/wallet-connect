@@ -1,3 +1,7 @@
+import UniversalProvider from '@walletconnect/universal-provider/dist/types/UniversalProvider';
+
+import { TRpc } from './rpc';
+
 // Fake types just to make the API more readable
 type HexString = string;
 export type Cbor<_T> = string;
@@ -56,4 +60,12 @@ export interface EnabledAPI {
   onNetworkChange: (
     callback: CardanoInjectorEventMethods['onNetworkChangeTrigger']
   ) => Promise<undefined>;
+}
+
+export interface EnabledWalletEmulatorParams {
+  provider: UniversalProvider;
+  chainId: string;
+  rpc: TRpc;
+  baseAddress?: Cbor<'base_addr'>;
+  stakeAddress?: Cbor<'reward_addr'>;
 }

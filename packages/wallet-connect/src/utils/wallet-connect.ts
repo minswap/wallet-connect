@@ -35,9 +35,8 @@ export const getWeb3Modal = (projectId: string, chain: Chain) => {
   const chainID = chainToId(chain);
   try {
     return new WalletConnectModal({
-      walletConnectVersion: 2,
       projectId: projectId,
-      standaloneChains: [chainID],
+      chains: [chainID],
       enableExplorer: false
     });
   } catch (e) {

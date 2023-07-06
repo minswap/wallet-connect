@@ -4,7 +4,13 @@ import { PairingTypes, SessionTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
 import { chainToId, protocolMagicToChain } from '../defaults/chains';
-import { DEFAULT_LOGGER, STORAGE_KEY } from '../defaults/constants';
+import {
+  BASE_ADDRESS_KEY,
+  CHAIN_ID_KEY,
+  DEFAULT_LOGGER,
+  STAKE_ADDRESS_KEY
+} from '../defaults/constants';
+import { TRpc } from '../types';
 import { Chain } from '../types/chain';
 import { EnabledAPI } from '../types/cip30';
 import { WalletConnectOpts } from '../types/wallet-connect';
@@ -19,7 +25,7 @@ export class WalletConnectConnector implements Connector {
 
   private chain: Chain | undefined;
   private chainId: string | undefined;
-  private address = '';
+  private rpc: TRpc;
 
   private provider: UniversalProvider | undefined;
   private enabledApi: EnabledAPI | undefined;
@@ -29,17 +35,41 @@ export class WalletConnectConnector implements Connector {
     provider,
     qrcode,
     modal,
-    chain
+    chain,
+    rpc
   }: {
     provider: UniversalProvider;
     chain: Chain;
-  } & Pick<WalletConnectOpts, 'qrcode' | 'modal'>) {
+  } & Pick<WalletConnectOpts, 'qrcode' | 'modal' | 'rpc'>) {
     this.chain = chain;
     this.chainId = chainToId(chain);
     this.provider = provider;
     this.modal = modal;
     this.qrcode = Boolean(qrcode);
+    this.rpc = rpc;
     this.registerEventListeners();
+  }
+
+  static async init(opts: WalletConnectOpts) {
+    invariant(opts.projectId.length > 0, 'Wallet Connect project ID not set');
+    const chain = protocolMagicToChain(opts.chain, opts.projectId);
+    const provider = await UniversalProvider.init({
+      logger: DEFAULT_LOGGER,
+      relayUrl: opts.relayerRegion,
+      projectId: opts.projectId,
+      metadata: opts.metadata
+    });
+    let modal: WalletConnectModal | undefined;
+    if (opts.qrcode) {
+      modal = getWeb3Modal(opts.projectId, chain);
+    }
+    return new WalletConnectConnector({
+      qrcode: opts.qrcode,
+      provider,
+      modal,
+      chain,
+      rpc: opts.rpc
+    });
   }
 
   private onDisplayUri = (uri: string) => {
@@ -80,31 +110,15 @@ export class WalletConnectConnector implements Connector {
     this.provider.removeListener('display_uri', this.onDisplayUri);
   }
 
-  static async init(opts: WalletConnectOpts) {
-    invariant(opts.projectId.length > 0, 'Wallet Connect project ID not set');
-    const chain = protocolMagicToChain(opts.chain, opts.projectId);
-    const provider = await UniversalProvider.init({
-      logger: DEFAULT_LOGGER,
-      relayUrl: opts.relayerRegion,
-      projectId: opts.projectId,
-      metadata: opts.metadata
-    });
-    let modal: WalletConnectModal | undefined;
-    if (opts.qrcode) {
-      modal = getWeb3Modal(opts.projectId, chain);
-    }
-    return new WalletConnectConnector({ qrcode: opts.qrcode, provider, modal, chain });
-  }
-
   private async loadPersistedSession() {
     invariant(this.provider?.session, 'Provider not initialized. Call init() first');
     invariant(this.chainId, 'Chain not set. Call init() first');
-    this.enabledApi = new EnabledWalletEmulator(this.provider, this.chainId);
-    const address = this.provider.session.namespaces?.cip34?.accounts[0]?.split(':')[2];
-    if (address) {
-      this.address = address;
-      this.enabled = true;
-    }
+    this.enabledApi = await new EnabledWalletEmulator({
+      provider: this.provider,
+      chainId: this.chainId,
+      rpc: this.rpc
+    }).persistAddressesIfRequired();
+    this.enabled = true;
   }
 
   private getSessionPair(pairingTopic: string | undefined): PairingTypes.Struct | undefined {
@@ -115,10 +129,7 @@ export class WalletConnectConnector implements Connector {
   public async enable() {
     this.reset();
     // if there is a session already persisted, check if the current chain id is same as the presently tried to connect
-    const lastChainConnected = await this.provider?.client.core.storage.getItem(
-      `${STORAGE_KEY}/chainId`
-    );
-    console.info('lastChainConnected', lastChainConnected);
+    const lastChainConnected = await this.provider?.client.core.storage.getItem(CHAIN_ID_KEY);
     const session = this.provider?.session;
     // sometimes (when signing) pairing is gone when wallet is not connected, so we restabilish pairing
     const pairingTopic = session?.pairingTopic;
@@ -130,16 +141,16 @@ export class WalletConnectConnector implements Connector {
       }
       await this.connect();
     } else {
-      this.loadPersistedSession();
+      await this.loadPersistedSession();
     }
     if (!this.provider) throw new Error('Provider not initialized');
     if (!this.enabledApi) throw new Error('Enabled API not initialized');
     return this.enabledApi;
   }
 
-  private persist() {
+  private persistChain() {
     if (!this.provider?.session) return;
-    this.provider.client.core.storage.setItem(`${STORAGE_KEY}/chainId`, this.chainId);
+    this.provider.client.core.storage.setItem(CHAIN_ID_KEY, this.chainId);
   }
 
   /**
@@ -185,7 +196,7 @@ export class WalletConnectConnector implements Connector {
           });
       });
       if (!session) return;
-      this.persist();
+      this.persistChain();
       this.loadPersistedSession();
     } catch (error) {
       this.provider?.logger.error(error);
@@ -198,7 +209,9 @@ export class WalletConnectConnector implements Connector {
   public async disconnect(): Promise<void> {
     if (this.provider?.session) {
       try {
-        this.provider.client.core.storage.removeItem(`${STORAGE_KEY}/chainId`);
+        this.provider.client.core.storage.removeItem(CHAIN_ID_KEY);
+        this.provider.client.core.storage.removeItem(BASE_ADDRESS_KEY);
+        this.provider.client.core.storage.removeItem(STAKE_ADDRESS_KEY);
         await this.provider.disconnect();
       } catch (error) {
         console.info('disconnect error', (error as Error).message);
@@ -207,7 +220,6 @@ export class WalletConnectConnector implements Connector {
       } finally {
         this.removeListeners();
         this.reset();
-        this.address = '';
       }
     }
   }
@@ -215,15 +227,10 @@ export class WalletConnectConnector implements Connector {
   private reset() {
     this.enabled = false;
     this.enabledApi = undefined;
-    this.address = '';
   }
 
   public async isEnabled(): Promise<boolean> {
     return Promise.resolve(this.enabled);
-  }
-
-  public getAddress(): string {
-    return this.address;
   }
 
   public getProvider(): UniversalProvider | undefined {

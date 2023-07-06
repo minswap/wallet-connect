@@ -1,6 +1,7 @@
 import { type WalletConnectModal } from '@walletconnect/modal';
 
 import { ProtocolMagic } from '../defaults';
+import { TRpc } from './rpc';
 
 export interface WalletConnectAppMetadata {
   name: string;
@@ -14,6 +15,7 @@ export type WalletConnectOpts = {
   projectId: string;
   relayerRegion: string;
   metadata: WalletConnectAppMetadata;
+  rpc: TRpc;
   qrcode?: boolean;
   modal?: WalletConnectModal;
 };

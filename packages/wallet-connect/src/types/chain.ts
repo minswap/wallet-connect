@@ -7,3 +7,8 @@ export interface Chain {
   networkMagic: ProtocolMagic;
   endpoint: string;
 }
+
+export enum NetworkID {
+  TESTNET = 0,
+  MAINNET = 1
+}

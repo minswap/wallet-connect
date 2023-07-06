@@ -1,4 +1,4 @@
-import type { Chain } from '../types/chain';
+import type { Chain, NetworkID } from '../types/chain';
 
 const chainType = 'cip34';
 
@@ -38,10 +38,22 @@ export function chainToId(chain: Chain | null): string {
   return `${chain.chainType}:${chain.networkId}-${chain.networkMagic}`;
 }
 
+export type NetworkInfo = {
+  type: string;
+  networkId: NetworkID;
+  protocolMagic: string;
+};
+
+export function chainIdToNetowrkInfo(chainId: string): NetworkInfo {
+  const [type, network] = chainId.split(':');
+  const [networkId, protocolMagic] = network.split('-');
+  return { type, networkId: parseInt(networkId), protocolMagic };
+}
+
+// This RPC is not gonna be used any more with WC V2
 function chainToEndpoint(chain: Chain, projectId: string): string {
   const chainID = chainToId(chain);
   const endpoint = `https://rpc.walletconnect.com/v1?chainId=${chainID}&projectId=${projectId}`;
-
   return endpoint;
 }
 
