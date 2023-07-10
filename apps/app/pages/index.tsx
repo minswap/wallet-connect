@@ -17,6 +17,7 @@ const removeItemFromLocalStorage = (regex: RegExp) => {
 
 const TIMEOUT_ERR_MESSAGE = 'request timed out!';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const timeoutPromise = (fn: Promise<any>, ms = 5000) => {
   return new Promise((resolve, reject) => {
     fn.then(res => resolve(res));
@@ -39,7 +40,7 @@ export default function Index() {
         metadata: {
           description: 'The first multi-pool decentralized exchange on Cardano.',
           name: 'Minswap DEX',
-          icons: [''], // TODO: check why icon doesn't work
+          icons: ['https://app.minswap.org/icons/android-chrome-192x192.png'], // TODO: check why icon doesn't work
           url: process.env['NEXT_PUBLIC_URL'] ?? 'https://app.minswap.org'
         },
         qrcode: true,

@@ -12,15 +12,10 @@ export const getCardanoNamespace = (chain: Chain) => {
         'cardano_signTx',
         'cardano_signData',
         'cardano_submitTx',
-        'cardano_getBalance',
-        'cardano_getCollateral',
-        'cardano_getUtxos',
-        'cardano_getNetworkId',
         'cardano_getUsedAddresses',
         'cardano_getUnusedAddresses',
         'cardano_getChangeAddress',
-        'cardano_getRewardAddress',
-        'cardano_getRewardAddresses'
+        'cardano_getRewardAddress'
       ],
       events: ['cardano_onNetworkChange', 'cardano_onAccountChange'],
       rpcMap: {
