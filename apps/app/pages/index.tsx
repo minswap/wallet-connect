@@ -1,6 +1,7 @@
 import { ProtocolMagic, WalletConnectConnector } from '@minswap/wallet-connect';
+import { EnabledWalletEmulator } from '@minswap/wallet-connect';
 import { EnabledAPI } from '@minswap/wallet-connect/dist/types/cip30';
-import { Layout, Page } from '@vercel/examples-ui';
+import { Button, Input, Layout, Page } from '@vercel/examples-ui';
 import { useState } from 'react';
 import { WalletConnectRpc } from 'utils';
 
@@ -28,6 +29,10 @@ const timeoutPromise = (fn: Promise<any>, ms = 5000) => {
 export default function Index() {
   const [wc, setWc] = useState<WalletConnectConnector | null>(null);
   const [enabledApi, setEnabledApi] = useState<EnabledAPI | null>(null);
+  const [baseAddr, setBaseAddr] = useState<string | null | undefined>(null);
+  const [balance, setBalance] = useState<string | undefined>(undefined);
+
+  const [tx, setTx] = useState<string | undefined>(undefined);
 
   const initWc = async () => {
     try {
@@ -58,88 +63,126 @@ export default function Index() {
   const getBalance = async () => {
     if (!enabledApi) return;
     console.info('fetching balance');
-    const bal = await timeoutPromise(
-      enabledApi.getBalance().catch((err: unknown) => {
-        // when request times out, client throws an error with empty message. we should ignore it as we are timing out the request ourselves.
-        if ((err as Error).message) {
-          throw err;
-        }
-      })
+    await timeoutPromise(
+      (enabledApi as EnabledWalletEmulator)
+        ._getBalance()
+        .then(bal => {
+          console.info('bal', bal);
+          setBalance(bal);
+        })
+        .catch((err: unknown) => {
+          // when request times out, client throws an error with empty message. we should ignore it as we are timing out the request ourselves.
+          if ((err as Error).message) {
+            throw err;
+          }
+          console.info('get balance', err);
+        })
     ).catch(err => {
       if (err === TIMEOUT_ERR_MESSAGE) {
         console.info(TIMEOUT_ERR_MESSAGE);
       }
     });
-    console.info('bal', bal);
   };
 
   const getAddress = async () => {
     if (!enabledApi) return;
     console.info('fetching address');
-    const addr = await timeoutPromise(
-      enabledApi.getUsedAddresses().catch((err: unknown) => {
-        // when request times out, client throws an error with empty message. we should ignore it as we are timing out the request ourselves.
-        if ((err as Error).message) {
-          throw err;
-        }
-      })
+    await timeoutPromise(
+      (enabledApi as EnabledWalletEmulator)
+        ._getUnusedAddresses()
+        .then(res => {
+          console.info('addr', res);
+          setBaseAddr(res[0]);
+        })
+        .catch((err: unknown) => {
+          // when request times out, client throws an error with empty message. we should ignore it as we are timing out the request ourselves.
+          console.info('get address error', err);
+          if ((err as Error).message) {
+            throw err;
+          }
+        })
     ).catch(err => {
       if (err === TIMEOUT_ERR_MESSAGE) {
         console.info(TIMEOUT_ERR_MESSAGE);
       }
     });
-    console.info('addr', addr);
   };
 
   const signTx = async () => {
-    if (!enabledApi) return;
+    if (!enabledApi || !tx) return;
     console.info('signing tx');
-    const signedTx = await enabledApi
-      .signTx(
-        '84a600838258205c3e8ae5f823149976f31f660c4d155236f5d930934a346223378dc14f9250f301825820a909cddb9cc5bcb696f6b380fc3ca99b93973471529588c8b49fa94bf16a166301825820d24b624f2102e53e2fb704658aed4126f4dfc6ac86f81a2f4e382abcc1523fb002018283583911a65ca58a4e9c755fa830173d2a5caed458ac0c73f97db7faae2e7e3b52563c5410bff6a0d43ccebb7c37e1f69f5eb260552521adff33b9c21a008954405820ffa9fa54248b7e06bb41e6ae4a417991261ef7503d6e2d4125e9ef04f2e1c12682583901ffff25d841c6b21970c6c5339bd4bc7827bb90e609a6744299b7939b6dabc2efba65d7e853dd0d25e19188ad0dc7a30ee924010212a2e2be1a0047223d021a0002dd75031a05b70cb3075820b64602eebf602e8bbce198e2a1d6bbb2a109ae87fa5316135d217110d6d946490b58207bca569b67de00b99edfec917339f9485c427d4e2ed2ea01741228908d000c40a1049fd8799fd8799fd8799f581cffff25d841c6b21970c6c5339bd4bc7827bb90e609a6744299b7939bffd8799fd8799fd8799f581c6dabc2efba65d7e853dd0d25e19188ad0dc7a30ee924010212a2e2beffffffffd8799fd8799f581cffff25d841c6b21970c6c5339bd4bc7827bb90e609a6744299b7939bffd8799fd8799fd8799f581c6dabc2efba65d7e853dd0d25e19188ad0dc7a30ee924010212a2e2beffffffffd87a80d8799fd8799f581c29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c6434d494eff1a03505ac1ff1a001e84801a001e8480fffff5a11902a2a1636d736781781c4d696e737761703a205377617020457861637420496e204f72646572'
-      )
-      .catch((err: unknown) => {
-        if ((err as Error).message) {
-          throw err;
-        } else {
-          // when request times out, client throws an error with empty message.
-          throw new Error('request timed out');
-        }
-      });
+    const signedTx = await enabledApi.signTx(tx).catch((err: unknown) => {
+      if ((err as Error).message) {
+        throw err;
+      } else {
+        // when request times out, client throws an error with empty message.
+        throw new Error('request timed out');
+      }
+    });
     console.info(signedTx);
   };
 
-  const getPairings = async () => {
-    if (!wc) return;
-    const pairings = wc.getProvider()?.client?.pairing.getAll({ active: true });
-    console.info('pairings', pairings);
+  const reset = () => {
+    setWc(null);
+    setEnabledApi(null);
+    setBaseAddr(null);
+    setBalance(undefined);
   };
 
   const disconnectWc = async () => {
+    if (wc) {
+      await wc.disconnect();
+    }
+    reset();
     let i = 0;
     while (i < 5) {
       // retry 5 times to remove all wc@2* keys
       removeItemFromLocalStorage(/wc@2*/);
       i++;
     }
-    setEnabledApi(null);
-    setWc(null);
-    if (!wc) return;
-    await wc.disconnect();
   };
 
   return (
     <Page>
       <div className={styles.container}>
         {wc && <div>Connected!</div>}
+        {baseAddr && <div>Address: {baseAddr}</div>}
+        {balance && <div>Balance: {balance}</div>}
         <div className={styles.buttonContainer}>
-          <button onClick={initWc}>Init</button>
-          <button onClick={getBalance}>Balance</button>
-          <button onClick={getAddress}>Address</button>
-          <button onClick={signTx}>Sign Tx</button>
-          <button onClick={getPairings}>Pairings</button>
-          <button onClick={disconnectWc}>Disconnect</button>
+          {!wc && (
+            <button className={styles.button} onClick={initWc}>
+              Init
+            </button>
+          )}
+          {wc && (
+            <>
+              <button className={styles.button} onClick={getBalance}>
+                Balance
+              </button>
+              <button className={styles.button} onClick={getAddress}>
+                Unused Addresses
+              </button>
+              <button className={styles.button} onClick={disconnectWc}>
+                Disconnect
+              </button>
+            </>
+          )}
         </div>
+        {wc && (
+          <div className={styles.signContainer}>
+            <Input
+              placeholder="Raw Tx"
+              value={tx}
+              onChange={e => {
+                setTx(e.target.value);
+              }}
+              className={styles.input}
+            />
+            <Button className={styles.button} onClick={signTx}>
+              Sign Tx
+            </Button>
+          </div>
+        )}
       </div>
     </Page>
   );

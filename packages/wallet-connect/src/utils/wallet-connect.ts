@@ -15,7 +15,9 @@ export const getCardanoNamespace = (chain: Chain) => {
         'cardano_getUsedAddresses',
         'cardano_getUnusedAddresses',
         'cardano_getChangeAddress',
-        'cardano_getRewardAddress'
+        'cardano_getRewardAddress',
+        'cardano_getBalance',
+        'cardano_getUtxos'
       ],
       events: ['cardano_onNetworkChange', 'cardano_onAccountChange'],
       rpcMap: {

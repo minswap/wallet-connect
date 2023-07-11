@@ -97,7 +97,6 @@ export class WalletConnectConnector implements Connector {
   }
 
   private removeListeners() {
-    console.info('remove listeners');
     if (!this.provider) return;
     this.provider.removeListener('session_event', this.onSessionEvent);
     this.provider.removeListener('session_ping', this.onSessionPing);
@@ -115,7 +114,8 @@ export class WalletConnectConnector implements Connector {
       rpc: this.rpc,
       stakeAddress
     });
-    await (this.enabledApi as EnabledWalletEmulator).loadBaseAddress();
+    // TODO: uncomment this line
+    // await (this.enabledApi as EnabledWalletEmulator).loadBaseAddress();
     this.enabled = true;
   }
 
@@ -188,9 +188,9 @@ export class WalletConnectConnector implements Connector {
           .then(session => {
             resolve(session);
           })
-          .catch((error: Error) => {
+          .catch(error => {
             this.reset();
-            reject(new Error(error.message));
+            reject(error);
           });
       });
       if (!session) return;
