@@ -1,6 +1,6 @@
 {
   "name": "@minswap/wallet-connect",
-  "description": "Wallet connect integration for Cardano DApps",
+  "description": "Wallet connect integration for Cardano dApps",
   "version": "1.0.0",
   "author": "Parichay <parichay@minswap.org>",
   "homepage": "https://github.com/minswap/wallet-connect/",
