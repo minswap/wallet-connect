@@ -52,60 +52,66 @@ export default function Index() {
         rpc: new WalletConnectRpc()
       });
       const enabledApi = await walletConnectConnector.enable();
-      console.info('enabledApi', enabledApi);
+      console.info('[APP] enabledApi', enabledApi);
       setWc(walletConnectConnector);
       setEnabledApi(enabledApi);
     } catch (error) {
-      console.error('error', error);
+      console.error('[APP] wallet connect init error: ', error);
     }
   };
 
   const getBalance = async () => {
     if (!enabledApi) return;
-    console.info('fetching balance');
+    console.info('[APP] fetching balance');
     await timeoutPromise(
       (enabledApi as EnabledWalletEmulator)
         ._getBalance()
         .then(bal => {
-          console.info('bal', bal);
-          setBalance(bal);
+          console.info('[APP] bal', bal);
         })
         .catch((err: unknown) => {
           // when request times out, client throws an error with empty message. we should ignore it as we are timing out the request ourselves.
           if ((err as Error).message) {
             throw err;
           }
-          console.info('get balance', err);
+          console.info('[APP] get balance', err);
         })
-    ).catch(err => {
-      if (err === TIMEOUT_ERR_MESSAGE) {
-        console.info(TIMEOUT_ERR_MESSAGE);
-      }
-    });
+    )
+      .then(bal => {
+        setBalance(bal as string);
+      })
+      .catch(err => {
+        if (err === TIMEOUT_ERR_MESSAGE) {
+          console.info(TIMEOUT_ERR_MESSAGE);
+        }
+      });
   };
 
   const getAddress = async () => {
     if (!enabledApi) return;
-    console.info('fetching address');
+    console.info('[APP] fetching address');
     await timeoutPromise(
       (enabledApi as EnabledWalletEmulator)
         ._getUnusedAddresses()
         .then(res => {
-          console.info('addr', res);
-          setBaseAddr(res[0]);
+          console.info('[APP] addr', res);
         })
         .catch((err: unknown) => {
           // when request times out, client throws an error with empty message. we should ignore it as we are timing out the request ourselves.
-          console.info('get address error', err);
+          console.info('[APP] get address error', err);
           if ((err as Error).message) {
             throw err;
           }
         })
-    ).catch(err => {
-      if (err === TIMEOUT_ERR_MESSAGE) {
-        console.info(TIMEOUT_ERR_MESSAGE);
-      }
-    });
+    )
+      .then(addr => {
+        setBaseAddr((addr as string[])[0]);
+      })
+      .catch(err => {
+        if (err === TIMEOUT_ERR_MESSAGE) {
+          console.info(TIMEOUT_ERR_MESSAGE);
+        }
+      });
   };
 
   const signTx = async () => {
@@ -116,7 +122,7 @@ export default function Index() {
         throw err;
       } else {
         // when request times out, client throws an error with empty message.
-        throw new Error('request timed out');
+        throw new Error('[APP] request timed out');
       }
     });
     console.info(signedTx);
@@ -142,6 +148,24 @@ export default function Index() {
     }
   };
 
+  const onPing = async () => {
+    const provider = wc?.getProvider();
+    if (!provider) {
+      throw new Error('[APP] No provider initialized');
+    }
+    const providerTopic = provider.session?.topic;
+    if (!providerTopic) {
+      throw new Error('[APP] no provider topic');
+    }
+    console.log('[APP] Provider session topic', providerTopic);
+    const signClientSession = provider.client.session.get(providerTopic);
+    console.log('[APP] sign client session', signClientSession);
+    const providerSession = provider.session;
+    console.log('[APP] provider session', providerSession);
+    const pingResponse = await provider.client.ping({ topic: providerTopic });
+    console.log('[APP] Ping successful', pingResponse);
+  };
+
   return (
     <Page>
       <div className={styles.container}>
@@ -156,6 +180,9 @@ export default function Index() {
           )}
           {wc && (
             <>
+              <button className={styles.button} onClick={onPing}>
+                Ping
+              </button>
               <button className={styles.button} onClick={getBalance}>
                 Balance
               </button>

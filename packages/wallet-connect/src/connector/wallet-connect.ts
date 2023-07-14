@@ -196,9 +196,6 @@ export class WalletConnectConnector implements Connector {
       if (!session) return;
       this.persistChain();
       this.loadPersistedSession();
-    } catch (error) {
-      this.provider?.logger.error(error);
-      throw error;
     } finally {
       if (this.modal) this.modal.closeModal();
     }
