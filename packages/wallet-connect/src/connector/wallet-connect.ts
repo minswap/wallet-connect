@@ -88,12 +88,17 @@ export class WalletConnectConnector implements Connector {
     console.info('session_event', args);
   };
 
+  private onSessionUpdate = (args: unknown) => {
+    console.info('session_update', args);
+  };
+
   private registerEventListeners() {
     if (!this.provider) return;
     this.provider.on('session_event', this.onSessionEvent);
     this.provider.on('session_ping', this.onSessionPing);
     this.provider.on('session_delete', this.onDisconnect);
     this.provider.on('display_uri', this.onDisplayUri);
+    this.provider.on('session_update', this.onSessionUpdate);
   }
 
   private removeListeners() {
@@ -102,6 +107,7 @@ export class WalletConnectConnector implements Connector {
     this.provider.removeListener('session_ping', this.onSessionPing);
     this.provider.removeListener('session_delete', this.onDisconnect);
     this.provider.removeListener('display_uri', this.onDisplayUri);
+    this.provider.removeListener('session_update', this.onSessionUpdate);
   }
 
   private async loadPersistedSession() {
@@ -227,7 +233,8 @@ export class WalletConnectConnector implements Connector {
     return Promise.resolve(this.enabled);
   }
 
-  public getProvider(): UniversalProvider | undefined {
+  public getProvider(): UniversalProvider {
+    if (!this.provider) throw new Error('Provider not initialized. Call init() first');
     return this.provider;
   }
 }
