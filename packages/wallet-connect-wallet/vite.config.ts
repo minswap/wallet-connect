@@ -14,7 +14,7 @@ export default defineConfig(() => ({
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
       formats: ['es'],
-      name: 'Minswap Wallet Connect',
+      name: 'Minswap Wallet Connect for wallet',
       fileName: format => `index.${format}.js`
     },
     minify: 'esbuild',

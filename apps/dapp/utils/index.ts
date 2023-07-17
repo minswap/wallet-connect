@@ -1,5 +1,10 @@
 /* eslint-disable unused-imports/no-unused-vars */
-import { SubmitTxRequest, TRpc, UtxoRequest, UtxoResponse } from '@minswap/wallet-connect';
+import {
+  SubmitTxRequest,
+  TRpc,
+  UtxoRequest,
+  UtxoResponse
+} from '../../../packages/wallet-connect-dapp/dist';
 
 export class WalletConnectRpc implements TRpc {
   getUtxos(params: UtxoRequest): Promise<UtxoResponse> {

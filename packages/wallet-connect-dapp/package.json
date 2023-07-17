@@ -1,5 +1,5 @@
 {
-  "name": "@minswap/wallet-connect",
+  "name": "@minswap/wallet-connect-dapp",
   "description": "Wallet connect integration for Cardano dApps",
   "version": "1.0.0",
   "author": "Parichay <parichay@minswap.org>",
@@ -26,9 +26,7 @@
     "preview": "vite preview",
     "lint": "eslint src/**/*.ts",
     "prettier": "prettier --check .",
-    "format": "prettier --check . -w",
-    "prepublishOnly": "npm run build",
-    "pkg": "npm run build && cd dist && npm run pack && cd .."
+    "format": "prettier --check . -w"
   },
   "keywords": [
     "wallet",

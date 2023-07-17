@@ -1,6 +1,9 @@
-import { ProtocolMagic, WalletConnectConnector } from '@minswap/wallet-connect';
-import { EnabledWalletEmulator } from '@minswap/wallet-connect';
-import { EnabledAPI } from '@minswap/wallet-connect/dist/types/cip30';
+import {
+  EnabledAPI,
+  EnabledWalletEmulator,
+  ProtocolMagic,
+  WalletConnectConnector
+} from '@minswap/wallet-connect-dapp';
 import { Button, Input, Layout, Page } from '@vercel/examples-ui';
 import { useState } from 'react';
 import { WalletConnectRpc } from 'utils';
@@ -157,13 +160,13 @@ export default function Index() {
     if (!providerTopic) {
       throw new Error('[APP] no provider topic');
     }
-    console.log('[APP] Provider session topic', providerTopic);
+    console.info('[APP] Provider session topic', providerTopic);
     const signClientSession = provider.client.session.get(providerTopic);
-    console.log('[APP] sign client session', signClientSession);
+    console.info('[APP] sign client session', signClientSession);
     const providerSession = provider.session;
-    console.log('[APP] provider session', providerSession);
+    console.info('[APP] provider session', providerSession);
     const pingResponse = await provider.client.ping({ topic: providerTopic });
-    console.log('[APP] Ping successful', pingResponse);
+    console.info('[APP] Ping successful', pingResponse);
   };
 
   return (
