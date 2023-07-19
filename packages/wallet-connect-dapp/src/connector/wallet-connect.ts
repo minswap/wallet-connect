@@ -3,10 +3,9 @@ import { WalletConnectModal } from '@walletconnect/modal';
 import { PairingTypes, SessionTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
-import { chainToId, protocolMagicToChain } from '../defaults/chains';
+import { CHAIN_ID } from '../defaults';
 import { BASE_ADDRESS_KEY, CHAIN_ID_KEY, DEFAULT_LOGGER } from '../defaults/constants';
 import { TRpc } from '../types';
-import { Chain } from '../types/chain';
 import { EnabledAPI } from '../types/cip30';
 import { WalletConnectOpts } from '../types/wallet-connect';
 import { EnabledWalletEmulator } from '../utils/enabled-wallet';
@@ -18,36 +17,36 @@ export class WalletConnectConnector implements Connector {
   private modal: WalletConnectModal | undefined;
   private enabled = false;
 
-  private chain: Chain | undefined;
-  private chainId: string | undefined;
+  private chains: CHAIN_ID[] | undefined;
+  private desiredChain: CHAIN_ID | undefined;
   private rpc: TRpc;
 
   private provider: UniversalProvider | undefined;
   private enabledApi: EnabledAPI | undefined;
   private qrcode: boolean;
 
-  private constructor({
+  constructor({
     provider,
     qrcode,
     modal,
-    chain,
+    chains,
+    desiredChain,
     rpc
   }: {
     provider: UniversalProvider;
-    chain: Chain;
-  } & Pick<WalletConnectOpts, 'qrcode' | 'modal' | 'rpc'>) {
-    this.chain = chain;
-    this.chainId = chainToId(chain);
+  } & Pick<WalletConnectOpts, 'chains' | 'desiredChain' | 'qrcode' | 'modal' | 'rpc'>) {
+    this.chains = chains;
     this.provider = provider;
     this.modal = modal;
     this.qrcode = Boolean(qrcode);
     this.rpc = rpc;
+    this.desiredChain = desiredChain;
     this.registerEventListeners();
   }
 
   static async init(opts: WalletConnectOpts) {
     invariant(opts.projectId.length > 0, 'Wallet Connect project ID not set');
-    const chain = protocolMagicToChain(opts.chain, opts.projectId);
+    invariant(opts.chains.length > 1, 'Currently we only support 1 chain');
     const provider = await UniversalProvider.init({
       logger: DEFAULT_LOGGER,
       relayUrl: opts.relayerRegion,
@@ -56,67 +55,25 @@ export class WalletConnectConnector implements Connector {
     });
     let modal: WalletConnectModal | undefined;
     if (opts.qrcode) {
-      modal = getWeb3Modal(opts.projectId, chain);
+      modal = getWeb3Modal(opts.projectId, opts.chains);
     }
     return new WalletConnectConnector({
       qrcode: opts.qrcode,
       provider,
       modal,
-      chain,
-      rpc: opts.rpc
+      chains: opts.chains,
+      rpc: opts.rpc,
+      desiredChain: opts.desiredChain
     });
-  }
-
-  private onDisplayUri = (uri: string) => {
-    console.info('display_uri', uri);
-    if (this.qrcode) {
-      this.modal?.closeModal();
-      void this.modal?.openModal({ uri });
-    }
-  };
-
-  private onDisconnect = () => {
-    console.info('disconnect');
-    this.reset();
-  };
-
-  private onSessionPing = (args: unknown) => {
-    console.info('session_ping', args);
-  };
-
-  private onSessionEvent = (args: unknown) => {
-    console.info('session_event', args);
-  };
-
-  private onSessionUpdate = (args: unknown) => {
-    console.info('session_update', args);
-  };
-
-  private registerEventListeners() {
-    if (!this.provider) return;
-    this.provider.on('session_event', this.onSessionEvent);
-    this.provider.on('session_ping', this.onSessionPing);
-    this.provider.on('session_delete', this.onDisconnect);
-    this.provider.on('display_uri', this.onDisplayUri);
-    this.provider.on('session_update', this.onSessionUpdate);
-  }
-
-  private removeListeners() {
-    if (!this.provider) return;
-    this.provider.removeListener('session_event', this.onSessionEvent);
-    this.provider.removeListener('session_ping', this.onSessionPing);
-    this.provider.removeListener('session_delete', this.onDisconnect);
-    this.provider.removeListener('display_uri', this.onDisplayUri);
-    this.provider.removeListener('session_update', this.onSessionUpdate);
   }
 
   private async loadPersistedSession() {
     invariant(this.provider?.session, 'Provider not initialized. Call init() first');
-    invariant(this.chainId, 'Chain not set. Call init() first');
+    invariant(this.desiredChain, 'no chain selected');
     const stakeAddress = this.provider.session.namespaces?.cip34?.accounts[0]?.split(':')[2];
     this.enabledApi = new EnabledWalletEmulator({
       provider: this.provider,
-      chainId: this.chainId,
+      chainId: this.desiredChain,
       rpc: this.rpc,
       stakeAddress
     });
@@ -131,18 +88,14 @@ export class WalletConnectConnector implements Connector {
   }
 
   public async enable() {
-    this.reset();
-    // if there is a session already persisted, check if the current chain id is same as the presently tried to connect
-    const lastChainConnected = await this.provider?.client.core.storage.getItem(CHAIN_ID_KEY);
     const session = this.provider?.session;
-    // sometimes (when signing) pairing is gone when wallet is not connected, so we restabilish pairing
+    // Edge Case: sometimes pairing is lost, so we disconnect session and reconnect
     const pairingTopic = session?.pairingTopic;
-    const pair = this.getSessionPair(pairingTopic);
-    if (!session || !pair || lastChainConnected !== this.chainId) {
-      if (session) {
-        // disconnect to remove the session when pairing doesn't exist
-        this.disconnect();
-      }
+    const hasPairing = this.getSessionPair(pairingTopic);
+    if (!hasPairing && session) {
+      this.disconnect();
+    }
+    if (!session) {
       await this.connect();
     } else {
       await this.loadPersistedSession();
@@ -153,8 +106,8 @@ export class WalletConnectConnector implements Connector {
   }
 
   private persistChain() {
-    if (!this.provider?.session) return;
-    this.provider.client.core.storage.setItem(CHAIN_ID_KEY, this.chainId);
+    const provider = this.getProvider();
+    provider.client.core.storage.setItem(CHAIN_ID_KEY, this.desiredChain);
   }
 
   /**
@@ -168,8 +121,8 @@ export class WalletConnectConnector implements Connector {
    * QRCode.
    */
   private async connect(opts: { pairingTopic?: ConnectParams['pairingTopic'] } = {}) {
-    invariant(this.chain, 'Chain not set. Call init() first');
-    const cardanoNamespace = getCardanoNamespace(this.chain);
+    invariant(this.chains, 'Chain not set. Call init() first');
+    const cardanoNamespace = getCardanoNamespace(this.chains);
     if (!this.provider?.client) {
       throw new Error('Provider not initialized. Call init() first');
     }
@@ -208,11 +161,12 @@ export class WalletConnectConnector implements Connector {
   }
 
   public async disconnect(): Promise<void> {
-    if (this.provider?.session) {
+    const provider = this.getProvider();
+    if (provider.session) {
       try {
-        this.provider.client.core.storage.removeItem(CHAIN_ID_KEY);
-        this.provider.client.core.storage.removeItem(BASE_ADDRESS_KEY);
-        await this.provider.disconnect();
+        provider.client.core.storage.removeItem(CHAIN_ID_KEY);
+        provider.client.core.storage.removeItem(BASE_ADDRESS_KEY);
+        await provider.disconnect();
       } catch (error) {
         console.info('disconnect error', (error as Error).message);
         // bc wagmi does this
@@ -225,6 +179,7 @@ export class WalletConnectConnector implements Connector {
   }
 
   private reset() {
+    this.provider = undefined;
     this.enabled = false;
     this.enabledApi = undefined;
   }
@@ -236,5 +191,60 @@ export class WalletConnectConnector implements Connector {
   public getProvider(): UniversalProvider {
     if (!this.provider) throw new Error('Provider not initialized. Call init() first');
     return this.provider;
+  }
+
+  private onDisplayUri = (uri: string) => {
+    console.info('pairing uri', uri);
+    if (this.qrcode) {
+      this.modal?.closeModal();
+      void this.modal?.openModal({ uri });
+    }
+  };
+
+  private onSessionDelete = () => {
+    console.info('session delete');
+    this.reset();
+  };
+
+  private onSessionPing = (args: unknown) => {
+    console.info('session_ping', args);
+  };
+
+  private onSessionEvent = (args: unknown) => {
+    console.info('session_event', args);
+  };
+
+  private onSessionUpdate = (args: unknown) => {
+    console.info('session_update', args);
+  };
+
+  private onNetworkChange = (args: unknown) => {
+    console.info('network_change', args);
+  };
+
+  private onAccountChange = (args: unknown) => {
+    console.info('account_change', args);
+  };
+
+  private registerEventListeners() {
+    if (!this.provider) return;
+    this.provider.on('session_event', this.onSessionEvent);
+    this.provider.on('session_ping', this.onSessionPing);
+    this.provider.on('session_delete', this.onSessionDelete);
+    this.provider.on('display_uri', this.onDisplayUri);
+    this.provider.on('session_update', this.onSessionUpdate);
+    this.provider.on('cardano_onAccountChange', this.onAccountChange);
+    this.provider.on('cardano_onNetworkChange', this.onNetworkChange);
+  }
+
+  private removeListeners() {
+    if (!this.provider) return;
+    this.provider.removeListener('session_event', this.onSessionEvent);
+    this.provider.removeListener('session_ping', this.onSessionPing);
+    this.provider.removeListener('session_delete', this.onSessionDelete);
+    this.provider.removeListener('display_uri', this.onDisplayUri);
+    this.provider.removeListener('session_update', this.onSessionUpdate);
+    this.provider.removeListener('cardano_onAccountChange', this.onAccountChange);
+    this.provider.removeListener('cardano_onNetworkChange', this.onNetworkChange);
   }
 }

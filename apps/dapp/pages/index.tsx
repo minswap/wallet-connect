@@ -1,7 +1,7 @@
 import {
+  CHAIN_ID,
   EnabledAPI,
   EnabledWalletEmulator,
-  ProtocolMagic,
   WalletConnectConnector
 } from '@minswap/wallet-connect-dapp';
 import { Button, Input, Layout, Page } from '@vercel/examples-ui';
@@ -42,9 +42,10 @@ export default function Index() {
       setWc(null);
       setEnabledApi(null);
       const walletConnectConnector = await WalletConnectConnector.init({
-        chain: ProtocolMagic.MAINNET,
+        chains: [CHAIN_ID.MAINNET],
+        desiredChain: CHAIN_ID.MAINNET,
         projectId: process.env['NEXT_PUBLIC_WC_PROJECT_ID'] ?? '97b4dbc5d1f1492a20c9e5d4d7047d63',
-        relayerRegion: 'wss://relay.walletconnect.com',
+        relayerRegion: 'wss://relay.walletconnect.com', // TODO: allow selection of relay region
         metadata: {
           description: 'The first multi-pool decentralized exchange on Cardano.',
           name: 'Minswap DEX',

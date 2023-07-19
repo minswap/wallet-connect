@@ -1,13 +1,11 @@
 import { WalletConnectModal } from '@walletconnect/modal';
 
-import { chainToId } from '../defaults';
-import { Chain } from '../types/chain';
+import { CHAIN_ID } from '../defaults';
 
-export const getCardanoNamespace = (chain: Chain) => {
-  const chainID = chainToId(chain);
+export const getCardanoNamespace = (chains: CHAIN_ID[]) => {
   const cardanoNamespace = {
     cip34: {
-      chains: [chainID],
+      chains,
       methods: [
         'cardano_signTx',
         'cardano_signData',
@@ -20,20 +18,17 @@ export const getCardanoNamespace = (chain: Chain) => {
         'cardano_getUtxos'
       ],
       events: ['cardano_onNetworkChange', 'cardano_onAccountChange'],
-      rpcMap: {
-        [chainID]: chain.endpoint
-      }
+      rpcMap: {}
     }
   };
   return cardanoNamespace;
 };
 
-export const getWeb3Modal = (projectId: string, chain: Chain) => {
-  const chainID = chainToId(chain);
+export const getWeb3Modal = (projectId: string, chains: CHAIN_ID[]) => {
   try {
     return new WalletConnectModal({
       projectId: projectId,
-      chains: [chainID],
+      chains,
       enableExplorer: false
     });
   } catch (e) {

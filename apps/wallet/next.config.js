@@ -1,4 +1,12 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {};
+module.exports = {
+  reactStrictMode: true,
+  webpack(config) {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false
+    };
+    config.experiments = { asyncWebAssembly: true, layers: true };
 
-module.exports = nextConfig;
+    return config;
+  }
+};

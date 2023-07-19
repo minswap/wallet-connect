@@ -1,7 +1,7 @@
 import invariant from '@minswap/tiny-invariant';
 import UniversalProvider from '@walletconnect/universal-provider';
 
-import { chainIdToNetowrkInfo as chainIdToNetworkInfo, NetworkInfo } from '../defaults';
+import { CHAIN_ID, chainIdToNetowrkInfo as chainIdToNetworkInfo, NetworkInfo } from '../defaults';
 import { BASE_ADDRESS_KEY } from '../defaults/constants';
 import { NetworkID, TRpc } from '../types';
 import type {
@@ -29,7 +29,7 @@ const timeoutPromise = <T>(fn: Promise<T>, ms = 5000) => {
  */
 export class EnabledWalletEmulator implements EnabledAPI {
   private _provider: UniversalProvider;
-  private _chainId: string;
+  private _chainId: CHAIN_ID;
   private _networkInfo: NetworkInfo;
   private _baseAddress: string | undefined;
   private _stakeAddress: string | undefined;
@@ -41,6 +41,10 @@ export class EnabledWalletEmulator implements EnabledAPI {
     this._networkInfo = chainIdToNetworkInfo(params.chainId);
     this._rpc = params.rpc;
     this._stakeAddress = params.stakeAddress;
+  }
+
+  set chainId(chainId: CHAIN_ID) {
+    this._chainId = chainId;
   }
 
   public async loadBaseAddress() {

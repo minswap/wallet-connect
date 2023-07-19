@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "build": "turbo run build",
+    "dev": "turbo run dev",
     "dapp": "turbo run --filter dapp --filter wallet-connect-dapp dev",
     "wallet": "turbo run --filter wallet --filter wallet-connect-wallet dev",
     "start": "turbo run start",
