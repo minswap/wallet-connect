@@ -4,7 +4,7 @@ import { useSnapshot } from 'valtio';
 
 import PageHeader from '@/components/PageHeader';
 import RelayRegionPicker from '@/components/RelayRegionPicker';
-import SettingsStore from '@/store/settingsStore';
+import SettingsStore from '@/store/SettingsStore';
 
 import packageJSON from '../../package.json';
 

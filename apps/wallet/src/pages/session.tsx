@@ -7,7 +7,7 @@ import { useSnapshot } from 'valtio';
 import PageHeader from '@/components/PageHeader';
 import ProjectInfoCard from '@/components/ProjectInfoCard';
 import SessionChainCard from '@/components/SessionChainCard';
-import SettingsStore from '@/store/settingsStore';
+import SettingsStore from '@/store/SettingsStore';
 
 export default function SessionPage() {
   const { wcWallet } = useSnapshot(SettingsStore.state);

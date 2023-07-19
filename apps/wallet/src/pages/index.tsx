@@ -7,7 +7,7 @@ import AccountCard from '@/components/AccountCard';
 import AccountPicker from '@/components/AccountPicker';
 import NetworkPicker from '@/components/ChainPicker';
 import PageHeader from '@/components/PageHeader';
-import SettingsStore from '@/store/settingsStore';
+import SettingsStore from '@/store/SettingsStore';
 
 export default function HomePage() {
   const { wcWallet, chain } = useSnapshot(SettingsStore.state);

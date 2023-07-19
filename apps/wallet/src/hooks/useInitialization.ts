@@ -2,7 +2,7 @@ import { CardanoWallet, CardanoWcConnector, CHAIN_ID } from '@minswap/wc-wallet'
 import { useCallback, useEffect, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
-import SettingsStore from '@/store/settingsStore';
+import SettingsStore from '@/store/SettingsStore';
 
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false);

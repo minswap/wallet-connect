@@ -1,7 +1,7 @@
 import { CHAIN_ID } from '@minswap/wc-wallet';
 import { useSnapshot } from 'valtio';
 
-import SettingsStore from '@/store/settingsStore';
+import SettingsStore from '@/store/SettingsStore';
 
 export default function ChainPicker() {
   const { chain, wcWallet } = useSnapshot(SettingsStore.state);

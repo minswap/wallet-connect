@@ -1,7 +1,7 @@
 import { REGIONALIZED_RELAYER_ENDPOINTS } from '@minswap/wc-wallet';
 import { useSnapshot } from 'valtio';
 
-import SettingsStore from '@/store/settingsStore';
+import SettingsStore from '@/store/SettingsStore';
 
 export default function AccountPicker() {
   const { relayerRegionURL } = useSnapshot(SettingsStore.state);
