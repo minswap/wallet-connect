@@ -47,7 +47,6 @@ export class EnabledWalletEmulator implements EnabledAPI {
 
   async getUtxos() {
     return this._rpc.getUtxos({
-      // TODO: use stake address but stake address is of invalid format
       addr: this._stakeAddress,
       network: this._networkId
     });

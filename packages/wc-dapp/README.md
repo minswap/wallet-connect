@@ -11,13 +11,13 @@ The init method sets up wallet connect provider, registers listeners and creates
 ```js
 const walletConnectConnector = await WalletConnectConnector.init({
   chain: ProtocolMagic.MAINNET,
-  projectId: '..', // TODO: add wallet connect project id
+  projectId: '..',
   relayerRegion: 'wss://relay.walletconnect.com',
   metadata: {
     description: 'The first multi-pool decentralized exchange on Cardano.',
     name: 'Minswap DEX',
     icons: ['https://app.minswap.org/icons/android-chrome-192x192.png'],
-    url: process.env['NEXT_PUBLIC_URL'] ?? 'https://app.minswap.org' // TODO: add website public url,
+    url: process.env['NEXT_PUBLIC_URL'] ?? 'https://app.minswap.org'
     rpc: new WalletConnectRpc()
   },
   qrcode: true

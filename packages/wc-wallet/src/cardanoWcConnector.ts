@@ -148,7 +148,6 @@ export class CardanoWcConnector {
     }
   }
 
-  // TODO: fix network type
   async emitNetworkChanged(topic: string, prevChain: CHAIN_ID, newChain: CHAIN_ID) {
     await this.web3wallet.emitSessionEvent({
       topic,

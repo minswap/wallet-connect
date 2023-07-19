@@ -48,7 +48,7 @@ export default function Index() {
         metadata: {
           description: 'The first multi-pool decentralized exchange on Cardano.',
           name: 'Minswap DEX',
-          icons: ['https://app.minswap.org/icons/android-chrome-192x192.png'], // TODO: check why icon doesn't work
+          icons: ['https://app.minswap.org/icons/android-chrome-192x192.png'],
           url: process.env['NEXT_PUBLIC_URL'] ?? 'https://app.minswap.org'
         },
         qrcode: true,
