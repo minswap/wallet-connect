@@ -7,7 +7,7 @@ import { BASE_ADDRESS_KEY, CHAIN_ID_KEY, DEFAULT_LOGGER } from '../constants';
 import { TRpc } from '../types';
 import { EnabledAPI } from '../types/cip30';
 import { CHAIN_ID } from './chain';
-import { EnabledWalletEmulator } from './enabled-wallet';
+import { EnabledWalletEmulator } from './enabledWalletEmulator';
 import { CardanoWcProviderOpts } from './types';
 
 // Designed to support only one chain upon initialization

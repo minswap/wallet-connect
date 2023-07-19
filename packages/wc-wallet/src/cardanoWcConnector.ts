@@ -178,7 +178,7 @@ export class CardanoWcConnector {
 
     let response: JsonRpcResponse;
 
-    console.info('cardano chain', this.cardanoWallet.chain);
+    // TODO: listener callbacks do not get update cardano wallet object
     if (chainId !== this.cardanoWallet.chain) {
       response = formatJsonRpcError(
         id,
@@ -200,7 +200,7 @@ export class CardanoWcConnector {
         default:
           // TODO: error response not propagated to dapp
           // Search for: Error code is not in server code range
-          response = formatJsonRpcError(id, getSdkError('USER_REJECTED_METHODS'));
+          response = formatJsonRpcError(id, getSdkError('INVALID_METHOD'));
       }
     }
 
