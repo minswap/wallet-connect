@@ -1,0 +1,28 @@
+{
+  "name": "dapp",
+  "version": "0.0.0",
+  "repository": "https://github.com/minswap/wallet-connect.git",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@minswap/wc-dapp": "workspace:*",
+    "@vercel/examples-ui": "^1.0.5",
+    "next": "13.4.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.2.5",
+    "@types/react": "^18.2.8",
+    "@types/react-dom": "^18.2.4",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.24",
+    "tailwindcss": "^3.2.1"
+  }
+}

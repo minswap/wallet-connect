@@ -9,6 +9,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
+    "dapp": "turbo run --filter dapp --filter wc-dapp dev",
+    "wallet": "turbo run --filter wallet --filter wc-wallet dev",
     "start": "turbo run start",
     "lint": "turbo run lint",
     "clean": "turbo run clean",
