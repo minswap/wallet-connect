@@ -72,7 +72,7 @@ export default function Index() {
         ?.getProvider()
         .request(
           {
-            method: 'cardano_getUnusedAddresses',
+            method: 'cardano_getUsedAddresses',
             params: []
           },
           CHAIN_ID.MAINNET
