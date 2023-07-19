@@ -4,8 +4,8 @@ export type TCardanoChain = keyof typeof CARDANO_MAINNET_CHAINS;
 
 export enum CHAIN_ID {
   MAINNET = 'cip34:1-764824073',
-  TESTNET_PREVIEW = 'cip34:0-0',
-  TESTNET_PREPROD = 'cip34:0-1'
+  TESTNET_PREPROD = 'cip34:0-1',
+  TESTNET_PREVIEW = 'cip34:0-2'
 }
 
 export const CARDANO_MAINNET_CHAINS = {
@@ -18,17 +18,17 @@ export const CARDANO_MAINNET_CHAINS = {
 };
 
 export const CARDANO_TEST_CHAINS = {
-  [CHAIN_ID.TESTNET_PREVIEW]: {
-    type: 'cip34',
-    networkId: NetworkID.TESTNET,
-    protocolMagic: '0',
-    name: 'Cardano Testnet Preview'
-  },
   [CHAIN_ID.TESTNET_PREPROD]: {
     type: 'cip34',
     networkId: NetworkID.TESTNET,
     protocolMagic: '1',
     name: 'Cardano Testnet Preprod'
+  },
+  [CHAIN_ID.TESTNET_PREVIEW]: {
+    type: 'cip34',
+    networkId: NetworkID.TESTNET,
+    protocolMagic: '2',
+    name: 'Cardano Testnet Preview'
   }
 };
 

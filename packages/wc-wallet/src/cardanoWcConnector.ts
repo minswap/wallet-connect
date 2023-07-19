@@ -127,7 +127,11 @@ export class CardanoWcConnector {
       topic,
       event: {
         name: 'cardano_onAccountChange',
-        data: `${chainId}:${this.cardanoWallet.getRewardAddress()}`
+        data: formatAccount(
+          chainId,
+          this.cardanoWallet.getRewardAddress(),
+          this.cardanoWallet.getBaseAddress()
+        )
       },
       chainId
     });
@@ -150,7 +154,11 @@ export class CardanoWcConnector {
       topic,
       event: {
         name: 'cardano_onNetworkChange',
-        data: `${newChain}:${this.cardanoWallet.getRewardAddress()}`
+        data: formatAccount(
+          newChain,
+          this.cardanoWallet.getRewardAddress(),
+          this.cardanoWallet.getBaseAddress()
+        )
       },
       chainId: prevChain
     });
@@ -216,7 +224,11 @@ export class CardanoWcConnector {
       if (chainIds)
         for (const chainId of chainIds) {
           accounts.push(
-            `${chainId}:${this.cardanoWallet.getRewardAddress()}:${this.cardanoWallet.getBaseAddress()}}`
+            formatAccount(
+              chainId,
+              this.cardanoWallet.getRewardAddress(),
+              this.cardanoWallet.getBaseAddress()
+            )
           );
         }
       namespaces[key] = {
@@ -251,4 +263,8 @@ export class CardanoWcConnector {
   async ping(topic: string) {
     return this.web3wallet.engine.signClient.ping({ topic });
   }
+}
+
+function formatAccount(chainId: CHAIN_ID, stakeAddress: string, baseAddress: string) {
+  return `${chainId}:${stakeAddress}-${baseAddress}`;
 }

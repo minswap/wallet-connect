@@ -70,9 +70,9 @@ export class CardanoWcProvider {
     const provider = this.getProvider();
     invariant(provider.session, 'Provider not initialized. Call init() first');
     invariant(this.desiredChain, 'no chain selected');
-    const accounts = provider.session.namespaces.cip34.accounts;
-    const stakeAddress = accounts[0].split(':')[2];
-    const baseAddress = accounts[0].split(':')[3];
+    const addresses = provider.session.namespaces.cip34.accounts[0].split(':')[2].split('-');
+    const stakeAddress = addresses[0];
+    const baseAddress = addresses[1];
     this.enabledApi = new EnabledWalletEmulator({
       provider: provider,
       chainId: this.desiredChain,

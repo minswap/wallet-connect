@@ -11,8 +11,8 @@ export default function useInitialization() {
 
   const onInitialize = useCallback(async () => {
     try {
-      const storedAccount = localStorage.getItem('ACCOUNT');
-      const storedChain = localStorage.getItem('CHAIN');
+      const storedAccount = localStorage.getItem('ACCOUNT') || 0;
+      const storedChain = localStorage.getItem('CHAIN') || CHAIN_ID.MAINNET;
 
       const mnemonic = localStorage.getItem(`CIP34_MNEMONIC_${storedAccount}`) || undefined;
       const wallet = await CardanoWallet.init({

@@ -31,7 +31,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
   constructor(params: EnabledWalletEmulatorParams) {
     this._provider = params.provider;
     this._chainId = params.chainId;
-    this._networkId = getNetworkIdFromChainId(this.chainId);
+    this._networkId = getNetworkIdFromChainId(params.chainId);
     this._rpc = params.rpc;
     this._stakeAddress = params.stakeAddress;
     this._baseAddress = params.baseAddress;
