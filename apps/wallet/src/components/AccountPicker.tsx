@@ -1,6 +1,6 @@
 import { useSnapshot } from 'valtio';
 
-import SettingsStore from '@/store/SettingsStore';
+import SettingsStore from '@/store/settingsStore';
 
 export default function AccountPicker() {
   const { account, wcWallet } = useSnapshot(SettingsStore.state);

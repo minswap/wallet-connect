@@ -1,4 +1,9 @@
-import { CardanoWcProvider, CHAIN_ID, EnabledAPI } from '@minswap/wc-dapp';
+import {
+  CardanoWcProvider,
+  CHAIN_ID,
+  EnabledAPI,
+  REGIONALIZED_RELAYER_ENDPOINTS
+} from '@minswap/wc-dapp';
 import { CARDANO_SIGNING_METHODS } from '@minswap/wc-dapp';
 import { Button, Input, Layout, Page } from '@vercel/examples-ui';
 import { useState } from 'react';
@@ -45,7 +50,7 @@ export default function Index() {
         chains: [CHAIN_ID.MAINNET],
         desiredChain: CHAIN_ID.MAINNET,
         projectId: process.env['NEXT_PUBLIC_WC_PROJECT_ID'] ?? '97b4dbc5d1f1492a20c9e5d4d7047d63',
-        relayerRegion: 'wss://relay.walletconnect.com', // TODO: allow selection of relay region
+        relayerRegion: REGIONALIZED_RELAYER_ENDPOINTS.Default,
         metadata: {
           description: 'The first multi-pool decentralized exchange on Cardano.',
           name: 'Minswap DEX',

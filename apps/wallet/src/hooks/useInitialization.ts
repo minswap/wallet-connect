@@ -1,13 +1,10 @@
 import { CardanoWallet, CardanoWcConnector, CHAIN_ID } from '@minswap/wc-wallet';
 import { useCallback, useEffect, useState } from 'react';
-import { useSnapshot } from 'valtio';
 
-import SettingsStore from '@/store/SettingsStore';
+import SettingsStore from '@/store/settingsStore';
 
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false);
-
-  const { relayerRegionURL } = useSnapshot(SettingsStore.state);
 
   const onInitialize = useCallback(async () => {
     try {
@@ -21,12 +18,12 @@ export default function useInitialization() {
       });
 
       const wcWallet = await CardanoWcConnector.init({
-        projectId: '9635b09fa7cd4617a49fcff9bba19952', // TODO: move it to env var
+        projectId: process.env['NEXT_PUBLIC_WC_PROJECT_ID'] ?? '9635b09fa7cd4617a49fcff9bba19952',
         relayerRegionUrl: relayerRegionURL,
         metadata: {
-          name: 'React Web3Wallet',
-          description: 'React Web3Wallet for WalletConnect',
-          url: 'http://localhost:4000',
+          name: 'Cardano Web3Wallet',
+          description: 'Cardano Web3Wallet for WalletConnect',
+          url: process.env['NEXT_PUBLIC_URL'] ?? 'https://wallet.minswap.org',
           icons: ['https://avatars.githubusercontent.com/u/37784886']
         },
         cardanoWallet: wallet
@@ -41,9 +38,8 @@ export default function useInitialization() {
     } catch (err: unknown) {
       alert(err);
     }
-  }, [relayerRegionURL]);
+  }, []);
 
-  // TODO: add support for changing relayer url
   useEffect(() => {
     if (!initialized) {
       onInitialize();

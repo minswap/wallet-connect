@@ -4,7 +4,7 @@ import { useSnapshot } from 'valtio';
 
 import PageHeader from '@/components/PageHeader';
 import QrReader from '@/components/QrReader';
-import SettingsStore from '@/store/SettingsStore';
+import SettingsStore from '@/store/settingsStore';
 
 export default function WalletConnectPage() {
   const [uri, setUri] = useState('');

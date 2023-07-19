@@ -16,7 +16,7 @@ const state = proxy<State>({
   account: 0,
   wallet: undefined,
   wcWallet: undefined,
-  relayerRegionURL: REGIONALIZED_RELAYER_ENDPOINTS.Default
+  relayerRegionURL: REGIONALIZED_RELAYER_ENDPOINTS.DEFAULT
 });
 
 const SettingsStore = {

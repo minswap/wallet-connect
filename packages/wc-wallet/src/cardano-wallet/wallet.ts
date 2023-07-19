@@ -20,7 +20,7 @@ export class CardanoWallet {
 
   private constructor(chain: CHAIN_ID, mnemonic?: string) {
     this.chain = chain;
-    // TODO: store encrypted xprv key instead
+    // TODO: Should store encrypted xprv key instead
     this.mnemonic = mnemonic || generateSeed();
   }
 

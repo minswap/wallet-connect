@@ -208,7 +208,7 @@ export class CardanoWcConnector {
     });
   };
 
-  // TODO: Add support for modal to intercept session proposal for user approval
+  // TODO: Should intercept session proposal for user approval
   private onSessionProposal = async (
     proposal: SignClientTypes.EventArguments['session_proposal']
   ) => {
