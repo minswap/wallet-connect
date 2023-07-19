@@ -50,7 +50,7 @@ export default function Index() {
         chains: [CHAIN_ID.MAINNET],
         desiredChain: CHAIN_ID.MAINNET,
         projectId: process.env['NEXT_PUBLIC_WC_PROJECT_ID'] ?? '97b4dbc5d1f1492a20c9e5d4d7047d63',
-        relayerRegion: REGIONALIZED_RELAYER_ENDPOINTS.Default,
+        relayerRegion: REGIONALIZED_RELAYER_ENDPOINTS.DEFAULT,
         metadata: {
           description: 'The first multi-pool decentralized exchange on Cardano.',
           name: 'Minswap DEX',

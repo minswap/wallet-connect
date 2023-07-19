@@ -1,10 +1,13 @@
 import { CardanoWallet, CardanoWcConnector, CHAIN_ID } from '@minswap/wc-wallet';
 import { useCallback, useEffect, useState } from 'react';
+import { useSnapshot } from 'valtio';
 
 import SettingsStore from '@/store/settingsStore';
 
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false);
+
+  const { relayerRegionURL } = useSnapshot(SettingsStore.state);
 
   const onInitialize = useCallback(async () => {
     try {
@@ -38,7 +41,7 @@ export default function useInitialization() {
     } catch (err: unknown) {
       alert(err);
     }
-  }, []);
+  }, [relayerRegionURL]);
 
   useEffect(() => {
     if (!initialized) {
