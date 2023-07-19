@@ -9,7 +9,6 @@ import { EnabledAPI } from '../types/cip30';
 import { CHAIN_ID } from './chain';
 import { EnabledWalletEmulator } from './enabled-wallet';
 import { CardanoWcProviderOpts } from './types';
-import { getRequiredCardanoNamespace, getWeb3Modal } from './utils';
 
 // Designed to support only one chain upon initialization
 export class CardanoWcProvider {
@@ -248,3 +247,30 @@ export class CardanoWcProvider {
     this.provider.removeListener('session_update', this.onSessionUpdate);
   }
 }
+
+const SESSION_PROPOSAL_METHODS = ['cardano_signTx', 'cardano_signData', 'cardano_getUsedAddresses'];
+const SESSION_PROPOSAL_EVENTS = ['cardano_onNetworkChange', 'cardano_onAccountChange'];
+
+const getRequiredCardanoNamespace = (chains: CHAIN_ID[]) => {
+  const cardanoNamespace = {
+    cip34: {
+      chains,
+      methods: SESSION_PROPOSAL_METHODS,
+      events: SESSION_PROPOSAL_EVENTS,
+      rpcMap: {}
+    }
+  };
+  return cardanoNamespace;
+};
+
+const getWeb3Modal = (projectId: string, chains: CHAIN_ID[]) => {
+  try {
+    return new WalletConnectModal({
+      projectId: projectId,
+      chains,
+      enableExplorer: false
+    });
+  } catch (e) {
+    throw new Error(`Error instantiating web3Modal: ${JSON.stringify(e)}`);
+  }
+};
