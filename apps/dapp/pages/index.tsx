@@ -29,11 +29,16 @@ const timeoutPromise = (fn: Promise<any>, ms = 5000) => {
   });
 };
 
+const sleep = (ms: number) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
+
 export default function Index() {
   const [wc, setWc] = useState<WalletConnectConnector | null>(null);
   const [enabledApi, setEnabledApi] = useState<EnabledAPI | null>(null);
   const [baseAddr, setBaseAddr] = useState<string | null | undefined>(null);
   const [balance, setBalance] = useState<string | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
 
   const [tx, setTx] = useState<string | undefined>(undefined);
 
@@ -94,6 +99,7 @@ export default function Index() {
 
   const getAddress = async () => {
     if (!enabledApi) return;
+    setLoading(true);
     console.info('[APP] fetching address');
     await timeoutPromise(
       (enabledApi as EnabledWalletEmulator)
@@ -118,6 +124,8 @@ export default function Index() {
           console.info(TIMEOUT_ERR_MESSAGE);
         }
       });
+    await sleep(1000);
+    setLoading(false);
   };
 
   const signTx = async () => {
@@ -192,7 +200,7 @@ export default function Index() {
               <button className={styles.button} onClick={getBalance}>
                 Balance
               </button>
-              <button className={styles.button} onClick={getAddress}>
+              <button className={styles.button} onClick={getAddress} disabled={loading}>
                 Unused Addresses
               </button>
               <button className={styles.button} onClick={disconnectWc}>

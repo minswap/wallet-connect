@@ -171,7 +171,6 @@ export class WalletConnectWallet {
     let response: JsonRpcResponse;
 
     console.info('cardano chain', this.cardanoWallet.chain);
-
     if (chainId !== this.cardanoWallet.chain) {
       response = formatJsonRpcError(
         id,
@@ -238,15 +237,13 @@ export class WalletConnectWallet {
   };
 
   private registerListeners() {
-    console.log('registerlistners');
-    this.web3wallet.on('session_request', this.onSessionRequest.bind(this));
-    this.web3wallet.on('session_proposal', this.onSessionProposal.bind(this));
+    this.web3wallet.on('session_request', this.onSessionRequest);
+    this.web3wallet.on('session_proposal', this.onSessionProposal);
   }
 
   private removeListeners() {
-    console.log('deregisterlistners');
-    this.web3wallet.removeListener('session_request', this.onSessionRequest.bind(this));
-    this.web3wallet.removeListener('session_proposal', this.onSessionProposal.bind(this));
+    this.web3wallet.removeListener('session_request', this.onSessionRequest);
+    this.web3wallet.removeListener('session_proposal', this.onSessionProposal);
   }
 
   async ping(topic: string) {
