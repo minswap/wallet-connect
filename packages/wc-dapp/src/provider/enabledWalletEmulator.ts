@@ -110,23 +110,23 @@ export class EnabledWalletEmulator implements EnabledAPI {
     return Promise.resolve([]);
   }
 
-  // TODO: Fix listeners
-  async onAccountChange(callback: (addresses: Cbor<'address'>[]) => Promise<undefined>) {
-    return new Promise<undefined>((resolve, reject) => {
+  // TODO: do we need to remove listeners?
+  async onAccountChange(callback: (account: string) => void) {
+    return new Promise<void>((resolve, reject) => {
       try {
         this._provider.on(CARDANO_EVENTS.CARDANO_ACCOUNT_CHANGE, callback);
-        resolve(undefined);
+        resolve();
       } catch (e) {
         reject(e);
       }
     });
   }
 
-  async onNetworkChange(callback: (network: number) => Promise<undefined>) {
-    return new Promise<undefined>((resolve, reject) => {
+  async onNetworkChange(callback: (account: string) => void) {
+    return new Promise<void>((resolve, reject) => {
       try {
         this._provider.on(CARDANO_EVENTS.CARDANO_NETWORK_CHANGE, callback);
-        resolve(undefined);
+        resolve();
       } catch (e) {
         reject(e);
       }

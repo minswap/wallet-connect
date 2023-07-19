@@ -210,23 +210,15 @@ export class CardanoWcProvider {
 
   private onSessionEvent = (args: SignClientTypes.EventArguments['session_event']) => {
     const eventName = args.params.event.name;
-    if (eventName === 'cardano_onAccountChange') {
-      this.onAccountChange(args.params.event.data);
-    } else if (eventName === 'cardano_onNetworkChange') {
-      this.onNetworkChange(args.params.event.data);
+    if (Object.values(CARDANO_EVENTS).find(cardano_event => cardano_event === eventName)) {
+      // TODO: update session
+      return;
     }
+    console.info('session_event', args);
   };
 
   private onSessionUpdate = (args: unknown) => {
     console.info('session_update', args);
-  };
-
-  private onNetworkChange = (newAccount: string) => {
-    console.info('network_change', newAccount);
-  };
-
-  private onAccountChange = (newAccount: string) => {
-    console.info('account_change', newAccount);
   };
 
   private registerEventListeners() {

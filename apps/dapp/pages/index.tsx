@@ -1,10 +1,10 @@
 import {
+  CARDANO_SIGNING_METHODS,
   CardanoWcProvider,
   CHAIN_ID,
   EnabledAPI,
   REGIONALIZED_RELAYER_ENDPOINTS
 } from '@minswap/wc-dapp';
-import { CARDANO_SIGNING_METHODS } from '@minswap/wc-dapp';
 import { Button, Input, Layout, Page } from '@vercel/examples-ui';
 import { useState } from 'react';
 import { WalletConnectRpc } from 'utils';
@@ -56,6 +56,9 @@ export default function Index() {
       console.info('[APP] enabledApi', enabledApi);
       setWc(walletConnectConnector);
       setEnabledApi(enabledApi);
+      enabledApi.onAccountChange((account: string) => {
+        console.info('account changed', account);
+      });
     } catch (error) {
       console.error('[APP] wallet connect init error: ', error);
     }

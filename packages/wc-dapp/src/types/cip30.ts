@@ -14,8 +14,8 @@ export interface Paginate {
 }
 
 export interface CardanoInjectorEventMethods {
-  onAccountChangeTrigger: (addresses: Cbor<'address'>[]) => Promise<undefined>;
-  onNetworkChangeTrigger: (network: number) => Promise<undefined>;
+  onAccountChangeTrigger: (account: string) => void;
+  onNetworkChangeTrigger: (account: string) => void;
 }
 
 export interface DataSignature {
@@ -57,10 +57,10 @@ export interface EnabledAPI {
   getCollateral: () => Promise<Cbor<'TransactionUnspentOutput'>[]>;
   onAccountChange: (
     callback: CardanoInjectorEventMethods['onAccountChangeTrigger']
-  ) => Promise<undefined>;
+  ) => Promise<void>;
   onNetworkChange: (
     callback: CardanoInjectorEventMethods['onNetworkChangeTrigger']
-  ) => Promise<undefined>;
+  ) => Promise<void>;
 }
 
 export interface EnabledWalletEmulatorParams {
