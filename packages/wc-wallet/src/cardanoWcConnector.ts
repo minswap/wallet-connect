@@ -1,10 +1,10 @@
+import { Core } from '@walletconnect/core';
 import {
   ErrorResponse,
   formatJsonRpcError,
   formatJsonRpcResult,
   JsonRpcResponse
-} from '@json-rpc-tools/utils';
-import { Core } from '@walletconnect/core';
+} from '@walletconnect/jsonrpc-utils';
 import { ICore, PairingTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
 import { IWeb3Wallet, Web3Wallet, Web3WalletTypes } from '@walletconnect/web3wallet';

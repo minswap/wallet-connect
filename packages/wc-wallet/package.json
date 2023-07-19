@@ -37,7 +37,7 @@
   ],
   "dependencies": {
     "@emurgo/cardano-serialization-lib-browser": "^11.4.0",
-    "@json-rpc-tools/utils": "1.7.6",
+    "@walletconnect/jsonrpc-utils": "1.0.8",
     "@minswap/tiny-invariant": "^1.2.0",
     "@nextui-org/react": "1.0.8-beta.5",
     "@walletconnect/utils": "2.9.0",
