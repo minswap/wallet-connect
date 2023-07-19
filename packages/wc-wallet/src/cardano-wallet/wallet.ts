@@ -107,6 +107,7 @@ export class CardanoWallet {
   }
 
   signTx(_tx: CborHex): string {
-    throw new Error('Not implemented');
+    // TODO: implement sign tx
+    return 'not implemented';
   }
 }
