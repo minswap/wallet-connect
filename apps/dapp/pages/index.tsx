@@ -11,15 +11,6 @@ import { WalletConnectRpc } from 'utils';
 
 import styles from '../styles/index.module.css';
 
-const removeItemFromLocalStorage = (regex: RegExp) => {
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key && regex.test(key)) {
-      localStorage.removeItem(key);
-    }
-  }
-};
-
 const TIMEOUT_ERR_MESSAGE = 'request timed out!';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -38,7 +29,8 @@ export default function Index() {
   const [wc, setWc] = useState<CardanoWcProvider | null>(null);
   const [enabledApi, setEnabledApi] = useState<EnabledAPI | null>(null);
   const [baseAddr, setBaseAddr] = useState<string | null | undefined>(null);
-  const [loading, setLoading] = useState(false);
+  const [addressLoading, setAddressLoading] = useState(false);
+  const [disconnectLoading, setDisconnectLoading] = useState(false);
 
   const [tx, setTx] = useState<string | undefined>(undefined);
 
@@ -71,7 +63,7 @@ export default function Index() {
 
   const getAddress = async () => {
     if (!wc) return;
-    setLoading(true);
+    setAddressLoading(true);
     console.info('[APP] fetching address');
     await timeoutPromise(
       wc
@@ -104,7 +96,7 @@ export default function Index() {
         }
       });
     await sleep(1000);
-    setLoading(false);
+    setAddressLoading(false);
   };
 
   const signTx = async () => {
@@ -118,7 +110,7 @@ export default function Index() {
         throw new Error('[APP] request timed out');
       }
     });
-    console.info(signedTx);
+    console.info('signedTx', signedTx);
   };
 
   const reset = () => {
@@ -128,33 +120,24 @@ export default function Index() {
   };
 
   const disconnectWc = async () => {
+    setDisconnectLoading(true);
     if (wc) {
       await wc.disconnect();
     }
     reset();
-    let i = 0;
-    while (i < 5) {
-      // retry 5 times to remove all wc@2* keys
-      removeItemFromLocalStorage(/wc@2*/);
-      i++;
-    }
+    setDisconnectLoading(false);
   };
 
   const onPing = async () => {
-    const provider = wc?.getProvider();
-    if (!provider) {
-      throw new Error('[APP] No provider initialized');
+    if (!wc) {
+      return;
     }
-    const providerTopic = provider.session?.topic;
-    if (!providerTopic) {
+    const provider = wc.getProvider();
+    const topic = provider.session?.topic;
+    if (!topic) {
       throw new Error('[APP] no provider topic');
     }
-    console.info('[APP] Provider session topic', providerTopic);
-    const signClientSession = provider.client.session.get(providerTopic);
-    console.info('[APP] sign client session', signClientSession);
-    const providerSession = provider.session;
-    console.info('[APP] provider session', providerSession);
-    const pingResponse = await provider.client.ping({ topic: providerTopic });
+    const pingResponse = await provider.client.ping({ topic });
     console.info('[APP] Ping successful', pingResponse);
   };
 
@@ -174,10 +157,10 @@ export default function Index() {
               <button className={styles.button} onClick={onPing}>
                 Ping
               </button>
-              <button className={styles.button} onClick={getAddress} disabled={loading}>
+              <button className={styles.button} onClick={getAddress} disabled={addressLoading}>
                 Unused Addresses
               </button>
-              <button className={styles.button} onClick={disconnectWc}>
+              <button className={styles.button} onClick={disconnectWc} disabled={disconnectLoading}>
                 Disconnect
               </button>
             </>
