@@ -10,16 +10,16 @@ import { getSdkError } from '@walletconnect/utils';
 import { IWeb3Wallet, Web3Wallet, Web3WalletTypes } from '@walletconnect/web3wallet';
 
 import { CardanoWallet } from './cardano-wallet/wallet';
-import { CARDANO_SIGNING_METHODS, CHAIN_ID } from './cardanoChain';
+import { CARDANO_SIGNING_METHODS, CHAIN_ID } from './chain';
 
-export interface IWeb3WalletInitParams {
+export interface ICardanoWcConnectorParams {
   projectId: string;
   relayerRegionUrl: string;
   metadata: Web3WalletTypes.Metadata;
   cardanoWallet: CardanoWallet;
 }
 
-export class WalletConnectWallet {
+export class CardanoWcConnector {
   readonly core: ICore;
   readonly web3wallet: IWeb3Wallet;
   cardanoWallet: CardanoWallet;
@@ -31,7 +31,7 @@ export class WalletConnectWallet {
     this.registerListeners();
   }
 
-  static async init(params: IWeb3WalletInitParams) {
+  static async init(params: ICardanoWcConnectorParams) {
     const core = new Core({
       logger: 'debug',
       projectId: params.projectId,
@@ -41,7 +41,7 @@ export class WalletConnectWallet {
       core,
       metadata: params.metadata
     });
-    return new WalletConnectWallet(core, web3wallet, params.cardanoWallet);
+    return new CardanoWcConnector(core, web3wallet, params.cardanoWallet);
   }
 
   /**
@@ -215,7 +215,9 @@ export class WalletConnectWallet {
       const chainIds = requiredNamespaces[key].chains as CHAIN_ID[];
       if (chainIds)
         for (const chainId of chainIds) {
-          accounts.push(`${chainId}:${this.cardanoWallet.getRewardAddress()}`);
+          accounts.push(
+            `${chainId}:${this.cardanoWallet.getRewardAddress()}:${this.cardanoWallet.getBaseAddress()}}`
+          );
         }
       namespaces[key] = {
         accounts,

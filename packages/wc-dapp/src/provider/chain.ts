@@ -1,6 +1,9 @@
-import { NetworkID } from '../types';
-
 export type TCardanoChain = keyof typeof CARDANO_MAINNET_CHAINS;
+
+export enum NetworkID {
+  TESTNET = 0,
+  MAINNET = 1
+}
 
 export enum CHAIN_ID {
   MAINNET = 'cip34:1-764824073',

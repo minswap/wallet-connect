@@ -47,9 +47,9 @@ importers:
 
   apps/dapp:
     dependencies:
-      '@minswap/wallet-connect-dapp':
+      '@minswap/wc-dapp':
         specifier: workspace:*
-        version: link:../../packages/wallet-connect-dapp
+        version: link:../../packages/wc-dapp
       '@vercel/examples-ui':
         specifier: ^1.0.5
         version: 1.0.5(next@13.4.4)(react-dom@18.2.0)(react@18.2.0)
@@ -84,9 +84,9 @@ importers:
 
   apps/wallet:
     dependencies:
-      '@minswap/wallet-connect-wallet':
+      '@minswap/wc-wallet':
         specifier: workspace:*
-        version: link:../../packages/wallet-connect-wallet
+        version: link:../../packages/wc-wallet
       '@nextui-org/react':
         specifier: 1.0.8-beta.5
         version: 1.0.8-beta.5(react-dom@17.0.2)(react@17.0.2)
@@ -137,7 +137,7 @@ importers:
         specifier: 2.7.6
         version: 2.7.6
 
-  packages/wallet-connect-dapp:
+  packages/wc-dapp:
     dependencies:
       '@minswap/tiny-invariant':
         specifier: ^1.2.0
@@ -171,7 +171,7 @@ importers:
         specifier: ^0.24.3
         version: 0.24.3
 
-  packages/wallet-connect-wallet:
+  packages/wc-wallet:
     dependencies:
       '@emurgo/cardano-serialization-lib-browser':
         specifier: ^11.4.0
@@ -407,21 +407,12 @@ packages:
       js-tokens: 4.0.0
     dev: false
 
-  /@babel/parser@7.22.5:
-    resolution: {integrity: sha512-DFZMC9LJUG9PLOclRC32G63UXwzqS2koQC8dkx+PLdmt1xSePYpbT/NbsrJy8Q/muXz7o/h/d4A7Fuyixm559Q==}
-    engines: {node: '>=6.0.0'}
-    hasBin: true
-    dependencies:
-      '@babel/types': 7.22.5
-    dev: true
-
   /@babel/parser@7.22.7:
     resolution: {integrity: sha512-7NF8pOkHP5o2vpmGgNGcfAeCvOYhGLyA3Z4eBQkT1RJlWu47n63bCs93QfJ2hIAFCil7L5P2IWhs1oToVgrL0Q==}
     engines: {node: '>=6.0.0'}
     hasBin: true
     dependencies:
       '@babel/types': 7.22.5
-    dev: false
 
   /@babel/plugin-syntax-jsx@7.22.5(@babel/core@7.22.9):
     resolution: {integrity: sha512-gvyP4hZrgrs/wWMaocvxZ44Hw0b3W8Pe+cMxc8V1ULQ07oh8VNbIRaoD1LRZVTvD+0nieDKjfgKg89sD7rrKrg==}
@@ -1162,7 +1153,7 @@ packages:
       '@motionone/easing': 10.15.1
       '@motionone/types': 10.15.1
       '@motionone/utils': 10.15.1
-      tslib: 2.5.3
+      tslib: 2.6.0
     dev: false
 
   /@motionone/dom@10.16.2:
@@ -1173,14 +1164,14 @@ packages:
       '@motionone/types': 10.15.1
       '@motionone/utils': 10.15.1
       hey-listen: 1.0.8
-      tslib: 2.5.3
+      tslib: 2.6.0
     dev: false
 
   /@motionone/easing@10.15.1:
     resolution: {integrity: sha512-6hIHBSV+ZVehf9dcKZLT7p5PEKHGhDwky2k8RKkmOvUoYP3S+dXsKupyZpqx5apjd9f+php4vXk4LuS+ADsrWw==}
     dependencies:
       '@motionone/utils': 10.15.1
-      tslib: 2.5.3
+      tslib: 2.6.0
     dev: false
 
   /@motionone/generators@10.15.1:
@@ -1188,14 +1179,14 @@ packages:
     dependencies:
       '@motionone/types': 10.15.1
       '@motionone/utils': 10.15.1
-      tslib: 2.5.3
+      tslib: 2.6.0
     dev: false
 
   /@motionone/svelte@10.16.2:
     resolution: {integrity: sha512-38xsroKrfK+aHYhuQlE6eFcGy0EwrB43Q7RGjF73j/kRUTcLNu/LAaKiLLsN5lyqVzCgTBVt4TMT/ShWbTbc5Q==}
     dependencies:
       '@motionone/dom': 10.16.2
-      tslib: 2.5.3
+      tslib: 2.6.0
     dev: false
 
   /@motionone/types@10.15.1:
@@ -1207,14 +1198,14 @@ packages:
     dependencies:
       '@motionone/types': 10.15.1
       hey-listen: 1.0.8
-      tslib: 2.5.3
+      tslib: 2.6.0
     dev: false
 
   /@motionone/vue@10.16.2:
     resolution: {integrity: sha512-7/dEK/nWQXOkJ70bqb2KyNfSWbNvWqKKq1C8juj+0Mg/AorgD8O5wE3naddK0G+aXuNMqRuc4jlsYHHWHtIzVw==}
     dependencies:
       '@motionone/dom': 10.16.2
-      tslib: 2.5.3
+      tslib: 2.6.0
     dev: false
 
   /@next/env@12.1.5:
@@ -6934,7 +6925,7 @@ packages:
     peerDependencies:
       vite: '>=2.9.0'
     dependencies:
-      '@babel/parser': 7.22.5
+      '@babel/parser': 7.22.7
       '@microsoft/api-extractor': 7.36.0
       '@rollup/pluginutils': 5.0.2
       '@rushstack/node-core-library': 3.59.4

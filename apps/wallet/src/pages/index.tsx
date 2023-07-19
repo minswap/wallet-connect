@@ -1,8 +1,4 @@
-import {
-  CARDANO_MAINNET_CHAINS,
-  CARDANO_TEST_CHAINS,
-  CHAIN_ID
-} from '@minswap/wallet-connect-wallet';
+import { CARDANO_MAINNET_CHAINS, CARDANO_TEST_CHAINS, CHAIN_ID } from '@minswap/wc-wallet';
 import { Text } from '@nextui-org/react';
 import { Fragment } from 'react';
 import { useSnapshot } from 'valtio';

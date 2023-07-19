@@ -3,17 +3,16 @@ import { WalletConnectModal } from '@walletconnect/modal';
 import { PairingTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
-import { CHAIN_ID } from '../defaults';
-import { BASE_ADDRESS_KEY, CHAIN_ID_KEY, DEFAULT_LOGGER } from '../defaults/constants';
+import { BASE_ADDRESS_KEY, CHAIN_ID_KEY, DEFAULT_LOGGER } from '../constants';
 import { TRpc } from '../types';
 import { EnabledAPI } from '../types/cip30';
-import { WalletConnectOpts } from '../types/wallet-connect';
-import { EnabledWalletEmulator } from '../utils/enabled-wallet';
-import { getCardanoNamespace, getWeb3Modal } from '../utils/wallet-connect';
-import type { Connector } from './base';
+import { CHAIN_ID } from './chain';
+import { EnabledWalletEmulator } from './enabled-wallet';
+import { CardanoWcProviderOpts } from './types';
+import { getRequiredCardanoNamespace, getWeb3Modal } from './utils';
 
 // Designed to support only one chain upon initialization
-export class WalletConnectConnector implements Connector {
+export class CardanoWcProvider {
   private modal: WalletConnectModal | undefined;
   private enabled = false;
 
@@ -34,7 +33,7 @@ export class WalletConnectConnector implements Connector {
     rpc
   }: {
     provider: UniversalProvider;
-  } & Pick<WalletConnectOpts, 'chains' | 'desiredChain' | 'qrcode' | 'modal' | 'rpc'>) {
+  } & Pick<CardanoWcProviderOpts, 'chains' | 'desiredChain' | 'qrcode' | 'modal' | 'rpc'>) {
     this.chains = chains;
     this.provider = provider;
     this.modal = modal;
@@ -44,7 +43,7 @@ export class WalletConnectConnector implements Connector {
     this.registerEventListeners();
   }
 
-  static async init(opts: WalletConnectOpts) {
+  static async init(opts: CardanoWcProviderOpts) {
     invariant(opts.projectId.length > 0, 'Wallet Connect project ID not set');
     invariant(opts.chains.length < 2, 'Currently we only support 1 chain');
     const provider = await UniversalProvider.init({
@@ -57,7 +56,7 @@ export class WalletConnectConnector implements Connector {
     if (opts.qrcode) {
       modal = getWeb3Modal(opts.projectId, opts.chains);
     }
-    return new WalletConnectConnector({
+    return new CardanoWcProvider({
       qrcode: opts.qrcode,
       provider,
       modal,
@@ -68,17 +67,19 @@ export class WalletConnectConnector implements Connector {
   }
 
   private async loadPersistedSession() {
-    invariant(this.provider?.session, 'Provider not initialized. Call init() first');
+    const provider = this.getProvider();
+    invariant(provider.session, 'Provider not initialized. Call init() first');
     invariant(this.desiredChain, 'no chain selected');
-    const stakeAddress = this.provider.session.namespaces?.cip34?.accounts[0]?.split(':')[2];
+    const accounts = provider.session.namespaces.cip34.accounts;
+    const stakeAddress = accounts[0].split(':')[2];
+    const baseAddress = accounts[0].split(':')[3];
     this.enabledApi = new EnabledWalletEmulator({
-      provider: this.provider,
+      provider: provider,
       chainId: this.desiredChain,
       rpc: this.rpc,
-      stakeAddress
+      stakeAddress,
+      baseAddress
     });
-    // TODO: uncomment this line
-    // await (this.enabledApi as EnabledWalletEmulator).loadBaseAddress();
     this.enabled = true;
   }
 
@@ -122,24 +123,22 @@ export class WalletConnectConnector implements Connector {
    */
   private async connect(opts: { pairingTopic?: ConnectParams['pairingTopic'] } = {}) {
     invariant(this.chains, 'Chain not set. Call init() first');
-    const cardanoNamespace = getCardanoNamespace(this.chains);
-    if (!this.provider?.client) {
-      throw new Error('Provider not initialized. Call init() first');
-    }
+    const provider = this.getProvider();
+    const cardanoNamespace = getRequiredCardanoNamespace(this.chains);
     try {
       const session = await new Promise<SessionTypes.Struct | undefined>((resolve, reject) => {
         if (this.qrcode) {
           this.modal?.subscribeModal(state => {
-            if (!state.open && !this.provider?.session) {
+            if (!state.open && !provider.session) {
               // the modal was closed so reject the promise
-              this.provider?.abortPairingAttempt();
-              this.provider?.cleanupPendingPairings({ deletePairings: true });
+              provider.abortPairingAttempt();
+              provider.cleanupPendingPairings({ deletePairings: true });
               this.reset();
               reject(new Error('Connection aborted by user.'));
             }
           });
         }
-        this.provider
+        provider
           ?.connect({
             namespaces: { ...cardanoNamespace },
             pairingTopic: opts.pairingTopic

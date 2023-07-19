@@ -1,4 +1,4 @@
-import { NetworkID } from './chain';
+import { NetworkID } from '../provider';
 import { Cbor } from './cip30';
 
 export type UtxoRequest = {

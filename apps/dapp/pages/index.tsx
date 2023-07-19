@@ -1,9 +1,4 @@
-import {
-  CHAIN_ID,
-  EnabledAPI,
-  EnabledWalletEmulator,
-  WalletConnectConnector
-} from '@minswap/wallet-connect-dapp';
+import { CardanoWcProvider, CHAIN_ID, EnabledAPI } from '@minswap/wc-dapp';
 import { Button, Input, Layout, Page } from '@vercel/examples-ui';
 import { useState } from 'react';
 import { WalletConnectRpc } from 'utils';
@@ -34,10 +29,9 @@ const sleep = (ms: number) => {
 };
 
 export default function Index() {
-  const [wc, setWc] = useState<WalletConnectConnector | null>(null);
+  const [wc, setWc] = useState<CardanoWcProvider | null>(null);
   const [enabledApi, setEnabledApi] = useState<EnabledAPI | null>(null);
   const [baseAddr, setBaseAddr] = useState<string | null | undefined>(null);
-  const [balance, setBalance] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
 
   const [tx, setTx] = useState<string | undefined>(undefined);
@@ -46,7 +40,7 @@ export default function Index() {
     try {
       setWc(null);
       setEnabledApi(null);
-      const walletConnectConnector = await WalletConnectConnector.init({
+      const walletConnectConnector = await CardanoWcProvider.init({
         chains: [CHAIN_ID.MAINNET],
         desiredChain: CHAIN_ID.MAINNET,
         projectId: process.env['NEXT_PUBLIC_WC_PROJECT_ID'] ?? '97b4dbc5d1f1492a20c9e5d4d7047d63',
@@ -69,41 +63,20 @@ export default function Index() {
     }
   };
 
-  const getBalance = async () => {
-    if (!enabledApi) return;
-    console.info('[APP] fetching balance');
-    await timeoutPromise(
-      (enabledApi as EnabledWalletEmulator)
-        ._getBalance()
-        .then(bal => {
-          console.info('[APP] bal', bal);
-          return bal;
-        })
-        .catch((err: unknown) => {
-          // when request times out, client throws an error with empty message. we should ignore it as we are timing out the request ourselves.
-          console.info('[APP] get balance', err);
-          if ((err as Error).message) {
-            throw err;
-          }
-        })
-    )
-      .then(bal => {
-        setBalance(bal as string);
-      })
-      .catch(err => {
-        if (err === TIMEOUT_ERR_MESSAGE) {
-          console.info(TIMEOUT_ERR_MESSAGE);
-        }
-      });
-  };
-
   const getAddress = async () => {
-    if (!enabledApi) return;
+    if (!wc) return;
     setLoading(true);
     console.info('[APP] fetching address');
     await timeoutPromise(
-      (enabledApi as EnabledWalletEmulator)
-        ._getUnusedAddresses()
+      wc
+        ?.getProvider()
+        .request(
+          {
+            method: 'cardano_getUnUsedAddresses',
+            params: []
+          },
+          CHAIN_ID.MAINNET
+        )
         .then(addr => {
           console.info('[APP] addr', addr);
           return addr;
@@ -146,7 +119,6 @@ export default function Index() {
     setWc(null);
     setEnabledApi(null);
     setBaseAddr(null);
-    setBalance(undefined);
   };
 
   const disconnectWc = async () => {
@@ -185,7 +157,6 @@ export default function Index() {
       <div className={styles.container}>
         {wc && <div>Connected!</div>}
         {baseAddr && <div>Address: {baseAddr}</div>}
-        {balance && <div>Balance: {balance}</div>}
         <div className={styles.buttonContainer}>
           {!wc && (
             <button className={styles.button} onClick={initWc}>
@@ -196,9 +167,6 @@ export default function Index() {
             <>
               <button className={styles.button} onClick={onPing}>
                 Ping
-              </button>
-              <button className={styles.button} onClick={getBalance}>
-                Balance
               </button>
               <button className={styles.button} onClick={getAddress} disabled={loading}>
                 Unused Addresses

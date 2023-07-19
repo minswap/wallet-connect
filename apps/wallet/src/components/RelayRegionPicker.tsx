@@ -1,4 +1,4 @@
-import { REGIONALIZED_RELAYER_ENDPOINTS } from '@minswap/wallet-connect-wallet';
+import { REGIONALIZED_RELAYER_ENDPOINTS } from '@minswap/wc-wallet';
 import { useSnapshot } from 'valtio';
 
 import SettingsStore from '@/store/SettingsStore';

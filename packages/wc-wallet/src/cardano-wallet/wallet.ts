@@ -1,7 +1,7 @@
 import { Bip32PublicKey } from '@emurgo/cardano-serialization-lib-browser';
 import { mnemonicToEntropy } from 'bip39';
 
-import { CHAIN_ID, getNetworkIdFromChainId } from '../cardanoChain';
+import { CHAIN_ID, getNetworkIdFromChainId } from '../chain';
 import { loadCSL } from './loader';
 import { Address, CborHex, ICardanoWalletInitArgs, NetworkID } from './types';
 import { generateSeed, harden } from './utils';

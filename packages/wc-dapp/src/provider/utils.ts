@@ -1,8 +1,8 @@
 import { WalletConnectModal } from '@walletconnect/modal';
 
-import { CHAIN_ID } from '../defaults';
+import { CHAIN_ID } from '.';
 
-export const getCardanoNamespace = (chains: CHAIN_ID[]) => {
+export const getRequiredCardanoNamespace = (chains: CHAIN_ID[]) => {
   const cardanoNamespace = {
     cip34: {
       chains,

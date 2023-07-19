@@ -11,7 +11,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@minswap/wallet-connect-dapp": "workspace:*",
+    "@minswap/wc-dapp": "workspace:*",
     "@vercel/examples-ui": "^1.0.5",
     "next": "13.4.4",
     "react": "^18.2.0",

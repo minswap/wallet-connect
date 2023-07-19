@@ -11,7 +11,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@minswap/wallet-connect-wallet": "workspace:*",
+    "@minswap/wc-wallet": "workspace:*",
     "@nextui-org/react": "1.0.8-beta.5",
     "@walletconnect/utils": "2.8.1",
     "@walletconnect/web3wallet": "^1.7.4",

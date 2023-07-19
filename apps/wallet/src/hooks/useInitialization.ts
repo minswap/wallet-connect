@@ -1,4 +1,4 @@
-import { CardanoWallet, CHAIN_ID, WalletConnectWallet } from '@minswap/wallet-connect-wallet';
+import { CardanoWallet, CardanoWcConnector, CHAIN_ID } from '@minswap/wc-wallet';
 import { useCallback, useEffect, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
@@ -20,7 +20,7 @@ export default function useInitialization() {
         mnemonic
       });
 
-      const wcWallet = await WalletConnectWallet.init({
+      const wcWallet = await CardanoWcConnector.init({
         projectId: '9635b09fa7cd4617a49fcff9bba19952', // TODO: move it to env var
         relayerRegionUrl: relayerRegionURL,
         metadata: {

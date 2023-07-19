@@ -1,6 +1,6 @@
 {
-  "name": "@minswap/wallet-connect-wallet",
-  "description": "Wallet connect integration for Cardano wallet",
+  "name": "@minswap/wc-dapp",
+  "description": "Wallet connect integration for Cardano dApps",
   "version": "1.0.0",
   "author": "Parichay <parichay@minswap.org>",
   "homepage": "https://github.com/minswap/wallet-connect/",
@@ -36,13 +36,9 @@
     "walletconnect"
   ],
   "dependencies": {
-    "@emurgo/cardano-serialization-lib-browser": "^11.4.0",
-    "@json-rpc-tools/utils": "1.7.6",
     "@minswap/tiny-invariant": "^1.2.0",
-    "@nextui-org/react": "1.0.8-beta.5",
-    "@walletconnect/utils": "2.8.1",
-    "@walletconnect/web3wallet": "^1.7.4",
-    "bip39": "^3.1.0",
+    "@walletconnect/modal": "2.5.9",
+    "@walletconnect/universal-provider": "^2.8.6",
     "bs58": "5.0.0",
     "buffer": "^6.0.3"
   },

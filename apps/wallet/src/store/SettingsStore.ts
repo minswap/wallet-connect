@@ -1,13 +1,13 @@
-import { CHAIN_ID, WalletConnectWallet } from '@minswap/wallet-connect-wallet';
-import { REGIONALIZED_RELAYER_ENDPOINTS } from '@minswap/wallet-connect-wallet';
-import { CardanoWallet } from '@minswap/wallet-connect-wallet';
+import { CardanoWcConnector, CHAIN_ID } from '@minswap/wc-wallet';
+import { REGIONALIZED_RELAYER_ENDPOINTS } from '@minswap/wc-wallet';
+import { CardanoWallet } from '@minswap/wc-wallet';
 import { proxy } from 'valtio';
 
 interface State {
   chain: CHAIN_ID;
   account: number;
   wallet: CardanoWallet | undefined;
-  wcWallet: WalletConnectWallet | undefined;
+  wcWallet: CardanoWcConnector | undefined;
   relayerRegionURL: string;
 }
 
@@ -46,7 +46,7 @@ const SettingsStore = {
   setWallet(wallet: CardanoWallet) {
     state.wallet = wallet;
   },
-  setWeb3Wallet(web3wallet: WalletConnectWallet | undefined) {
+  setWeb3Wallet(web3wallet: CardanoWcConnector) {
     state.wcWallet = web3wallet;
   },
   setRelayerRegionURL(relayerRegionURL: string) {

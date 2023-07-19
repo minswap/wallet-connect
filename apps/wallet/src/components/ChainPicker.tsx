@@ -1,4 +1,4 @@
-import { CHAIN_ID } from '@minswap/wallet-connect-wallet';
+import { CHAIN_ID } from '@minswap/wc-wallet';
 import { useSnapshot } from 'valtio';
 
 import SettingsStore from '@/store/SettingsStore';

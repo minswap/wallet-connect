@@ -1,4 +1,4 @@
-import { CHAIN_ID } from '../cardanoChain';
+import { CHAIN_ID } from '../chain';
 
 export interface ICardanoWalletInitArgs {
   chain: CHAIN_ID;
