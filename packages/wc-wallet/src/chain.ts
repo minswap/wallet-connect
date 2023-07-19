@@ -34,12 +34,16 @@ export const CARDANO_TEST_CHAINS = {
 
 export const CARDANO_CHAINS = { ...CARDANO_MAINNET_CHAINS, ...CARDANO_TEST_CHAINS };
 
-export const CARDANO_SIGNING_METHODS = {
-  CARDANO_SIGN_TRANSACTION: 'cardano_signTx',
-  CARDANO_SIGN_DATA: 'cardano_signData',
-  CARDANO_GET_UNUSED_ADDRESSES: 'cardano_getUnusedAddresses',
-  CARDANO_GET_USED_ADDRESSES: 'cardano_getUsedAddresses'
-};
+export enum CARDANO_SIGNING_METHODS {
+  CARDANO_SIGN_TRANSACTION = 'cardano_signTx',
+  CARDANO_SIGN_DATA = 'cardano_signData',
+  CARDANO_GET_USED_ADDRESSES = 'cardano_getUsedAddresses'
+}
+
+export enum CARDANO_EVENTS {
+  CARDANO_NETWORK_CHANGE = 'cardano_onNetworkChange',
+  CARDANO_ACCOUNT_CHANGE = 'cardano_onAccountChange'
+}
 
 export const getNetworkIdFromChainId = (chainId: string): NetworkID => {
   return CARDANO_CHAINS[chainId as keyof typeof CARDANO_CHAINS].networkId;

@@ -6,7 +6,7 @@ import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provi
 import { BASE_ADDRESS_KEY, CHAIN_ID_KEY, DEFAULT_LOGGER } from '../constants';
 import { TRpc } from '../types';
 import { EnabledAPI } from '../types/cip30';
-import { CHAIN_ID } from './chain';
+import { CARDANO_EVENTS, CARDANO_SIGNING_METHODS, CHAIN_ID } from './chain';
 import { EnabledWalletEmulator } from './enabledWalletEmulator';
 import { CardanoWcProviderOpts } from './types';
 
@@ -248,8 +248,8 @@ export class CardanoWcProvider {
   }
 }
 
-const SESSION_PROPOSAL_METHODS = ['cardano_signTx', 'cardano_signData', 'cardano_getUsedAddresses'];
-const SESSION_PROPOSAL_EVENTS = ['cardano_onNetworkChange', 'cardano_onAccountChange'];
+const SESSION_PROPOSAL_METHODS = Object.values(CARDANO_SIGNING_METHODS);
+const SESSION_PROPOSAL_EVENTS = Object.values(CARDANO_EVENTS);
 
 const getRequiredCardanoNamespace = (chains: CHAIN_ID[]) => {
   const cardanoNamespace = {

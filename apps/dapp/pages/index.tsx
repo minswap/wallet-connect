@@ -1,4 +1,5 @@
 import { CardanoWcProvider, CHAIN_ID, EnabledAPI } from '@minswap/wc-dapp';
+import { CARDANO_SIGNING_METHODS } from '@minswap/wc-dapp';
 import { Button, Input, Layout, Page } from '@vercel/examples-ui';
 import { useState } from 'react';
 import { WalletConnectRpc } from 'utils';
@@ -72,7 +73,7 @@ export default function Index() {
         ?.getProvider()
         .request(
           {
-            method: 'cardano_getUsedAddresses',
+            method: CARDANO_SIGNING_METHODS.CARDANO_GET_USED_ADDRESSES,
             params: []
           },
           CHAIN_ID.MAINNET

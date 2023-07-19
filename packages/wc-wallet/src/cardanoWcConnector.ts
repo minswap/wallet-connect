@@ -10,7 +10,7 @@ import { getSdkError } from '@walletconnect/utils';
 import { IWeb3Wallet, Web3Wallet, Web3WalletTypes } from '@walletconnect/web3wallet';
 
 import { CardanoWallet } from './cardano-wallet/wallet';
-import { CARDANO_SIGNING_METHODS, CHAIN_ID } from './chain';
+import { CARDANO_EVENTS, CARDANO_SIGNING_METHODS, CHAIN_ID } from './chain';
 
 export interface ICardanoWcConnectorParams {
   projectId: string;
@@ -126,7 +126,7 @@ export class CardanoWcConnector {
     await this.web3wallet.emitSessionEvent({
       topic,
       event: {
-        name: 'cardano_onAccountChange',
+        name: CARDANO_EVENTS.CARDANO_ACCOUNT_CHANGE,
         data: formatAccount(
           chainId,
           this.cardanoWallet.getRewardAddress(),
@@ -152,7 +152,7 @@ export class CardanoWcConnector {
     await this.web3wallet.emitSessionEvent({
       topic,
       event: {
-        name: 'cardano_onNetworkChange',
+        name: CARDANO_EVENTS.CARDANO_NETWORK_CHANGE,
         data: formatAccount(
           newChain,
           this.cardanoWallet.getRewardAddress(),
@@ -191,7 +191,6 @@ export class CardanoWcConnector {
           response = formatJsonRpcResult(id, signedTx);
           break;
         }
-        case CARDANO_SIGNING_METHODS.CARDANO_GET_UNUSED_ADDRESSES:
         case CARDANO_SIGNING_METHODS.CARDANO_GET_USED_ADDRESSES: {
           response = formatJsonRpcResult(id, [this.cardanoWallet.getBaseAddress()]);
           break;

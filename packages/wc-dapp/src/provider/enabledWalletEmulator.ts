@@ -3,16 +3,13 @@ import UniversalProvider from '@walletconnect/universal-provider';
 
 import { TRpc } from '../types';
 import type { Cbor, DataSignature, EnabledAPI, EnabledWalletEmulatorParams } from '../types/cip30';
-import { CHAIN_ID, getNetworkIdFromChainId, NetworkID } from './chain';
-
-// const TIMEOUT_ERR_MESSAGE = 'request timed out!';
-
-// const timeoutPromise = <T>(fn: Promise<T>, ms = 5000) => {
-//   return new Promise<T>((resolve, reject) => {
-//     fn.then(res => resolve(res)).catch(err => reject(err));
-//     setTimeout(() => reject(TIMEOUT_ERR_MESSAGE), ms);
-//   });
-// };
+import {
+  CARDANO_EVENTS,
+  CARDANO_SIGNING_METHODS,
+  CHAIN_ID,
+  getNetworkIdFromChainId,
+  NetworkID
+} from './chain';
 
 /**
  * This class is used to emulate the Cardano Wallet API's content script.
@@ -87,7 +84,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
   async signTx(tx: string, partialSign = false) {
     return this._provider.request<Cbor<'transaction_witness_set'>>(
       {
-        method: 'cardano_signTx',
+        method: CARDANO_SIGNING_METHODS.CARDANO_SIGN_TRANSACTION,
         params: [tx, partialSign]
       },
       this._chainId
@@ -97,7 +94,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
   async signData(addr: string, payload: string) {
     return this._provider.request<DataSignature>(
       {
-        method: 'cardano_signData',
+        method: CARDANO_SIGNING_METHODS.CARDANO_SIGN_DATA,
         params: [addr, payload]
       },
       this._chainId
@@ -113,11 +110,11 @@ export class EnabledWalletEmulator implements EnabledAPI {
     return Promise.resolve([]);
   }
 
-  // Fix listeners
+  // TODO: Fix listeners
   async onAccountChange(callback: (addresses: Cbor<'address'>[]) => Promise<undefined>) {
     return new Promise<undefined>((resolve, reject) => {
       try {
-        this._provider.on('cardano_onAccountChange', callback);
+        this._provider.on(CARDANO_EVENTS.CARDANO_ACCOUNT_CHANGE, callback);
         resolve(undefined);
       } catch (e) {
         reject(e);
@@ -128,7 +125,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
   async onNetworkChange(callback: (network: number) => Promise<undefined>) {
     return new Promise<undefined>((resolve, reject) => {
       try {
-        this._provider.on('cardano_onNetworkChange', callback);
+        this._provider.on(CARDANO_EVENTS.CARDANO_NETWORK_CHANGE, callback);
         resolve(undefined);
       } catch (e) {
         reject(e);
