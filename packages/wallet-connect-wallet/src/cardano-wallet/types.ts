@@ -1,4 +1,7 @@
+import { CHAIN_ID } from '../cardanoChain';
+
 export interface ICardanoWalletInitArgs {
+  chain: CHAIN_ID;
   mnemonic?: string;
 }
 

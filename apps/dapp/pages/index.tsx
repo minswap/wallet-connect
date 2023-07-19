@@ -24,7 +24,7 @@ const TIMEOUT_ERR_MESSAGE = 'request timed out!';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const timeoutPromise = (fn: Promise<any>, ms = 5000) => {
   return new Promise((resolve, reject) => {
-    fn.then(res => resolve(res));
+    fn.then(res => resolve(res)).catch(err => reject(err));
     setTimeout(() => reject(TIMEOUT_ERR_MESSAGE), ms);
   });
 };
@@ -72,13 +72,14 @@ export default function Index() {
         ._getBalance()
         .then(bal => {
           console.info('[APP] bal', bal);
+          return bal;
         })
         .catch((err: unknown) => {
           // when request times out, client throws an error with empty message. we should ignore it as we are timing out the request ourselves.
+          console.info('[APP] get balance', err);
           if ((err as Error).message) {
             throw err;
           }
-          console.info('[APP] get balance', err);
         })
     )
       .then(bal => {
@@ -97,8 +98,9 @@ export default function Index() {
     await timeoutPromise(
       (enabledApi as EnabledWalletEmulator)
         ._getUnusedAddresses()
-        .then(res => {
-          console.info('[APP] addr', res);
+        .then(addr => {
+          console.info('[APP] addr', addr);
+          return addr;
         })
         .catch((err: unknown) => {
           // when request times out, client throws an error with empty message. we should ignore it as we are timing out the request ourselves.

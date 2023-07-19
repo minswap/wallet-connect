@@ -44,10 +44,6 @@ export class WalletConnectWallet {
     return new WalletConnectWallet(core, web3wallet, params.cardanoWallet);
   }
 
-  changeAccount(newWallet: CardanoWallet) {
-    this.cardanoWallet = newWallet;
-  }
-
   /**
    *
    * PAIRING
@@ -113,28 +109,50 @@ export class WalletConnectWallet {
       topic,
       reason: reason ?? getSdkError('USER_DISCONNECTED')
     });
+    this.removeListeners();
   }
 
-  async emitAccountChanged(topic: string, chainId: CHAIN_ID, account: string) {
+  changeAccount(newWallet: CardanoWallet) {
+    this.removeListeners();
+    this.cardanoWallet = newWallet;
+    this.registerListeners();
+    for (const topic of Object.keys(this.getSessions())) {
+      // TODO: update session
+      this.emitAccountChanged(topic, this.cardanoWallet.chain);
+    }
+  }
+
+  async emitAccountChanged(topic: string, chainId: CHAIN_ID) {
     await this.web3wallet.emitSessionEvent({
       topic,
       event: {
         name: 'cardano_onAccountChange',
-        data: `${chainId}:${account}`
+        data: `${chainId}:${this.cardanoWallet.getRewardAddress()}`
       },
       chainId
     });
   }
 
+  changeChain(newChain: CHAIN_ID) {
+    this.removeListeners();
+    const prevChain = this.cardanoWallet.chain;
+    this.cardanoWallet.changeChain(newChain);
+    this.registerListeners();
+    for (const topic of Object.keys(this.getSessions())) {
+      // TODO: update session
+      this.emitNetworkChanged(topic, prevChain, newChain);
+    }
+  }
+
   // TODO: fix network type
-  async emitNetworkChanged(topic: string, newChainId: CHAIN_ID, currentChainId: CHAIN_ID) {
+  async emitNetworkChanged(topic: string, prevChain: CHAIN_ID, newChain: CHAIN_ID) {
     await this.web3wallet.emitSessionEvent({
       topic,
       event: {
         name: 'cardano_onNetworkChange',
-        data: `${newChainId}:${this.cardanoWallet.getRewardAddress(newChainId)}`
+        data: `${newChain}:${this.cardanoWallet.getRewardAddress()}`
       },
-      chainId: currentChainId
+      chainId: prevChain
     });
   }
 
@@ -150,25 +168,35 @@ export class WalletConnectWallet {
     const { params, id, topic } = requestEvent;
     const { request, chainId } = params;
 
-    console.info('onSessionRequest', request);
-
     let response: JsonRpcResponse;
 
-    switch (request.method) {
-      case CARDANO_SIGNING_METHODS.CARDANO_SIGN_TRANSACTION: {
-        const tx = request.params[0];
-        const signedTx = this.cardanoWallet.signTx(tx);
-        response = formatJsonRpcResult(id, signedTx);
-        break;
+    console.info('cardano chain', this.cardanoWallet.chain);
+
+    if (chainId !== this.cardanoWallet.chain) {
+      response = formatJsonRpcError(
+        id,
+        `INCORRECT_CHAIN: Expected: ${this.cardanoWallet.chain}, Received: ${chainId}`
+      );
+    } else {
+      switch (request.method) {
+        case CARDANO_SIGNING_METHODS.CARDANO_SIGN_TRANSACTION: {
+          const tx = request.params[0];
+          const signedTx = this.cardanoWallet.signTx(tx);
+          response = formatJsonRpcResult(id, signedTx);
+          break;
+        }
+        case CARDANO_SIGNING_METHODS.CARDANO_GET_UNUSED_ADDRESSES:
+        case CARDANO_SIGNING_METHODS.CARDANO_GET_USED_ADDRESSES: {
+          response = formatJsonRpcResult(id, [this.cardanoWallet.getBaseAddress()]);
+          break;
+        }
+        default:
+          // TODO: error response not propagated to dapp
+          // Search for: Error code is not in server code range
+          response = formatJsonRpcError(id, getSdkError('USER_REJECTED_METHODS'));
       }
-      case CARDANO_SIGNING_METHODS.CARDANO_GET_UNUSED_ADDRESSES:
-      case CARDANO_SIGNING_METHODS.CARDANO_GET_USED_ADDRESSES: {
-        response = formatJsonRpcResult(id, this.cardanoWallet.getBaseAddress(chainId as CHAIN_ID));
-        break;
-      }
-      default:
-        response = formatJsonRpcError(id, getSdkError('INVALID_METHOD'));
     }
+
     await this.web3wallet.respondSessionRequest({
       topic,
       response
@@ -188,7 +216,7 @@ export class WalletConnectWallet {
       const chainIds = requiredNamespaces[key].chains as CHAIN_ID[];
       if (chainIds)
         for (const chainId of chainIds) {
-          accounts.push(`${chainId}:${this.cardanoWallet.getRewardAddress(chainId)}`);
+          accounts.push(`${chainId}:${this.cardanoWallet.getRewardAddress()}`);
         }
       namespaces[key] = {
         accounts,
@@ -210,8 +238,15 @@ export class WalletConnectWallet {
   };
 
   private registerListeners() {
-    this.web3wallet.on('session_request', this.onSessionRequest);
-    this.web3wallet.on('session_proposal', this.onSessionProposal);
+    console.log('registerlistners');
+    this.web3wallet.on('session_request', this.onSessionRequest.bind(this));
+    this.web3wallet.on('session_proposal', this.onSessionProposal.bind(this));
+  }
+
+  private removeListeners() {
+    console.log('deregisterlistners');
+    this.web3wallet.removeListener('session_request', this.onSessionRequest.bind(this));
+    this.web3wallet.removeListener('session_proposal', this.onSessionProposal.bind(this));
   }
 
   async ping(topic: string) {

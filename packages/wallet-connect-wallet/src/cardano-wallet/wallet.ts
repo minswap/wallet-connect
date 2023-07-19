@@ -16,16 +16,22 @@ export class CardanoWallet {
     [NetworkID.MAINNET]: '',
     [NetworkID.TESTNET]: ''
   };
+  chain: CHAIN_ID;
 
-  private constructor(mnemonic?: string) {
+  private constructor(chain: CHAIN_ID, mnemonic?: string) {
+    this.chain = chain;
     // TODO: store encrypted xprv key instead
     this.mnemonic = mnemonic || generateSeed();
   }
 
   static async init(args: ICardanoWalletInitArgs) {
-    const wallet = new CardanoWallet(args.mnemonic);
+    const wallet = new CardanoWallet(args.chain, args.mnemonic);
     await wallet.derive();
     return wallet;
+  }
+
+  changeChain(chain: CHAIN_ID) {
+    this.chain = chain;
   }
 
   private async derive() {
@@ -51,14 +57,14 @@ export class CardanoWallet {
         rustSDK.StakeCredential.from_keyhash(stakeKeyHash)
       )
         .to_address()
-        .to_bech32(),
+        .to_hex(),
       [NetworkID.TESTNET]: rustSDK.BaseAddress.new(
         rustSDK.NetworkInfo.testnet().network_id(),
         rustSDK.StakeCredential.from_keyhash(paymentKeyHash),
         rustSDK.StakeCredential.from_keyhash(stakeKeyHash)
       )
         .to_address()
-        .to_bech32()
+        .to_hex()
     };
     paymentKeyHash.free();
     stakeKeyHash.free();
@@ -74,13 +80,13 @@ export class CardanoWallet {
         rustSDK.StakeCredential.from_keyhash(stakeKeyHash)
       )
         .to_address()
-        .to_bech32(),
+        .to_hex(),
       [NetworkID.TESTNET]: rustSDK.RewardAddress.new(
         rustSDK.NetworkInfo.testnet().network_id(),
         rustSDK.StakeCredential.from_keyhash(stakeKeyHash)
       )
         .to_address()
-        .to_bech32()
+        .to_hex()
     };
     stakeKeyHash.free();
     this.rewardAddress = rewardAddress;
@@ -90,13 +96,13 @@ export class CardanoWallet {
     return this.mnemonic;
   }
 
-  getBaseAddress(chainId: CHAIN_ID) {
-    const networkId = getNetworkIdFromChainId(chainId);
+  getBaseAddress() {
+    const networkId = getNetworkIdFromChainId(this.chain);
     return this.baseAddress[networkId];
   }
 
-  getRewardAddress(chainId: CHAIN_ID) {
-    const networkId = getNetworkIdFromChainId(chainId);
+  getRewardAddress() {
+    const networkId = getNetworkIdFromChainId(this.chain);
     return this.rewardAddress[networkId];
   }
 

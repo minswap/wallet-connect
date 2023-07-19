@@ -1,25 +1,13 @@
-import { CardanoWallet } from '@minswap/wallet-connect-wallet';
 import { useSnapshot } from 'valtio';
 
 import SettingsStore from '@/store/SettingsStore';
 
 export default function AccountPicker() {
-  const { account, chain, wcWallet } = useSnapshot(SettingsStore.state);
+  const { account, wcWallet } = useSnapshot(SettingsStore.state);
 
   async function onSelect(value: string) {
     if (!wcWallet) return;
-    const account = Number(value);
-    SettingsStore.setAccount(account);
-    const mnemonic = localStorage.getItem(`CIP34_MNEMONIC_${account}`) || undefined;
-    const wallet = await CardanoWallet.init({
-      mnemonic
-    });
-    SettingsStore.changeAccount(wallet);
-    const sessions = wcWallet.getSessions();
-    for (const topic of Object.keys(sessions)) {
-      // TODO: update session
-      wcWallet.emitAccountChanged(topic, chain, wcWallet.cardanoWallet.getRewardAddress(chain));
-    }
+    SettingsStore.changeAccount(Number(value));
   }
 
   return (

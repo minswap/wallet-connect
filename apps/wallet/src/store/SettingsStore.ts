@@ -21,23 +21,33 @@ const state = proxy<State>({
 
 const SettingsStore = {
   state,
-  setChain(value: CHAIN_ID) {
-    state.chain = value;
-    localStorage.setItem('CHAIN', value);
+  setChain(chain: CHAIN_ID) {
+    state.chain = chain;
+    localStorage.setItem('CHAIN', chain);
   },
-  setAccount(value: number) {
-    state.account = value;
-    localStorage.setItem('ACCOUNT', String(value));
+  setAccount(account: number) {
+    state.account = account;
+    localStorage.setItem('ACCOUNT', String(account));
   },
-  changeAccount(value: CardanoWallet) {
-    state.wallet = value;
-    state.wcWallet?.changeAccount(value);
+  async changeAccount(account: number) {
+    this.setAccount(account);
+    const mnemonic = localStorage.getItem(`CIP34_MNEMONIC_${account}`) || undefined;
+    const wallet = await CardanoWallet.init({
+      chain: state.chain,
+      mnemonic
+    });
+    state.wallet = wallet;
+    state.wcWallet?.changeAccount(wallet);
   },
-  setWallet(value: CardanoWallet) {
-    state.wallet = value;
+  changeChain(chain: CHAIN_ID) {
+    this.setChain(chain);
+    state.wcWallet?.changeChain(chain);
   },
-  setWeb3Wallet(value: WalletConnectWallet | undefined) {
-    state.wcWallet = value;
+  setWallet(wallet: CardanoWallet) {
+    state.wallet = wallet;
+  },
+  setWeb3Wallet(web3wallet: WalletConnectWallet | undefined) {
+    state.wcWallet = web3wallet;
   },
   setRelayerRegionURL(relayerRegionURL: string) {
     state.relayerRegionURL = relayerRegionURL;

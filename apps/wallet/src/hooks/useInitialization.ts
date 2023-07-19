@@ -7,25 +7,18 @@ import SettingsStore from '@/store/SettingsStore';
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false);
 
-  const { relayerRegionURL, chain } = useSnapshot(SettingsStore.state);
+  const { relayerRegionURL } = useSnapshot(SettingsStore.state);
 
   const onInitialize = useCallback(async () => {
     try {
       const storedAccount = localStorage.getItem('ACCOUNT');
-      if (storedAccount) {
-        SettingsStore.setAccount(Number(storedAccount));
-      }
-
       const storedChain = localStorage.getItem('CHAIN');
-      if (storedChain) {
-        SettingsStore.setChain(storedChain as CHAIN_ID);
-      }
 
       const mnemonic = localStorage.getItem(`CIP34_MNEMONIC_${storedAccount}`) || undefined;
       const wallet = await CardanoWallet.init({
+        chain: storedChain as CHAIN_ID,
         mnemonic
       });
-      SettingsStore.setWallet(wallet);
 
       const wcWallet = await WalletConnectWallet.init({
         projectId: '9635b09fa7cd4617a49fcff9bba19952', // TODO: move it to env var
@@ -38,13 +31,17 @@ export default function useInitialization() {
         },
         cardanoWallet: wallet
       });
+
+      SettingsStore.setAccount(Number(storedAccount));
+      SettingsStore.setChain(storedChain as CHAIN_ID);
+      SettingsStore.setWallet(wallet);
       SettingsStore.setWeb3Wallet(wcWallet);
 
       setInitialized(true);
     } catch (err: unknown) {
       alert(err);
     }
-  }, [relayerRegionURL, chain]);
+  }, [relayerRegionURL]);
 
   // TODO: add support for changing relayer url
   useEffect(() => {

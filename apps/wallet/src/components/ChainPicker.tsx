@@ -8,13 +8,7 @@ export default function ChainPicker() {
 
   function onSelect(value: CHAIN_ID) {
     if (!wcWallet) return;
-    const oldChain = chain;
-    const sessions = wcWallet.getSessions();
-    for (const topic of Object.keys(sessions)) {
-      // TODO: update session
-      wcWallet.emitNetworkChanged(topic, oldChain, value);
-    }
-    SettingsStore.setChain(value);
+    SettingsStore.changeChain(value);
   }
 
   return (

@@ -36,8 +36,8 @@ export default function HomePage() {
             <AccountCard
               key={name}
               name={name}
-              baseAddress={wcWallet.cardanoWallet.getBaseAddress(chain)}
-              rewardAddress={wcWallet.cardanoWallet.getRewardAddress(chain)}
+              baseAddress={wcWallet.cardanoWallet.getBaseAddress()}
+              rewardAddress={wcWallet.cardanoWallet.getRewardAddress()}
             />
           ))}
         </>
@@ -52,8 +52,8 @@ export default function HomePage() {
             <AccountCard
               key={CARDANO_TEST_CHAINS[chain].name}
               name={CARDANO_TEST_CHAINS[chain].name}
-              baseAddress={wcWallet.cardanoWallet.getBaseAddress(chain)}
-              rewardAddress={wcWallet.cardanoWallet.getRewardAddress(chain)}
+              baseAddress={wcWallet.cardanoWallet.getBaseAddress()}
+              rewardAddress={wcWallet.cardanoWallet.getRewardAddress()}
             />
           }
         </Fragment>

@@ -1,6 +1,6 @@
 import invariant from '@minswap/tiny-invariant';
 import { WalletConnectModal } from '@walletconnect/modal';
-import { PairingTypes, SessionTypes } from '@walletconnect/types';
+import { PairingTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
 import { CHAIN_ID } from '../defaults';
@@ -46,7 +46,7 @@ export class WalletConnectConnector implements Connector {
 
   static async init(opts: WalletConnectOpts) {
     invariant(opts.projectId.length > 0, 'Wallet Connect project ID not set');
-    invariant(opts.chains.length > 1, 'Currently we only support 1 chain');
+    invariant(opts.chains.length < 2, 'Currently we only support 1 chain');
     const provider = await UniversalProvider.init({
       logger: DEFAULT_LOGGER,
       relayUrl: opts.relayerRegion,
@@ -210,20 +210,25 @@ export class WalletConnectConnector implements Connector {
     console.info('session_ping', args);
   };
 
-  private onSessionEvent = (args: unknown) => {
-    console.info('session_event', args);
+  private onSessionEvent = (args: SignClientTypes.EventArguments['session_event']) => {
+    const eventName = args.params.event.name;
+    if (eventName === 'cardano_onAccountChange') {
+      this.onAccountChange(args.params.event.data);
+    } else if (eventName === 'cardano_onNetworkChange') {
+      this.onNetworkChange(args.params.event.data);
+    }
   };
 
   private onSessionUpdate = (args: unknown) => {
     console.info('session_update', args);
   };
 
-  private onNetworkChange = (args: unknown) => {
-    console.info('network_change', args);
+  private onNetworkChange = (newAccount: string) => {
+    console.info('network_change', newAccount);
   };
 
-  private onAccountChange = (args: unknown) => {
-    console.info('account_change', args);
+  private onAccountChange = (newAccount: string) => {
+    console.info('account_change', newAccount);
   };
 
   private registerEventListeners() {
@@ -233,8 +238,6 @@ export class WalletConnectConnector implements Connector {
     this.provider.on('session_delete', this.onSessionDelete);
     this.provider.on('display_uri', this.onDisplayUri);
     this.provider.on('session_update', this.onSessionUpdate);
-    this.provider.on('cardano_onAccountChange', this.onAccountChange);
-    this.provider.on('cardano_onNetworkChange', this.onNetworkChange);
   }
 
   private removeListeners() {
@@ -244,7 +247,5 @@ export class WalletConnectConnector implements Connector {
     this.provider.removeListener('session_delete', this.onSessionDelete);
     this.provider.removeListener('display_uri', this.onDisplayUri);
     this.provider.removeListener('session_update', this.onSessionUpdate);
-    this.provider.removeListener('cardano_onAccountChange', this.onAccountChange);
-    this.provider.removeListener('cardano_onNetworkChange', this.onNetworkChange);
   }
 }
