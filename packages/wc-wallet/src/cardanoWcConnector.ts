@@ -1,34 +1,24 @@
 import { Core } from '@walletconnect/core';
-import {
-  ErrorResponse,
-  formatJsonRpcError,
-  formatJsonRpcResult,
-  JsonRpcResponse
-} from '@walletconnect/jsonrpc-utils';
+import { ErrorResponse } from '@walletconnect/jsonrpc-utils';
 import { ICore, PairingTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
 import { IWeb3Wallet, Web3Wallet, Web3WalletTypes } from '@walletconnect/web3wallet';
 
-import { CardanoWallet } from './cardano-wallet/wallet';
-import { CARDANO_EVENTS, CARDANO_SIGNING_METHODS, CHAIN_ID } from './chain';
+import { CARDANO_EVENTS, CHAIN_ID } from './chain';
 
 export interface ICardanoWcConnectorParams {
   projectId: string;
   relayerRegionUrl: string;
   metadata: Web3WalletTypes.Metadata;
-  cardanoWallet: CardanoWallet;
 }
 
 export class CardanoWcConnector {
   readonly core: ICore;
   readonly web3wallet: IWeb3Wallet;
-  cardanoWallet: CardanoWallet;
 
-  constructor(core: ICore, web3wallet: IWeb3Wallet, cardanoWallet: CardanoWallet) {
+  constructor(core: ICore, web3wallet: IWeb3Wallet) {
     this.core = core;
     this.web3wallet = web3wallet;
-    this.cardanoWallet = cardanoWallet;
-    this.registerListeners();
   }
 
   static async init(params: ICardanoWcConnectorParams) {
@@ -41,7 +31,7 @@ export class CardanoWcConnector {
       core,
       metadata: params.metadata
     });
-    return new CardanoWcConnector(core, web3wallet, params.cardanoWallet);
+    return new CardanoWcConnector(core, web3wallet);
   }
 
   /**
@@ -49,7 +39,6 @@ export class CardanoWcConnector {
    * PAIRING
    *
    */
-
   async pair(params: { uri: string }) {
     return await this.core.pairing.pair({ uri: params.uri });
   }
@@ -111,51 +100,35 @@ export class CardanoWcConnector {
     });
   }
 
-  changeAccount(newWallet: CardanoWallet) {
-    this.cardanoWallet = newWallet;
+  async emitAccountChanged(chainId: CHAIN_ID, rewardAddress: string, baseAddress: string) {
     for (const topic of Object.keys(this.getSessions())) {
-      // TODO: update session
-      this.emitAccountChanged(topic, this.cardanoWallet.chain);
+      await this.web3wallet.emitSessionEvent({
+        topic,
+        event: {
+          name: CARDANO_EVENTS.CARDANO_ACCOUNT_CHANGE,
+          data: formatAccount(chainId, rewardAddress, baseAddress)
+        },
+        chainId
+      });
     }
   }
 
-  async emitAccountChanged(topic: string, chainId: CHAIN_ID) {
-    await this.web3wallet.emitSessionEvent({
-      topic,
-      event: {
-        name: CARDANO_EVENTS.CARDANO_ACCOUNT_CHANGE,
-        data: formatAccount(
-          chainId,
-          this.cardanoWallet.getRewardAddress(),
-          this.cardanoWallet.getBaseAddress()
-        )
-      },
-      chainId
-    });
-  }
-
-  changeChain(newChain: CHAIN_ID) {
-    const prevChain = this.cardanoWallet.chain;
-    this.cardanoWallet.changeChain(newChain);
+  async emitNetworkChanged(
+    prevChain: CHAIN_ID,
+    newChain: CHAIN_ID,
+    rewardAddress: string,
+    baseAddress: string
+  ) {
     for (const topic of Object.keys(this.getSessions())) {
-      // TODO: update session
-      this.emitNetworkChanged(topic, prevChain, newChain);
+      await this.web3wallet.emitSessionEvent({
+        topic,
+        event: {
+          name: CARDANO_EVENTS.CARDANO_NETWORK_CHANGE,
+          data: formatAccount(newChain, rewardAddress, baseAddress)
+        },
+        chainId: prevChain
+      });
     }
-  }
-
-  async emitNetworkChanged(topic: string, prevChain: CHAIN_ID, newChain: CHAIN_ID) {
-    await this.web3wallet.emitSessionEvent({
-      topic,
-      event: {
-        name: CARDANO_EVENTS.CARDANO_NETWORK_CHANGE,
-        data: formatAccount(
-          newChain,
-          this.cardanoWallet.getRewardAddress(),
-          this.cardanoWallet.getBaseAddress()
-        )
-      },
-      chainId: prevChain
-    });
   }
 
   /**
@@ -163,52 +136,11 @@ export class CardanoWcConnector {
    * Requests
    *
    */
-
-  private onSessionRequest = async (
-    requestEvent: SignClientTypes.EventArguments['session_request']
+  approveSessionProposal = async (
+    proposal: SignClientTypes.EventArguments['session_proposal'],
+    rewardAddress: string,
+    baseAddress: string
   ) => {
-    const { params, id, topic } = requestEvent;
-    const { request, chainId } = params;
-
-    let response: JsonRpcResponse;
-
-    // TODO: listener callbacks do not get update cardano wallet object
-    if (chainId !== this.cardanoWallet.chain) {
-      response = formatJsonRpcError(
-        id,
-        `INCORRECT_CHAIN: Expected: ${this.cardanoWallet.chain}, Received: ${chainId}`
-      );
-    } else {
-      switch (request.method) {
-        case CARDANO_SIGNING_METHODS.CARDANO_SIGN_TRANSACTION: {
-          const tx = request.params[0];
-          const signedTx = this.cardanoWallet.signTx(tx);
-          response = formatJsonRpcResult(id, signedTx);
-          break;
-        }
-        case CARDANO_SIGNING_METHODS.CARDANO_GET_USED_ADDRESSES: {
-          response = formatJsonRpcResult(id, [this.cardanoWallet.getBaseAddress()]);
-          break;
-        }
-        default:
-          // TODO: error response not propagated to dapp
-          // Search for: Error code is not in server code range
-          response = formatJsonRpcError(id, getSdkError('INVALID_METHOD'));
-      }
-    }
-    await this.web3wallet.respondSessionRequest({
-      topic,
-      response
-    });
-  };
-
-  private registerListeners() {
-    this.web3wallet.on('session_request', this.onSessionRequest);
-    // TODO: listen to session delete
-  }
-
-  // TODO: Should intercept session proposal for user approval
-  approveSessionProposal = async (proposal: SignClientTypes.EventArguments['session_proposal']) => {
     const { id, params } = proposal;
     const { requiredNamespaces, relays } = params;
 
@@ -218,13 +150,7 @@ export class CardanoWcConnector {
       const chainIds = requiredNamespaces[key].chains as CHAIN_ID[];
       if (chainIds)
         for (const chainId of chainIds) {
-          accounts.push(
-            formatAccount(
-              chainId,
-              this.cardanoWallet.getRewardAddress(),
-              this.cardanoWallet.getBaseAddress()
-            )
-          );
+          accounts.push(formatAccount(chainId, rewardAddress, baseAddress));
         }
       namespaces[key] = {
         accounts,

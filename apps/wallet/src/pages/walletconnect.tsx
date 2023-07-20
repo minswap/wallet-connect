@@ -15,12 +15,17 @@ export default function WalletConnectPage() {
 
   const { push } = useRouter();
 
-  const { wcWallet } = useSnapshot(SettingsStore.state);
+  const { wcWallet, wallet } = useSnapshot(SettingsStore.state);
 
   const sessionProposalCb = useCallback(
     async (proposal: SignClientTypes.EventArguments['session_proposal']) => {
+      if (!wallet) return;
       // TODO: show modal for approval or rejection
-      await wcWallet?.approveSessionProposal(proposal);
+      await wcWallet?.approveSessionProposal(
+        proposal,
+        wallet?.getRewardAddress(),
+        wallet?.getBaseAddress()
+      );
       setUri('');
       setLoading(false);
       push('/');

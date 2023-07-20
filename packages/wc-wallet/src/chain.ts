@@ -1,6 +1,9 @@
-import { NetworkID } from './cardano-wallet';
-
 export type TCardanoChain = keyof typeof CARDANO_MAINNET_CHAINS;
+
+export enum NetworkID {
+  MAINNET = 1,
+  TESTNET = 0
+}
 
 export enum CHAIN_ID {
   MAINNET = 'cip34:1-764824073',

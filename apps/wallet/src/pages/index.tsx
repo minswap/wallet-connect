@@ -10,9 +10,9 @@ import PageHeader from '@/components/PageHeader';
 import SettingsStore from '@/store/SettingsStore';
 
 export default function HomePage() {
-  const { wcWallet, chain } = useSnapshot(SettingsStore.state);
+  const { wallet, chain } = useSnapshot(SettingsStore.state);
 
-  if (!wcWallet) return null;
+  if (!wallet) return null;
 
   return (
     <Fragment>
@@ -32,8 +32,8 @@ export default function HomePage() {
             <AccountCard
               key={name}
               name={name}
-              baseAddress={wcWallet.cardanoWallet.getBaseAddress()}
-              rewardAddress={wcWallet.cardanoWallet.getRewardAddress()}
+              baseAddress={wallet.getBaseAddress()}
+              rewardAddress={wallet.getRewardAddress()}
             />
           ))}
         </>
@@ -48,8 +48,8 @@ export default function HomePage() {
             <AccountCard
               key={CARDANO_TEST_CHAINS[chain].name}
               name={CARDANO_TEST_CHAINS[chain].name}
-              baseAddress={wcWallet.cardanoWallet.getBaseAddress()}
-              rewardAddress={wcWallet.cardanoWallet.getRewardAddress()}
+              baseAddress={wallet.getBaseAddress()}
+              rewardAddress={wallet.getRewardAddress()}
             />
           }
         </Fragment>

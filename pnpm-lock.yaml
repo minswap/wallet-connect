@@ -84,12 +84,18 @@ importers:
 
   apps/wallet:
     dependencies:
+      '@emurgo/cardano-serialization-lib-browser':
+        specifier: ^11.4.0
+        version: 11.4.0
       '@minswap/wc-wallet':
         specifier: workspace:*
         version: link:../../packages/wc-wallet
       '@nextui-org/react':
         specifier: 1.0.8-beta.5
         version: 1.0.8-beta.5(react-dom@17.0.2)(react@17.0.2)
+      '@walletconnect/jsonrpc-utils':
+        specifier: 1.0.8
+        version: 1.0.8
       '@walletconnect/utils':
         specifier: 2.8.1
         version: 2.8.1
@@ -173,9 +179,6 @@ importers:
 
   packages/wc-wallet:
     dependencies:
-      '@emurgo/cardano-serialization-lib-browser':
-        specifier: ^11.4.0
-        version: 11.4.0
       '@minswap/tiny-invariant':
         specifier: ^1.2.0
         version: 1.2.0
@@ -191,9 +194,6 @@ importers:
       '@walletconnect/web3wallet':
         specifier: ^1.8.6
         version: 1.8.6
-      bip39:
-        specifier: ^3.1.0
-        version: 3.1.0
       bs58:
         specifier: 5.0.0
         version: 5.0.0

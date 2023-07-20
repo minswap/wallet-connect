@@ -36,13 +36,11 @@
     "walletconnect"
   ],
   "dependencies": {
-    "@emurgo/cardano-serialization-lib-browser": "^11.4.0",
     "@walletconnect/jsonrpc-utils": "1.0.8",
     "@minswap/tiny-invariant": "^1.2.0",
     "@nextui-org/react": "1.0.8-beta.5",
     "@walletconnect/utils": "2.9.0",
     "@walletconnect/web3wallet": "^1.8.6",
-    "bip39": "^3.1.0",
     "bs58": "5.0.0",
     "buffer": "^6.0.3"
   },

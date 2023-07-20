@@ -53,7 +53,6 @@ export default function Index() {
         rpc: new WalletConnectRpc()
       });
       const enabledApi = await walletConnectConnector.enable();
-      console.info('[APP] enabledApi', enabledApi);
       setWc(walletConnectConnector);
       setEnabledApi(enabledApi);
       enabledApi.onAccountChange((account: string) => {
@@ -102,7 +101,7 @@ export default function Index() {
           console.info(TIMEOUT_ERR_MESSAGE);
         }
       });
-    await sleep(1000);
+    await sleep(1000); // not required just for demo
     setAddressLoading(false);
   };
 
