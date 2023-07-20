@@ -7,7 +7,6 @@ export const CONTEXT = 'cardano_provider';
 export const STORAGE_KEY = `${PROTOCOL}@${WC_VERSION}:${CONTEXT}:`;
 
 export const CHAIN_ID_KEY = `${STORAGE_KEY}/currentChainId`;
-export const BASE_ADDRESS_KEY = `${STORAGE_KEY}/baseAddr`;
 
 export enum REGIONALIZED_RELAYER_ENDPOINTS {
   DEFAULT = 'wss://relay.walletconnect.org',

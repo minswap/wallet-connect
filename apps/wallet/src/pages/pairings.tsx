@@ -11,7 +11,7 @@ export default function PairingsPage() {
   const [pairings, setPairings] = useState(wcWallet?.getPairings());
 
   async function onDelete(topic: string) {
-    wcWallet?.deletePairing(topic);
+    await wcWallet?.deletePairing(topic);
     setPairings(wcWallet?.getPairings());
   }
 

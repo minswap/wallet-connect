@@ -15,7 +15,7 @@ export default function SessionPage() {
   const [topic, setTopic] = useState<string | null>(null);
   const [session, setSession] = useState<SessionTypes.Struct | null>(null);
   const [updated, setUpdated] = useState(new Date());
-  const { query, replace } = useRouter();
+  const { query, push } = useRouter();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ export default function SessionPage() {
     if (!topic) return;
     setLoading(true);
     await wcWallet?.disconnectSession(topic);
-    replace('/sessions');
+    push('/sessions');
     setLoading(false);
   }
 

@@ -48,10 +48,11 @@
     gap: 2rem
 }
 
-.init {
-
+.addrLabel {
+    text-align: center;
 }
 
-.balance {
-    
+.baseAddr {
+    width: 500px;
+    word-break: break-all;
 }

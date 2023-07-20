@@ -59,6 +59,10 @@ export default function Index() {
       enabledApi.onAccountChange((account: string) => {
         console.info('account changed', account);
       });
+      const provider = walletConnectConnector.getProvider();
+      provider.on('disconnect', () => {
+        reset();
+      });
     } catch (error) {
       console.error('[APP] wallet connect init error: ', error);
     }
@@ -148,7 +152,12 @@ export default function Index() {
     <Page>
       <div className={styles.container}>
         {wc && <div>Connected!</div>}
-        {baseAddr && <div>Address: {baseAddr}</div>}
+        {baseAddr && (
+          <>
+            <div className={styles.addrLabel}>Base Address:</div>
+            <div className={styles.baseAddr}>{baseAddr}</div>
+          </>
+        )}
         <div className={styles.buttonContainer}>
           {!wc && (
             <button className={styles.button} onClick={initWc}>

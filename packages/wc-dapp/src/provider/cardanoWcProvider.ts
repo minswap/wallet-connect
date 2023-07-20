@@ -3,7 +3,7 @@ import { WalletConnectModal } from '@walletconnect/modal';
 import { PairingTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
-import { BASE_ADDRESS_KEY, CHAIN_ID_KEY, DEFAULT_LOGGER } from '../constants';
+import { CHAIN_ID_KEY, DEFAULT_LOGGER } from '../constants';
 import { TRpc } from '../types';
 import { EnabledAPI } from '../types/cip30';
 import { CARDANO_EVENTS, CARDANO_SIGNING_METHODS, CHAIN_ID } from './chain';
@@ -163,7 +163,6 @@ export class CardanoWcProvider {
     if (provider.session) {
       try {
         provider.client.core.storage.removeItem(CHAIN_ID_KEY);
-        provider.client.core.storage.removeItem(BASE_ADDRESS_KEY);
         await provider.disconnect();
       } catch (error) {
         console.info('disconnect error', (error as Error).message);
@@ -199,8 +198,8 @@ export class CardanoWcProvider {
     }
   };
 
-  private onSessionDelete = () => {
-    console.info('session delete');
+  private onSessionDelete = (args: Omit<SignClientTypes.BaseEventArgs, 'params'>) => {
+    console.info('session delete', args);
     this.reset();
   };
 

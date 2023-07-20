@@ -109,13 +109,10 @@ export class CardanoWcConnector {
       topic,
       reason: reason ?? getSdkError('USER_DISCONNECTED')
     });
-    this.removeListeners();
   }
 
   changeAccount(newWallet: CardanoWallet) {
-    this.removeListeners();
     this.cardanoWallet = newWallet;
-    this.registerListeners();
     for (const topic of Object.keys(this.getSessions())) {
       // TODO: update session
       this.emitAccountChanged(topic, this.cardanoWallet.chain);
@@ -138,10 +135,8 @@ export class CardanoWcConnector {
   }
 
   changeChain(newChain: CHAIN_ID) {
-    this.removeListeners();
     const prevChain = this.cardanoWallet.chain;
     this.cardanoWallet.changeChain(newChain);
-    this.registerListeners();
     for (const topic of Object.keys(this.getSessions())) {
       // TODO: update session
       this.emitNetworkChanged(topic, prevChain, newChain);
@@ -201,17 +196,19 @@ export class CardanoWcConnector {
           response = formatJsonRpcError(id, getSdkError('INVALID_METHOD'));
       }
     }
-
     await this.web3wallet.respondSessionRequest({
       topic,
       response
     });
   };
 
+  private registerListeners() {
+    this.web3wallet.on('session_request', this.onSessionRequest);
+    // TODO: listen to session delete
+  }
+
   // TODO: Should intercept session proposal for user approval
-  private onSessionProposal = async (
-    proposal: SignClientTypes.EventArguments['session_proposal']
-  ) => {
+  approveSessionProposal = async (proposal: SignClientTypes.EventArguments['session_proposal']) => {
     const { id, params } = proposal;
     const { requiredNamespaces, relays } = params;
 
@@ -241,22 +238,15 @@ export class CardanoWcConnector {
       relayProtocol: relays[0].protocol,
       namespaces
     });
-
-    // await this.web3wallet.rejectSession({
-    //   id,
-    //   reason: getSdkError('USER_REJECTED_METHODS')
-    // })
   };
 
-  private registerListeners() {
-    this.web3wallet.on('session_request', this.onSessionRequest);
-    this.web3wallet.on('session_proposal', this.onSessionProposal);
-  }
-
-  private removeListeners() {
-    this.web3wallet.removeListener('session_request', this.onSessionRequest);
-    this.web3wallet.removeListener('session_proposal', this.onSessionProposal);
-  }
+  rejectSessionProposal = async (proposal: SignClientTypes.EventArguments['session_proposal']) => {
+    const { id } = proposal;
+    await this.web3wallet.rejectSession({
+      id,
+      reason: getSdkError('USER_REJECTED_METHODS')
+    });
+  };
 
   async ping(topic: string) {
     return this.web3wallet.engine.signClient.ping({ topic });
