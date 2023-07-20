@@ -1,6 +1,6 @@
 import { CARDANO_CHAINS, CardanoWcConnector, CHAIN_ID, TCardanoChain } from '@minswap/wc-wallet';
 
-import { CardanoWallet } from './cardano-wallet';
+import { CardanoWallet } from '@/cardanoWallet';
 
 export function truncate(value: string, length: number) {
   if (value?.length <= length) {

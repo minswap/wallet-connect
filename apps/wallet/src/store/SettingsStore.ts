@@ -1,7 +1,7 @@
 import { CardanoWcConnector, CHAIN_ID, REGIONALIZED_RELAYER_ENDPOINTS } from '@minswap/wc-wallet';
 import { proxy } from 'valtio';
 
-import { CardanoWallet } from '@/cardano-wallet';
+import { CardanoWallet } from '@/cardanoWallet';
 import { createCardanoWallet } from '@/utils';
 
 interface State {
