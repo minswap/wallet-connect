@@ -1,8 +1,15 @@
 import { CardanoWcConnector, CHAIN_ID, REGIONALIZED_RELAYER_ENDPOINTS } from '@minswap/wc-wallet';
+import { SignClientTypes } from '@walletconnect/types';
 import { proxy } from 'valtio';
 
 import { CardanoWallet } from '@/cardanoWallet';
-import { createCardanoWallet } from '@/utils';
+import {
+  createCardanoWallet,
+  onAccountChange,
+  onChainChange,
+  onSessionProposalCb,
+  onSessionRequestCb
+} from '@/utils';
 
 interface State {
   chain: CHAIN_ID;
@@ -37,26 +44,28 @@ const SettingsStore = {
     this.setAccount(account);
     const wallet = await createCardanoWallet(state.chain, account);
     this.setWallet(wallet);
-    await state.wcWallet?.emitAccountChanged(
-      state.chain,
-      wallet.getRewardAddress(),
-      wallet.getBaseAddress()
-    );
+    await onAccountChange(state.chain, state.wcWallet, state.wallet);
   },
   async changeChain(chain: CHAIN_ID) {
     this.setChain(chain);
     const wallet = await createCardanoWallet(state.chain, state.account);
     const prevChain = state.wallet?.chain as CHAIN_ID;
     this.setWallet(wallet);
-    await state.wcWallet?.emitNetworkChanged(
-      prevChain,
-      chain,
-      wallet.getRewardAddress(),
-      wallet.getBaseAddress()
-    );
+    await onChainChange(prevChain, state.chain, state.wcWallet, state.wallet);
   },
-  setWeb3Wallet(web3wallet: CardanoWcConnector) {
-    state.wcWallet = web3wallet;
+  setWeb3Wallet(wcWallet: CardanoWcConnector) {
+    // Only to be called one time
+    state.wcWallet = wcWallet;
+    state.wcWallet.web3wallet.on(
+      'session_request',
+      async (requestEvent: SignClientTypes.EventArguments['session_request']) =>
+        onSessionRequestCb(requestEvent, state.wcWallet, state.wallet)
+    );
+    state.wcWallet.web3wallet.on(
+      'session_proposal',
+      async (proposal: SignClientTypes.EventArguments['session_proposal']) =>
+        onSessionProposalCb(proposal, state.wcWallet, state.account)
+    );
   },
   setRelayerRegionURL(relayerRegionURL: string) {
     state.relayerRegionURL = relayerRegionURL;

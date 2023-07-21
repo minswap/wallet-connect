@@ -51,3 +51,7 @@ export enum CARDANO_EVENTS {
 export const getNetworkIdFromChainId = (chainId: string): NetworkID => {
   return CARDANO_CHAINS[chainId as keyof typeof CARDANO_CHAINS].networkId;
 };
+
+export function formatAccount(chainId: CHAIN_ID, stakeAddress: string, baseAddress: string) {
+  return `${chainId}:${stakeAddress}-${baseAddress}`;
+}

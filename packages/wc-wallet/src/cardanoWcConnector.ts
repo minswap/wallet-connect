@@ -4,7 +4,7 @@ import { ICore, PairingTypes, SessionTypes, SignClientTypes } from '@walletconne
 import { getSdkError } from '@walletconnect/utils';
 import { IWeb3Wallet, Web3Wallet, Web3WalletTypes } from '@walletconnect/web3wallet';
 
-import { CARDANO_EVENTS, CHAIN_ID } from './chain';
+import { CARDANO_EVENTS, CHAIN_ID, formatAccount } from './chain';
 
 export interface ICardanoWcConnectorParams {
   projectId: string;
@@ -138,26 +138,10 @@ export class CardanoWcConnector {
    */
   approveSessionProposal = async (
     proposal: SignClientTypes.EventArguments['session_proposal'],
-    rewardAddress: string,
-    baseAddress: string
+    namespaces: SessionTypes.Namespaces
   ) => {
     const { id, params } = proposal;
-    const { requiredNamespaces, relays } = params;
-
-    const namespaces: SessionTypes.Namespaces = {};
-    for (const key of Object.keys(requiredNamespaces)) {
-      const accounts: string[] = [];
-      const chainIds = requiredNamespaces[key].chains as CHAIN_ID[];
-      if (chainIds)
-        for (const chainId of chainIds) {
-          accounts.push(formatAccount(chainId, rewardAddress, baseAddress));
-        }
-      namespaces[key] = {
-        accounts,
-        methods: requiredNamespaces[key].methods,
-        events: requiredNamespaces[key].events
-      };
-    }
+    const { relays } = params;
 
     await this.web3wallet.approveSession({
       id,
@@ -177,8 +161,4 @@ export class CardanoWcConnector {
   async ping(topic: string) {
     return this.web3wallet.engine.signClient.ping({ topic });
   }
-}
-
-function formatAccount(chainId: CHAIN_ID, stakeAddress: string, baseAddress: string) {
-  return `${chainId}:${stakeAddress}-${baseAddress}`;
 }

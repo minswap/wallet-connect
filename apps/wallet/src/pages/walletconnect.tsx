@@ -1,7 +1,5 @@
 import { Button, Input, Loading, Text } from '@nextui-org/react';
-import { SignClientTypes } from '@walletconnect/types';
-import { useRouter } from 'next/router';
-import { Fragment, useCallback, useEffect, useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import PageHeader from '@/components/PageHeader';
@@ -11,35 +9,8 @@ import SettingsStore from '@/store/SettingsStore';
 export default function WalletConnectPage() {
   const [uri, setUri] = useState('');
   const [loading, setLoading] = useState(false);
-  const [listening, setListening] = useState(false);
 
-  const { push } = useRouter();
-
-  const { wcWallet, wallet } = useSnapshot(SettingsStore.state);
-
-  const sessionProposalCb = useCallback(
-    async (proposal: SignClientTypes.EventArguments['session_proposal']) => {
-      if (!wallet) return;
-      // TODO: show modal for approval or rejection
-      await wcWallet?.approveSessionProposal(
-        proposal,
-        wallet?.getRewardAddress(),
-        wallet?.getBaseAddress()
-      );
-      setUri('');
-      setLoading(false);
-      push('/');
-    },
-    [wcWallet]
-  );
-
-  useEffect(() => {
-    wcWallet?.web3wallet.on('session_proposal', sessionProposalCb);
-    setListening(true);
-    return () => {
-      wcWallet?.web3wallet.removeListener('session_proposal', sessionProposalCb);
-    };
-  }, [wcWallet, sessionProposalCb]);
+  const { wcWallet } = useSnapshot(SettingsStore.state);
 
   async function onConnect(uri: string) {
     try {
@@ -47,11 +18,10 @@ export default function WalletConnectPage() {
       await wcWallet?.pair({ uri });
     } catch (err: unknown) {
       alert(err);
+    } finally {
+      setUri('');
+      setLoading(false);
     }
-  }
-
-  if (!listening) {
-    return <Loading />;
   }
 
   return (
