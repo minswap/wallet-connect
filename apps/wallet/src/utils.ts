@@ -104,6 +104,7 @@ export const onSessionProposalCb = async (
   const namespaces: SessionTypes.Namespaces = {};
   const accounts: string[] = [];
   for (const key of Object.keys(requiredNamespaces)) {
+    if (key !== 'cip34') continue;
     const chainIds = requiredNamespaces[key].chains as CHAIN_ID[];
     if (chainIds)
       for (const chainId of chainIds) {
@@ -123,23 +124,25 @@ export const onSessionProposalCb = async (
 };
 
 export const onAccountChange = async (
-  chain: string,
-  wallet: CardanoWallet | undefined,
-  wcWallet: CardanoWcConnector | undefined
-) => {
-  await wcWallet?.emitAccountChanged(chain, wallet?.getRewardAddress(), wallet?.getBaseAddress());
-};
-
-export const onChainChange = async (
-  prevChain: string,
-  currentChain: string,
+  chain: CHAIN_ID,
   wcWallet: CardanoWcConnector | undefined,
   wallet: CardanoWallet | undefined
 ) => {
-  await wcWallet?.emitNetworkChanged(
+  if (!wcWallet || !wallet) return;
+  await wcWallet.emitAccountChanged(chain, wallet.getRewardAddress(), wallet.getBaseAddress());
+};
+
+export const onChainChange = async (
+  prevChain: CHAIN_ID,
+  currentChain: CHAIN_ID,
+  wcWallet: CardanoWcConnector | undefined,
+  wallet: CardanoWallet | undefined
+) => {
+  if (!wcWallet || !wallet) return;
+  await wcWallet.emitNetworkChanged(
     prevChain,
     currentChain,
-    wallet?.getRewardAddress(),
-    wallet?.getBaseAddress()
+    wallet.getRewardAddress(),
+    wallet.getBaseAddress()
   );
 };

@@ -101,15 +101,22 @@ export class CardanoWcConnector {
   }
 
   async emitAccountChanged(chainId: CHAIN_ID, rewardAddress: string, baseAddress: string) {
-    for (const topic of Object.keys(this.getSessions())) {
-      await this.web3wallet.emitSessionEvent({
-        topic,
-        event: {
-          name: CARDANO_EVENTS.CARDANO_ACCOUNT_CHANGE,
-          data: formatAccount(chainId, rewardAddress, baseAddress)
-        },
-        chainId
-      });
+    const sessions = this.getSessions();
+    for (const topic of Object.keys(sessions)) {
+      const session = sessions[topic];
+      const sessionHasChainId = session.namespaces.cip34.accounts.some(account =>
+        account.startsWith(chainId)
+      );
+      if (sessionHasChainId) {
+        await this.web3wallet.emitSessionEvent({
+          topic,
+          event: {
+            name: CARDANO_EVENTS.CARDANO_ACCOUNT_CHANGE,
+            data: formatAccount(chainId, rewardAddress, baseAddress)
+          },
+          chainId
+        });
+      }
     }
   }
 
@@ -119,15 +126,22 @@ export class CardanoWcConnector {
     rewardAddress: string,
     baseAddress: string
   ) {
-    for (const topic of Object.keys(this.getSessions())) {
-      await this.web3wallet.emitSessionEvent({
-        topic,
-        event: {
-          name: CARDANO_EVENTS.CARDANO_NETWORK_CHANGE,
-          data: formatAccount(newChain, rewardAddress, baseAddress)
-        },
-        chainId: prevChain
-      });
+    const sessions = this.getSessions();
+    for (const topic of Object.keys(sessions)) {
+      const session = sessions[topic];
+      const sessionHasChainId = session.namespaces.cip34.accounts.some(account =>
+        account.startsWith(prevChain)
+      );
+      if (sessionHasChainId) {
+        await this.web3wallet.emitSessionEvent({
+          topic,
+          event: {
+            name: CARDANO_EVENTS.CARDANO_NETWORK_CHANGE,
+            data: formatAccount(newChain, rewardAddress, baseAddress)
+          },
+          chainId: prevChain
+        });
+      }
     }
   }
 
