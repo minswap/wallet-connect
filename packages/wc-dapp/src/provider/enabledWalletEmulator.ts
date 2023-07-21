@@ -38,6 +38,14 @@ export class EnabledWalletEmulator implements EnabledAPI {
     this._chain = chain;
   }
 
+  set baseAddress(baseAddress: string) {
+    this._baseAddress = baseAddress;
+  }
+
+  set stakeAddress(stakeAddress: string) {
+    this._stakeAddress = stakeAddress;
+  }
+
   async getNetworkId() {
     return Promise.resolve(this._networkId as number);
   }

@@ -205,10 +205,17 @@ export class CardanoWcProvider {
     console.info('session_ping', args);
   };
 
-  private onSessionEvent = (args: SignClientTypes.EventArguments['session_event']) => {
+  private onSessionEvent = async (args: SignClientTypes.EventArguments['session_event']) => {
     const eventName = args.params.event.name;
     if (CARDANO_EVENTS.CARDANO_ACCOUNT_CHANGE === eventName) {
-      return;
+      const isEnabled = await this.isEnabled();
+      if (isEnabled) {
+        const account = args.params.event.data;
+        const stakeAddress = account.split(':')[2].split('-')[0];
+        const baseAddress = account.split(':')[2].split('-')[1];
+        (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
+        (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
+      }
     }
     if (CARDANO_EVENTS.CARDANO_NETWORK_CHANGE === eventName) {
       const provider = this.getProvider();
@@ -217,6 +224,10 @@ export class CardanoWcProvider {
       provider.setDefaultChain(chainId);
       // TODO: Find why default chain is not set
       console.info('provider default chain updated to: ', chainId);
+      const isEnabled = await this.isEnabled();
+      if (isEnabled) {
+        (this.enabledApi as EnabledWalletEmulator).chain = `cip34:${chainId}` as CHAIN;
+      }
     } else {
       console.info('session_event', args);
     }
