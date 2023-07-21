@@ -5,29 +5,31 @@ export enum NetworkID {
   MAINNET = 1
 }
 
-export enum CHAIN_ID {
+export enum CHAIN {
   MAINNET = 'cip34:1-764824073',
   TESTNET_PREPROD = 'cip34:0-1',
   TESTNET_PREVIEW = 'cip34:0-2'
 }
 
 export const CARDANO_MAINNET_CHAINS = {
-  [CHAIN_ID.MAINNET]: {
+  [CHAIN.MAINNET]: {
     type: 'cip34',
     networkId: NetworkID.MAINNET,
     protocolMagic: '764824073',
-    name: 'Cardano Mainnet'
+    name: 'Cardano Mainnet',
+    id: '1-764824073'
   }
 };
 
 export const CARDANO_TEST_CHAINS = {
-  [CHAIN_ID.TESTNET_PREPROD]: {
+  [CHAIN.TESTNET_PREPROD]: {
     type: 'cip34',
     networkId: NetworkID.TESTNET,
     protocolMagic: '1',
-    name: 'Cardano Testnet Preprod'
+    name: 'Cardano Testnet Preprod',
+    id: '0-1'
   },
-  [CHAIN_ID.TESTNET_PREVIEW]: {
+  [CHAIN.TESTNET_PREVIEW]: {
     type: 'cip34',
     networkId: NetworkID.TESTNET,
     protocolMagic: '2',
@@ -39,8 +41,16 @@ export const CARDANO_CHAINS = { ...CARDANO_MAINNET_CHAINS, ...CARDANO_TEST_CHAIN
 
 export enum CARDANO_SIGNING_METHODS {
   CARDANO_SIGN_TRANSACTION = 'cardano_signTx',
-  CARDANO_SIGN_DATA = 'cardano_signData',
-  CARDANO_GET_USED_ADDRESSES = 'cardano_getUsedAddresses'
+  CARDANO_SIGN_DATA = 'cardano_signData'
+}
+
+export enum CARDANO_RPC_METHODS {
+  CARDANO_GET_UNUSED_ADDRESSES = 'cardano_getUnusedAddresses',
+  CARDANO_GET_USED_ADDRESSES = 'cardano_getUsedAddresses',
+  CARDANO_GET_CHANGE_ADDRESSES = 'cardano_getChangeAddress',
+  CARDANO_GET_BALANCE = 'cardano_getBalance',
+  CARDANO_GET_UTXOS = 'cardano_getUtxos',
+  CARDANO_GET_NETWORK_ID = 'cardano_getNetworkId'
 }
 
 export enum CARDANO_EVENTS {

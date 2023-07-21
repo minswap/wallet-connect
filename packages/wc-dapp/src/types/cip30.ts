@@ -1,6 +1,6 @@
 import UniversalProvider from '@walletconnect/universal-provider/dist/types/UniversalProvider';
 
-import { CHAIN_ID } from '../provider';
+import { CHAIN } from '../provider';
 import { TRpc } from './rpc';
 
 // Fake types just to make the API more readable
@@ -65,7 +65,7 @@ export interface EnabledAPI {
 
 export interface EnabledWalletEmulatorParams {
   provider: UniversalProvider;
-  chainId: CHAIN_ID;
+  chain: CHAIN;
   rpc: TRpc;
   stakeAddress: Cbor<'reward_addr'>;
   baseAddress: Cbor<'base_addr'>;

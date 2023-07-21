@@ -1,7 +1,7 @@
 import { WalletConnectModal } from '@walletconnect/modal';
 
 import { TRpc } from '../types';
-import { CHAIN_ID } from './chain';
+import { CHAIN } from './chain';
 
 export interface WalletConnectdAppMetadata {
   name: string;
@@ -11,8 +11,7 @@ export interface WalletConnectdAppMetadata {
 }
 
 export type CardanoWcProviderOpts = {
-  chains: CHAIN_ID[];
-  desiredChain: CHAIN_ID;
+  chains: CHAIN[];
   projectId: string;
   relayerRegion: string;
   metadata: WalletConnectdAppMetadata;

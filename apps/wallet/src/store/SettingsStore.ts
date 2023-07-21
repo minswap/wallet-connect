@@ -1,4 +1,4 @@
-import { CardanoWcConnector, CHAIN_ID, REGIONALIZED_RELAYER_ENDPOINTS } from '@minswap/wc-wallet';
+import { CardanoWcConnector, CHAIN, REGIONALIZED_RELAYER_ENDPOINTS } from '@minswap/wc-wallet';
 import { SignClientTypes } from '@walletconnect/types';
 import { proxy } from 'valtio';
 
@@ -7,12 +7,12 @@ import {
   createCardanoWallet,
   onAccountChange,
   onChainChange,
-  onSessionProposalCb,
-  onSessionRequestCb
+  onSessionProposal,
+  onSessionRequest
 } from '@/utils';
 
 interface State {
-  chain: CHAIN_ID;
+  chain: CHAIN;
   account: number;
   wallet: CardanoWallet | undefined;
   wcWallet: CardanoWcConnector | undefined;
@@ -20,7 +20,7 @@ interface State {
 }
 
 const state = proxy<State>({
-  chain: CHAIN_ID.MAINNET,
+  chain: CHAIN.MAINNET,
   account: 0,
   wallet: undefined,
   wcWallet: undefined,
@@ -29,7 +29,7 @@ const state = proxy<State>({
 
 const SettingsStore = {
   state,
-  setChain(chain: CHAIN_ID) {
+  setChain(chain: CHAIN) {
     state.chain = chain;
     localStorage.setItem('CHAIN', chain);
   },
@@ -46,10 +46,10 @@ const SettingsStore = {
     this.setWallet(wallet);
     await onAccountChange(state.chain, state.wcWallet, state.wallet);
   },
-  async changeChain(chain: CHAIN_ID) {
+  async changeChain(chain: CHAIN) {
     this.setChain(chain);
     const wallet = await createCardanoWallet(state.chain, state.account);
-    const prevChain = state.wallet?.chain as CHAIN_ID;
+    const prevChain = state.wallet?.chain as CHAIN;
     this.setWallet(wallet);
     await onChainChange(prevChain, state.chain, state.wcWallet, state.wallet);
   },
@@ -59,12 +59,12 @@ const SettingsStore = {
     state.wcWallet.web3wallet.on(
       'session_request',
       async (requestEvent: SignClientTypes.EventArguments['session_request']) =>
-        onSessionRequestCb(requestEvent, state.wcWallet, state.wallet)
+        onSessionRequest(requestEvent, state.wcWallet, state.wallet)
     );
     state.wcWallet.web3wallet.on(
       'session_proposal',
       async (proposal: SignClientTypes.EventArguments['session_proposal']) =>
-        onSessionProposalCb(proposal, state.wcWallet, state.account)
+        onSessionProposal(proposal, state.wcWallet, state.wallet, state.account)
     );
   },
   setRelayerRegionURL(relayerRegionURL: string) {

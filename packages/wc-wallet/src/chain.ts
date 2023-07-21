@@ -5,29 +5,31 @@ export enum NetworkID {
   TESTNET = 0
 }
 
-export enum CHAIN_ID {
+export enum CHAIN {
   MAINNET = 'cip34:1-764824073',
   TESTNET_PREPROD = 'cip34:0-1',
   TESTNET_PREVIEW = 'cip34:0-2'
 }
 
 export const CARDANO_MAINNET_CHAINS = {
-  [CHAIN_ID.MAINNET]: {
+  [CHAIN.MAINNET]: {
     type: 'cip34',
     networkId: NetworkID.MAINNET,
     protocolMagic: '764824073',
-    name: 'Cardano Mainnet'
+    name: 'Cardano Mainnet',
+    id: '1-764824073'
   }
 };
 
 export const CARDANO_TEST_CHAINS = {
-  [CHAIN_ID.TESTNET_PREPROD]: {
+  [CHAIN.TESTNET_PREPROD]: {
     type: 'cip34',
     networkId: NetworkID.TESTNET,
     protocolMagic: '1',
-    name: 'Cardano Testnet Preprod'
+    name: 'Cardano Testnet Preprod',
+    id: '0-1'
   },
-  [CHAIN_ID.TESTNET_PREVIEW]: {
+  [CHAIN.TESTNET_PREVIEW]: {
     type: 'cip34',
     networkId: NetworkID.TESTNET,
     protocolMagic: '2',
@@ -52,6 +54,6 @@ export const getNetworkIdFromChainId = (chainId: string): NetworkID => {
   return CARDANO_CHAINS[chainId as keyof typeof CARDANO_CHAINS].networkId;
 };
 
-export function formatAccount(chainId: CHAIN_ID, stakeAddress: string, baseAddress: string) {
+export function formatAccount(chainId: CHAIN, stakeAddress: string, baseAddress: string) {
   return `${chainId}:${stakeAddress}-${baseAddress}`;
 }

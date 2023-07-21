@@ -1,4 +1,4 @@
-import { CHAIN_ID } from '@minswap/wc-wallet';
+import { CHAIN } from '@minswap/wc-wallet';
 import { useSnapshot } from 'valtio';
 
 import SettingsStore from '@/store/SettingsStore';
@@ -6,7 +6,7 @@ import SettingsStore from '@/store/SettingsStore';
 export default function ChainPicker() {
   const { chain, wcWallet } = useSnapshot(SettingsStore.state);
 
-  function onSelect(value: CHAIN_ID) {
+  function onSelect(value: CHAIN) {
     if (!wcWallet) return;
     SettingsStore.changeChain(value);
   }
@@ -14,12 +14,12 @@ export default function ChainPicker() {
   return (
     <select
       value={chain}
-      onChange={e => onSelect(e.currentTarget.value as CHAIN_ID)}
+      onChange={e => onSelect(e.currentTarget.value as CHAIN)}
       aria-label="addresses"
     >
-      <option value={CHAIN_ID.MAINNET}>Mainnet</option>
-      <option value={CHAIN_ID.TESTNET_PREPROD}>Testnet Preprod</option>
-      <option value={CHAIN_ID.TESTNET_PREVIEW}>Testnet Preview</option>
+      <option value={CHAIN.MAINNET}>Mainnet</option>
+      <option value={CHAIN.TESTNET_PREPROD}>Testnet Preprod</option>
+      <option value={CHAIN.TESTNET_PREVIEW}>Testnet Preview</option>
     </select>
   );
 }

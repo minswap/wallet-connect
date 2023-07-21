@@ -4,7 +4,7 @@ import { ICore, PairingTypes, SessionTypes, SignClientTypes } from '@walletconne
 import { getSdkError } from '@walletconnect/utils';
 import { IWeb3Wallet, Web3Wallet, Web3WalletTypes } from '@walletconnect/web3wallet';
 
-import { CARDANO_EVENTS, CHAIN_ID, formatAccount } from './chain';
+import { CARDANO_EVENTS, CHAIN, formatAccount } from './chain';
 
 export interface ICardanoWcConnectorParams {
   projectId: string;
@@ -100,44 +100,75 @@ export class CardanoWcConnector {
     });
   }
 
-  async emitAccountChanged(chainId: CHAIN_ID, rewardAddress: string, baseAddress: string) {
+  async emitAccountChanged(chainId: CHAIN, rewardAddress: string, baseAddress: string) {
     const sessions = this.getSessions();
+    const newAccount = formatAccount(chainId, rewardAddress, baseAddress);
     for (const topic of Object.keys(sessions)) {
       const session = sessions[topic];
+      const chainIdInOptionalChains = session.optionalNamespaces?.cip34?.chains?.includes(chainId);
+      if (!chainIdInOptionalChains) continue;
       const sessionHasChainId = session.namespaces.cip34.accounts.some(account =>
         account.startsWith(chainId)
       );
-      if (sessionHasChainId) {
-        await this.web3wallet.emitSessionEvent({
+      if (!sessionHasChainId) {
+        const namespace = session.namespaces;
+        this.web3wallet.updateSession({
           topic,
-          event: {
-            name: CARDANO_EVENTS.CARDANO_ACCOUNT_CHANGE,
-            data: formatAccount(chainId, rewardAddress, baseAddress)
-          },
-          chainId
+          namespaces: {
+            ...namespace,
+            ...{
+              cip34: { ...namespace.cip34, accounts: namespace.cip34.accounts.concat(newAccount) }
+            }
+          }
         });
       }
+      await this.web3wallet.emitSessionEvent({
+        topic,
+        event: {
+          name: CARDANO_EVENTS.CARDANO_ACCOUNT_CHANGE,
+          data: newAccount
+        },
+        chainId
+      });
     }
   }
 
   async emitNetworkChanged(
-    prevChain: CHAIN_ID,
-    newChain: CHAIN_ID,
+    prevChain: CHAIN,
+    newChain: CHAIN,
     rewardAddress: string,
     baseAddress: string
   ) {
     const sessions = this.getSessions();
+    const newAccount = formatAccount(newChain, rewardAddress, baseAddress);
     for (const topic of Object.keys(sessions)) {
       const session = sessions[topic];
-      const sessionHasChainId = session.namespaces.cip34.accounts.some(account =>
-        account.startsWith(prevChain)
+      const sessionHasNewChain = session.namespaces.cip34.accounts.some(account =>
+        account.startsWith(newChain)
       );
-      if (sessionHasChainId) {
+      if (!sessionHasNewChain) {
+        // TODO: check if chain id in list of optional chains
+        const namespace = session.namespaces;
+        this.web3wallet.updateSession({
+          topic,
+          namespaces: {
+            ...namespace,
+            ...{
+              cip34: {
+                ...namespace.cip34,
+                accounts: namespace.cip34.accounts.concat(newAccount),
+                chains: namespace.cip34.chains?.concat(newChain) ?? [newChain]
+              }
+            }
+          }
+        });
+      } else {
+        // cannot emit network change event if prev chain id is not in session chains
         await this.web3wallet.emitSessionEvent({
           topic,
           event: {
             name: CARDANO_EVENTS.CARDANO_NETWORK_CHANGE,
-            data: formatAccount(newChain, rewardAddress, baseAddress)
+            data: newChain
           },
           chainId: prevChain
         });

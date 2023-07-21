@@ -1,4 +1,4 @@
-import { CHAIN_ID } from '@minswap/wc-wallet';
+import { CHAIN } from '@minswap/wc-wallet';
 import { useCallback, useEffect, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
@@ -13,13 +13,13 @@ export default function useInitialization() {
   const onInitialize = useCallback(async () => {
     try {
       const storedAccount = localStorage.getItem('ACCOUNT') || 0;
-      const storedChain = localStorage.getItem('CHAIN') || CHAIN_ID.MAINNET;
+      const storedChain = localStorage.getItem('CHAIN') || CHAIN.MAINNET;
 
-      const wallet = await createCardanoWallet(storedChain as CHAIN_ID, Number(storedAccount));
+      const wallet = await createCardanoWallet(storedChain as CHAIN, Number(storedAccount));
       const wcWallet = await createCardanoWalletConnector(relayerRegionURL);
 
       SettingsStore.setAccount(Number(storedAccount));
-      SettingsStore.setChain(storedChain as CHAIN_ID);
+      SettingsStore.setChain(storedChain as CHAIN);
       SettingsStore.setWallet(wallet);
       SettingsStore.setWeb3Wallet(wcWallet);
 

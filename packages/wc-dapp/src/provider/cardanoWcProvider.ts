@@ -3,10 +3,10 @@ import { WalletConnectModal } from '@walletconnect/modal';
 import { PairingTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
-import { CHAIN_ID_KEY, DEFAULT_LOGGER } from '../constants';
+import { DEFAULT_LOGGER } from '../constants';
 import { TRpc } from '../types';
 import { EnabledAPI } from '../types/cip30';
-import { CARDANO_EVENTS, CARDANO_SIGNING_METHODS, CHAIN_ID } from './chain';
+import { CARDANO_EVENTS, CARDANO_RPC_METHODS, CARDANO_SIGNING_METHODS, CHAIN } from './chain';
 import { EnabledWalletEmulator } from './enabledWalletEmulator';
 import { CardanoWcProviderOpts } from './types';
 
@@ -15,8 +15,7 @@ export class CardanoWcProvider {
   private modal: WalletConnectModal | undefined;
   private enabled = false;
 
-  private chains: CHAIN_ID[] | undefined;
-  private desiredChain: CHAIN_ID | undefined;
+  private chains: CHAIN[] | undefined;
   private rpc: TRpc;
 
   private provider: UniversalProvider | undefined;
@@ -28,23 +27,20 @@ export class CardanoWcProvider {
     qrcode,
     modal,
     chains,
-    desiredChain,
     rpc
   }: {
     provider: UniversalProvider;
-  } & Pick<CardanoWcProviderOpts, 'chains' | 'desiredChain' | 'qrcode' | 'modal' | 'rpc'>) {
+  } & Pick<CardanoWcProviderOpts, 'chains' | 'qrcode' | 'modal' | 'rpc'>) {
     this.chains = chains;
     this.provider = provider;
     this.modal = modal;
     this.qrcode = Boolean(qrcode);
     this.rpc = rpc;
-    this.desiredChain = desiredChain;
     this.registerEventListeners();
   }
 
   static async init(opts: CardanoWcProviderOpts) {
     invariant(opts.projectId.length > 0, 'Wallet Connect project ID not set');
-    invariant(opts.chains.length < 2, 'Currently we only support 1 chain');
     const provider = await UniversalProvider.init({
       logger: DEFAULT_LOGGER,
       relayUrl: opts.relayerRegion,
@@ -60,21 +56,20 @@ export class CardanoWcProvider {
       provider,
       modal,
       chains: opts.chains,
-      rpc: opts.rpc,
-      desiredChain: opts.desiredChain
+      rpc: opts.rpc
     });
   }
 
   private async loadPersistedSession() {
     const provider = this.getProvider();
     invariant(provider.session, 'Provider not initialized. Call init() first');
-    invariant(this.desiredChain, 'no chain selected');
+    const defaultChainId = this.getDefaultChainId();
     const addresses = provider.session.namespaces.cip34.accounts[0].split(':')[2].split('-');
     const stakeAddress = addresses[0];
     const baseAddress = addresses[1];
     this.enabledApi = new EnabledWalletEmulator({
       provider: provider,
-      chainId: this.desiredChain,
+      chain: `cip34:${defaultChainId}` as CHAIN,
       rpc: this.rpc,
       stakeAddress,
       baseAddress
@@ -105,11 +100,6 @@ export class CardanoWcProvider {
     return this.enabledApi;
   }
 
-  private persistChain() {
-    const provider = this.getProvider();
-    provider.client.core.storage.setItem(CHAIN_ID_KEY, this.desiredChain);
-  }
-
   /**
    * Connect to user's wallet.
    *
@@ -124,6 +114,7 @@ export class CardanoWcProvider {
     invariant(this.chains, 'Chain not set. Call init() first');
     const provider = this.getProvider();
     const cardanoNamespace = getRequiredCardanoNamespace(this.chains);
+    const cardanoOptionalNamespace = getOptionalCardanoNamespace();
     try {
       const session = await new Promise<SessionTypes.Struct | undefined>((resolve, reject) => {
         if (this.qrcode) {
@@ -140,6 +131,7 @@ export class CardanoWcProvider {
         provider
           ?.connect({
             namespaces: { ...cardanoNamespace },
+            optionalNamespaces: { ...cardanoOptionalNamespace },
             pairingTopic: opts.pairingTopic
           })
           .then(session => {
@@ -151,7 +143,6 @@ export class CardanoWcProvider {
           });
       });
       if (!session) return;
-      this.persistChain();
       this.loadPersistedSession();
     } finally {
       if (this.modal) this.modal.closeModal();
@@ -162,7 +153,6 @@ export class CardanoWcProvider {
     const provider = this.getProvider();
     if (provider.session) {
       try {
-        provider.client.core.storage.removeItem(CHAIN_ID_KEY);
         await provider.disconnect();
       } catch (error) {
         console.info('disconnect error', (error as Error).message);
@@ -190,6 +180,14 @@ export class CardanoWcProvider {
     return this.provider;
   }
 
+  getDefaultChainId(): string {
+    const provider = this.getProvider();
+    const chainId =
+      provider.namespaces?.cip34.defaultChain || provider.namespaces?.cip34.chains[0].split(':')[1];
+    if (!chainId) throw new Error('Default chain not set');
+    return chainId;
+  }
+
   private onDisplayUri = (uri: string) => {
     console.info('pairing uri', uri);
     if (this.qrcode) {
@@ -209,11 +207,19 @@ export class CardanoWcProvider {
 
   private onSessionEvent = (args: SignClientTypes.EventArguments['session_event']) => {
     const eventName = args.params.event.name;
-    if (Object.values(CARDANO_EVENTS).find(cardano_event => cardano_event === eventName)) {
-      // TODO: update session
+    if (CARDANO_EVENTS.CARDANO_ACCOUNT_CHANGE === eventName) {
       return;
     }
-    console.info('session_event', args);
+    if (CARDANO_EVENTS.CARDANO_NETWORK_CHANGE === eventName) {
+      const provider = this.getProvider();
+      const account = args.params.event.data;
+      const chainId = account.split(':')[1];
+      provider.setDefaultChain(chainId);
+      // TODO: Find why default chain is not set
+      console.info('provider default chain updated to: ', chainId);
+    } else {
+      console.info('session_event', args);
+    }
   };
 
   private onSessionUpdate = (args: unknown) => {
@@ -239,10 +245,17 @@ export class CardanoWcProvider {
   }
 }
 
-const SESSION_PROPOSAL_METHODS = Object.values(CARDANO_SIGNING_METHODS);
+const SESSION_PROPOSAL_METHODS = [
+  ...Object.values(CARDANO_SIGNING_METHODS),
+  CARDANO_RPC_METHODS.CARDANO_GET_USED_ADDRESSES
+];
+const SESSION_OPTIONAL_METHODS = [
+  ...Object.values(CARDANO_SIGNING_METHODS),
+  ...Object.values(CARDANO_RPC_METHODS)
+];
 const SESSION_PROPOSAL_EVENTS = Object.values(CARDANO_EVENTS);
 
-const getRequiredCardanoNamespace = (chains: CHAIN_ID[]) => {
+const getRequiredCardanoNamespace = (chains: CHAIN[]) => {
   const cardanoNamespace = {
     cip34: {
       chains,
@@ -254,7 +267,19 @@ const getRequiredCardanoNamespace = (chains: CHAIN_ID[]) => {
   return cardanoNamespace;
 };
 
-const getWeb3Modal = (projectId: string, chains: CHAIN_ID[]) => {
+const getOptionalCardanoNamespace = () => {
+  const cardanoNamespace = {
+    cip34: {
+      chains: Object.values(CHAIN),
+      methods: SESSION_OPTIONAL_METHODS,
+      events: SESSION_PROPOSAL_EVENTS,
+      rpcMap: {}
+    }
+  };
+  return cardanoNamespace;
+};
+
+const getWeb3Modal = (projectId: string, chains: CHAIN[]) => {
   try {
     return new WalletConnectModal({
       projectId: projectId,

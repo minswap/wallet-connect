@@ -1,4 +1,4 @@
-import { CARDANO_MAINNET_CHAINS, CARDANO_TEST_CHAINS, CHAIN_ID } from '@minswap/wc-wallet';
+import { CARDANO_MAINNET_CHAINS, CARDANO_TEST_CHAINS, CHAIN } from '@minswap/wc-wallet';
 import { Text } from '@nextui-org/react';
 import { Fragment } from 'react';
 import { useSnapshot } from 'valtio';
@@ -22,7 +22,7 @@ export default function HomePage() {
       <PageHeader title="Chains">
         <NetworkPicker />
       </PageHeader>
-      {chain === CHAIN_ID.MAINNET && (
+      {chain === CHAIN.MAINNET && (
         <>
           <Text h4 css={{ marginBottom: '$5' }}>
             Mainnet
@@ -39,7 +39,7 @@ export default function HomePage() {
         </>
       )}
 
-      {(chain === CHAIN_ID.TESTNET_PREPROD || chain === CHAIN_ID.TESTNET_PREVIEW) && (
+      {(chain === CHAIN.TESTNET_PREPROD || chain === CHAIN.TESTNET_PREVIEW) && (
         <Fragment>
           <Text h4 css={{ marginBottom: '$5' }}>
             {CARDANO_TEST_CHAINS[chain].name}

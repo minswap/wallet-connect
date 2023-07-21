@@ -1,15 +1,15 @@
 import {
-  CARDANO_SIGNING_METHODS,
+  CARDANO_RPC_METHODS,
   CardanoWcProvider,
-  CHAIN_ID,
+  CHAIN,
   EnabledAPI,
   REGIONALIZED_RELAYER_ENDPOINTS
 } from '@minswap/wc-dapp';
 import { Button, Input, Layout, Page } from '@vercel/examples-ui';
 import { useState } from 'react';
-import { WalletConnectRpc } from 'utils';
 
 import styles from '../styles/index.module.css';
+import { WalletConnectRpc } from '../utils/rpc';
 
 const TIMEOUT_ERR_MESSAGE = 'request timed out!';
 
@@ -39,8 +39,7 @@ export default function Index() {
       setWc(null);
       setEnabledApi(null);
       const walletConnectConnector = await CardanoWcProvider.init({
-        chains: [CHAIN_ID.MAINNET],
-        desiredChain: CHAIN_ID.MAINNET,
+        chains: [CHAIN.MAINNET],
         projectId: process.env['NEXT_PUBLIC_WC_PROJECT_ID'] ?? '97b4dbc5d1f1492a20c9e5d4d7047d63',
         relayerRegion: REGIONALIZED_RELAYER_ENDPOINTS.DEFAULT,
         metadata: {
@@ -71,16 +70,13 @@ export default function Index() {
     if (!wc) return;
     setAddressLoading(true);
     console.info('[APP] fetching address');
+    const provider = wc.getProvider();
     await timeoutPromise(
-      wc
-        ?.getProvider()
-        .request(
-          {
-            method: CARDANO_SIGNING_METHODS.CARDANO_GET_USED_ADDRESSES,
-            params: []
-          },
-          CHAIN_ID.MAINNET
-        )
+      provider
+        .request({
+          method: CARDANO_RPC_METHODS.CARDANO_GET_USED_ADDRESSES,
+          params: []
+        })
         .then(addr => {
           console.info('[APP] addr', addr);
           return addr;

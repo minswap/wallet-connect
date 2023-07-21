@@ -2,7 +2,7 @@ import {
   CARDANO_CHAINS,
   CARDANO_SIGNING_METHODS,
   CardanoWcConnector,
-  CHAIN_ID,
+  CHAIN,
   formatAccount,
   TCardanoChain
 } from '@minswap/wc-wallet';
@@ -47,16 +47,19 @@ export async function createCardanoWalletConnector(relayerRegionURL: string) {
   return connector;
 }
 
-export async function createCardanoWallet(chain: CHAIN_ID, account: number) {
+export async function createCardanoWallet(chain: CHAIN, account: number) {
   const mnemonic = localStorage.getItem(`CIP34_MNEMONIC_${account}`) || undefined;
   const wallet = await CardanoWallet.init({
     chain,
     mnemonic
   });
+  if (!mnemonic) {
+    localStorage.setItem(`CIP34_MNEMONIC_${account}`, wallet.getMnemonic());
+  }
   return wallet;
 }
 
-export const onSessionRequestCb = async (
+export const onSessionRequest = async (
   requestEvent: SignClientTypes.EventArguments['session_request'],
   wcWallet: CardanoWcConnector | undefined,
   wallet: CardanoWallet | undefined
@@ -102,11 +105,13 @@ export const onSessionRequestCb = async (
   });
 };
 
-export const onSessionProposalCb = async (
+export const onSessionProposal = async (
   proposal: SignClientTypes.EventArguments['session_proposal'],
   wcWallet: CardanoWcConnector | undefined,
+  wallet: CardanoWallet | undefined,
   account: number
 ) => {
+  if (!wcWallet || !wallet) return;
   const { params } = proposal;
   const { requiredNamespaces } = params;
 
@@ -114,7 +119,7 @@ export const onSessionProposalCb = async (
   const accounts: string[] = [];
   for (const key of Object.keys(requiredNamespaces)) {
     if (key !== 'cip34') continue;
-    const chainIds = requiredNamespaces[key].chains as CHAIN_ID[];
+    const chainIds = requiredNamespaces[key].chains as CHAIN[];
     if (chainIds)
       for (const chainId of chainIds) {
         const wallet = await createCardanoWallet(chainId, account);
@@ -122,10 +127,17 @@ export const onSessionProposalCb = async (
         const baseAddress = wallet.getBaseAddress();
         accounts.push(formatAccount(chainId, rewardAddress, baseAddress));
       }
+    if (!chainIds.includes(wallet.chain)) {
+      chainIds.push(wallet.chain);
+      const rewardAddress = wallet.getRewardAddress();
+      const baseAddress = wallet.getBaseAddress();
+      accounts.push(formatAccount(wallet.chain, rewardAddress, baseAddress));
+    }
     namespaces[key] = {
       accounts,
       methods: requiredNamespaces[key].methods,
-      events: requiredNamespaces[key].events
+      events: requiredNamespaces[key].events,
+      chains: chainIds
     };
   }
 
@@ -133,7 +145,7 @@ export const onSessionProposalCb = async (
 };
 
 export const onAccountChange = async (
-  chain: CHAIN_ID,
+  chain: CHAIN,
   wcWallet: CardanoWcConnector | undefined,
   wallet: CardanoWallet | undefined
 ) => {
@@ -142,8 +154,8 @@ export const onAccountChange = async (
 };
 
 export const onChainChange = async (
-  prevChain: CHAIN_ID,
-  currentChain: CHAIN_ID,
+  prevChain: CHAIN,
+  currentChain: CHAIN,
   wcWallet: CardanoWcConnector | undefined,
   wallet: CardanoWallet | undefined
 ) => {

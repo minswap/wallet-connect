@@ -6,7 +6,7 @@ import type { Cbor, DataSignature, EnabledAPI, EnabledWalletEmulatorParams } fro
 import {
   CARDANO_EVENTS,
   CARDANO_SIGNING_METHODS,
-  CHAIN_ID,
+  CHAIN,
   getNetworkIdFromChainId,
   NetworkID
 } from './chain';
@@ -19,7 +19,7 @@ import {
  */
 export class EnabledWalletEmulator implements EnabledAPI {
   private _provider: UniversalProvider;
-  private _chainId: CHAIN_ID;
+  private _chain: CHAIN;
   private _baseAddress: string;
   private _stakeAddress: string;
   private _rpc: TRpc;
@@ -27,15 +27,15 @@ export class EnabledWalletEmulator implements EnabledAPI {
 
   constructor(params: EnabledWalletEmulatorParams) {
     this._provider = params.provider;
-    this._chainId = params.chainId;
-    this._networkId = getNetworkIdFromChainId(params.chainId);
+    this._chain = params.chain;
+    this._networkId = getNetworkIdFromChainId(params.chain);
     this._rpc = params.rpc;
     this._stakeAddress = params.stakeAddress;
     this._baseAddress = params.baseAddress;
   }
 
-  set chainId(chainId: CHAIN_ID) {
-    this._chainId = chainId;
+  set chain(chain: CHAIN) {
+    this._chain = chain;
   }
 
   async getNetworkId() {
@@ -87,7 +87,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
         method: CARDANO_SIGNING_METHODS.CARDANO_SIGN_TRANSACTION,
         params: [tx, partialSign]
       },
-      this._chainId
+      this._chain
     );
   }
 
@@ -97,7 +97,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
         method: CARDANO_SIGNING_METHODS.CARDANO_SIGN_DATA,
         params: [addr, payload]
       },
-      this._chainId
+      this._chain
     );
   }
 

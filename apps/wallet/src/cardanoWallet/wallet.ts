@@ -1,5 +1,5 @@
 import { Bip32PublicKey } from '@emurgo/cardano-serialization-lib-browser';
-import { CHAIN_ID, getNetworkIdFromChainId, NetworkID } from '@minswap/wc-wallet';
+import { CHAIN, getNetworkIdFromChainId, NetworkID } from '@minswap/wc-wallet';
 import { mnemonicToEntropy } from 'bip39';
 
 import { loadCSL } from './loader';
@@ -10,9 +10,9 @@ export class CardanoWallet {
   mnemonic: string;
   baseAddress = '';
   rewardAddress = '';
-  chain: CHAIN_ID;
+  chain: CHAIN;
 
-  private constructor(chain: CHAIN_ID, mnemonic?: string) {
+  private constructor(chain: CHAIN, mnemonic?: string) {
     this.chain = chain;
     // TODO: Should store encrypted xprv key instead
     this.mnemonic = mnemonic || generateSeed();
