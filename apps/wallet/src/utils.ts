@@ -61,13 +61,22 @@ export const onSessionRequestCb = async (
   wcWallet: CardanoWcConnector | undefined,
   wallet: CardanoWallet | undefined
 ) => {
+  if (!wcWallet || !wallet) return;
   const { params, id, topic } = requestEvent;
   const { request, chainId } = params;
 
   let response: JsonRpcResponse;
 
+  const sessions = wcWallet.getSessions();
+
   if (chainId !== wallet?.chain) {
     response = formatJsonRpcError(id, getSdkError('UNSUPPORTED_CHAINS'));
+  } else if (
+    !sessions[topic].namespaces.cip34.accounts.some(account =>
+      account.includes(wallet.getRewardAddress())
+    )
+  ) {
+    response = formatJsonRpcError(id, getSdkError('UNSUPPORTED_ACCOUNTS'));
   } else {
     switch (request.method) {
       case CARDANO_SIGNING_METHODS.CARDANO_SIGN_TRANSACTION: {
