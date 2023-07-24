@@ -3,7 +3,7 @@ import { SessionTypes } from '@walletconnect/types';
 import { Fragment } from 'react';
 
 import ChainCard from '@/components/ChainCard';
-import { formatChainName } from '@/wc-utils';
+import { formatChainName } from '@/utils';
 
 interface IProps {
   namespace: SessionTypes.Namespace;

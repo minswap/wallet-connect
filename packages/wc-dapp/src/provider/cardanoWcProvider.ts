@@ -95,7 +95,7 @@ export class CardanoWcProvider {
     return this.provider;
   }
 
-  public async disconnect(): Promise<void> {
+  async disconnect(): Promise<void> {
     const provider = this.getProvider();
     if (provider.session) {
       try {
