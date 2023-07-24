@@ -171,7 +171,7 @@ export class CardanoWcConnector {
         const sessionHasNewChain = session.namespaces[CARDANO_NAMESPACE_NAME].accounts.some(
           account => account.startsWith(newChain)
         );
-        if (sessionHasNewChain) {
+        if (!sessionHasNewChain) {
           const namespaces = session.namespaces;
           try {
             await this.web3wallet.updateSession({
