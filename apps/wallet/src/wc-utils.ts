@@ -91,7 +91,10 @@ export const onSessionProposal = async (
   const accounts: string[] = [];
   let requiresChainUpdate = false;
   for (const key of Object.keys(requiredNamespaces)) {
-    if (key !== 'cip34') continue;
+    if (key !== 'cip34') {
+      await wcWallet?.rejectSessionProposal(proposal, getSdkError('UNSUPPORTED_NAMESPACE_KEY'));
+      return;
+    }
     const chainIds = requiredNamespaces[key].chains as CHAIN[];
     if (chainIds)
       for (const chainId of chainIds) {

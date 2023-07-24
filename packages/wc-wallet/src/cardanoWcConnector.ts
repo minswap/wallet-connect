@@ -189,11 +189,14 @@ export class CardanoWcConnector {
     });
   };
 
-  rejectSessionProposal = async (proposal: SignClientTypes.EventArguments['session_proposal']) => {
+  rejectSessionProposal = async (
+    proposal: SignClientTypes.EventArguments['session_proposal'],
+    reason: ErrorResponse
+  ) => {
     const { id } = proposal;
     await this.web3wallet.rejectSession({
       id,
-      reason: getSdkError('USER_REJECTED_METHODS')
+      reason
     });
   };
 
