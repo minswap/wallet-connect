@@ -1,22 +1,17 @@
 import invariant from '@minswap/tiny-invariant';
 import UniversalProvider from '@walletconnect/universal-provider';
+import EventEmitter from 'events';
 
 import { TRpc } from '../types';
 import type { Cbor, DataSignature, EnabledAPI, EnabledWalletEmulatorParams } from '../types/cip30';
 import {
   CARDANO_SIGNING_METHODS,
   CHAIN,
-  GENERIC_EVENTS,
+  CHAIN_EVENTS,
   getNetworkIdFromChainId,
   NetworkID
 } from './chain';
 
-/**
- * This class is used to emulate the Cardano Wallet API's content script.
- * It serves as an interface between the dApp and the WalletConnect provider relay.
- * It simulates the API that the content script would provide to the dApp, and passes
- * each method's name and arguments to the provider relay when called.
- */
 export class EnabledWalletEmulator implements EnabledAPI {
   private _provider: UniversalProvider;
   private _chain: CHAIN;
@@ -24,6 +19,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
   private _stakeAddress: string;
   private _rpc: TRpc;
   private _networkId: NetworkID;
+  events: EventEmitter = new EventEmitter();
 
   constructor(params: EnabledWalletEmulatorParams) {
     this._provider = params.provider;
@@ -119,11 +115,10 @@ export class EnabledWalletEmulator implements EnabledAPI {
     return Promise.resolve([]);
   }
 
-  // TODO: do we need to remove listeners?
   async onAccountChange(callback: (account: string) => void) {
     return new Promise<void>((resolve, reject) => {
       try {
-        this._provider.on(GENERIC_EVENTS.ACCOUNT_CHANGE, callback);
+        this.events.on(CHAIN_EVENTS.ACCOUNT_CHANGE, callback);
         resolve();
       } catch (e) {
         reject(e);
@@ -131,10 +126,10 @@ export class EnabledWalletEmulator implements EnabledAPI {
     });
   }
 
-  async onNetworkChange(callback: (chainId: string) => void) {
+  async onNetworkChange(callback: (account: string) => void) {
     return new Promise<void>((resolve, reject) => {
       try {
-        this._provider.on(GENERIC_EVENTS.NETWORK_CHANGE, callback);
+        this.events.on(CHAIN_EVENTS.NETWORK_CHANGE, callback);
         resolve();
       } catch (e) {
         reject(e);

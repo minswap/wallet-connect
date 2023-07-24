@@ -114,19 +114,20 @@ export class CardanoWcConnector {
     const newAccount = formatAccount(chain, rewardAddress, baseAddress);
     for (const topic of Object.keys(sessions)) {
       const session = sessions[topic];
+      // TODO: Add support for multiple namespace
       const chainIdInOptionalChains = session.optionalNamespaces?.cip34?.chains?.includes(chain);
       if (!chainIdInOptionalChains) continue;
       const sessionHasAccount = session.namespaces.cip34.accounts.some(
         account => account === newAccount
       );
       if (!sessionHasAccount) {
-        const namespace = session.namespaces;
-        this.web3wallet.updateSession({
+        const namespaces = session.namespaces;
+        await this.web3wallet.updateSession({
           topic,
           namespaces: {
-            ...namespace,
+            ...namespaces,
             ...{
-              cip34: { ...namespace.cip34, accounts: namespace.cip34.accounts.concat(newAccount) }
+              cip34: { ...namespaces.cip34, accounts: namespaces.cip34.accounts.concat(newAccount) }
             }
           }
         });
@@ -147,21 +148,22 @@ export class CardanoWcConnector {
     const newAccount = formatAccount(newChain, rewardAddress, baseAddress);
     for (const topic of Object.keys(sessions)) {
       const session = sessions[topic];
+      // TODO: Add support for multiple namespace
       const sessionHasNewChain = session.namespaces.cip34.accounts.some(account =>
         account.startsWith(newChain)
       );
       if (!sessionHasNewChain) {
         // TODO: check if chain id in list of optional chains
-        const namespace = session.namespaces;
+        const namespaces = session.namespaces;
         await this.web3wallet.updateSession({
           topic,
           namespaces: {
-            ...namespace,
+            ...namespaces,
             ...{
               cip34: {
-                ...namespace.cip34,
-                accounts: namespace.cip34.accounts.concat(newAccount),
-                chains: namespace.cip34.chains?.concat(newChain) ?? [newChain]
+                ...namespaces.cip34,
+                accounts: namespaces.cip34.accounts.concat(newAccount),
+                chains: namespaces.cip34.chains?.concat(newChain) ?? [newChain]
               }
             }
           }

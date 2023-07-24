@@ -8,7 +8,7 @@ import { TRpc } from '../types';
 import { EnabledAPI } from '../types/cip30';
 import {
   CHAIN,
-  GENERIC_EVENTS,
+  CHAIN_EVENTS,
   getOptionalCardanoNamespace,
   getRequiredCardanoNamespace
 } from './chain';
@@ -18,10 +18,8 @@ import { CardanoWcProviderOpts } from './types';
 export class CardanoWcProvider {
   private modal: WalletConnectModal | undefined;
   private enabled = false;
-
   private chains: CHAIN[] | undefined;
   private rpc: TRpc;
-
   private provider: UniversalProvider | undefined;
   private enabledApi: EnabledAPI | undefined;
   private qrcode: boolean;
@@ -70,7 +68,7 @@ export class CardanoWcProvider {
     const pairingTopic = session?.pairingTopic;
     const hasPairing = this.getSessionPair(pairingTopic);
     if (!hasPairing && session) {
-      this.disconnect();
+      await this.disconnect();
     }
     if (!session) {
       await this.connect();
@@ -145,11 +143,11 @@ export class CardanoWcProvider {
     try {
       const session = await new Promise<SessionTypes.Struct | undefined>((resolve, reject) => {
         if (this.qrcode) {
-          this.modal?.subscribeModal(state => {
+          this.modal?.subscribeModal(async state => {
             if (!state.open && !provider.session) {
               // the modal was closed so reject the promise
               provider.abortPairingAttempt();
-              provider.cleanupPendingPairings({ deletePairings: true });
+              await provider.cleanupPendingPairings({ deletePairings: true });
               this.reset();
               reject(new Error('Connection aborted by user.'));
             }
@@ -170,7 +168,7 @@ export class CardanoWcProvider {
           });
       });
       if (!session) return;
-      this.loadPersistedSession();
+      await this.loadPersistedSession();
     } finally {
       if (this.modal) this.modal.closeModal();
     }
@@ -201,10 +199,10 @@ export class CardanoWcProvider {
 
   private onSessionEvent = async (args: SignClientTypes.EventArguments['session_event']) => {
     const eventName = args.params.event.name;
-    if (GENERIC_EVENTS.NETWORK_CHANGE === eventName) {
-      this.onChainChange(args.params.event.data);
-    } else if (GENERIC_EVENTS.ACCOUNT_CHANGE === eventName) {
-      this.onAccountChange(args.params.event.data);
+    if (eventName === CHAIN_EVENTS.NETWORK_CHANGE) {
+      await this.onChainChange(args.params.event.data);
+    } else if (eventName === CHAIN_EVENTS.ACCOUNT_CHANGE) {
+      await this.onAccountChange(args.params.event.data);
     }
   };
 
@@ -215,6 +213,7 @@ export class CardanoWcProvider {
       const baseAddress = account.split(':')[2].split('-')[1];
       (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
       (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
+      (this.enabledApi as EnabledWalletEmulator).events.emit(CHAIN_EVENTS.ACCOUNT_CHANGE, account);
     }
   };
 
@@ -227,6 +226,7 @@ export class CardanoWcProvider {
       (this.enabledApi as EnabledWalletEmulator).chain = `cip34:${chainId}` as CHAIN;
       (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
       (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
+      (this.enabledApi as EnabledWalletEmulator).events.emit(CHAIN_EVENTS.NETWORK_CHANGE, account);
     }
   };
 

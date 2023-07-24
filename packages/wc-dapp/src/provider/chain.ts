@@ -58,7 +58,7 @@ export enum CARDANO_RPC_METHODS {
   CARDANO_SUBMIT_TX = 'cardano_submitTx'
 }
 
-export enum GENERIC_EVENTS {
+export enum CHAIN_EVENTS {
   NETWORK_CHANGE = 'chainChanged',
   ACCOUNT_CHANGE = 'accountsChanged'
 }
@@ -77,7 +77,7 @@ export const SESSION_OPTIONAL_METHODS = [
   ...Object.values(CARDANO_RPC_METHODS),
   ...Object.values(CARDANO_WALLET_METHODS)
 ];
-export const SESSION_PROPOSAL_EVENTS = Object.values(GENERIC_EVENTS);
+export const SESSION_PROPOSAL_EVENTS = Object.values(CHAIN_EVENTS);
 
 export const getRequiredCardanoNamespace = (chains: CHAIN[]) => {
   const cardanoNamespace = {

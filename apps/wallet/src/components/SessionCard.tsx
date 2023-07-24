@@ -1,7 +1,8 @@
 import { Avatar, Card, Link, Text } from '@nextui-org/react';
-import { truncate } from '@/utils';
 import Image from 'next/image';
 import NextLink from 'next/link';
+
+import { truncate } from '@/utils';
 
 interface IProps {
   topic?: string;

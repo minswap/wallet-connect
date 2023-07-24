@@ -27,6 +27,7 @@ const sleep = (ms: number) => {
 
 export default function Index() {
   const [wc, setWc] = useState<CardanoWcProvider | null>(null);
+  const [chain, setChain] = useState<string | undefined>(undefined);
   const [enabledApi, setEnabledApi] = useState<EnabledAPI | null>(null);
   const [baseAddr, setBaseAddr] = useState<string | null | undefined>(null);
   const [addressLoading, setAddressLoading] = useState(false);
@@ -36,8 +37,6 @@ export default function Index() {
 
   const initWc = async () => {
     try {
-      setWc(null);
-      setEnabledApi(null);
       const walletConnectConnector = await CardanoWcProvider.init({
         chains: [CHAIN.MAINNET],
         projectId: process.env['NEXT_PUBLIC_WC_PROJECT_ID'] ?? '97b4dbc5d1f1492a20c9e5d4d7047d63',
@@ -51,11 +50,19 @@ export default function Index() {
         qrcode: true,
         rpc: new WalletConnectRpc()
       });
-      const enabledApi = await walletConnectConnector.enable();
+      const localEnabledApi = await walletConnectConnector.enable();
       setWc(walletConnectConnector);
-      setEnabledApi(enabledApi);
-      await enabledApi.onAccountChange((account: string) => {
-        console.info('account changed', account);
+      setEnabledApi(localEnabledApi);
+      setBaseAddr((await localEnabledApi.getUsedAddresses())[0]);
+      setChain(walletConnectConnector?.getDefaultChainId());
+      await localEnabledApi.onAccountChange((account: string) => {
+        console.log('account change', account);
+        setBaseAddr(account.split(':')[2].split('-')[1]);
+      });
+      await localEnabledApi.onNetworkChange((account: string) => {
+        console.log(account);
+        setBaseAddr(account.split(':')[2].split('-')[1]);
+        setChain(account.split(':')[1]);
       });
       const provider = walletConnectConnector.getProvider();
       provider.on('disconnect', () => {
@@ -119,6 +126,7 @@ export default function Index() {
     setWc(null);
     setEnabledApi(null);
     setBaseAddr(null);
+    setChain(undefined);
   };
 
   const disconnectWc = async () => {
@@ -147,6 +155,7 @@ export default function Index() {
     <Page>
       <div className={styles.container}>
         {wc && <div>Connected!</div>}
+        {chain && <div>Chain: {chain}</div>}
         {baseAddr && (
           <>
             <div className={styles.addrLabel}>Base Address:</div>

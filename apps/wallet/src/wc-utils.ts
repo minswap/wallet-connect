@@ -90,6 +90,7 @@ export const onSessionProposal = async (
   let requiresChainUpdate = false;
   for (const key of Object.keys(requiredNamespaces)) {
     if (key !== 'cip34') {
+      // TODO: Add support for multiple namespace
       await wcWallet.rejectSessionProposal(proposal, getSdkError('UNSUPPORTED_NAMESPACE_KEY'));
       return;
     }
@@ -103,6 +104,7 @@ export const onSessionProposal = async (
       }
     if (!chainIds.includes(wallet.chain)) {
       // when chain is not in list of required chains, add it to list of chains
+      // eslint-disable-next-line unused-imports/no-unused-vars
       requiresChainUpdate = true;
       chainIds.push(wallet.chain);
       const rewardAddress = wallet.getRewardAddress();

@@ -37,7 +37,7 @@ export default function SessionPage() {
     if (!topic) return;
     setLoading(true);
     await wcWallet?.disconnectSession(topic);
-    push('/sessions');
+    await push('/sessions');
     setLoading(false);
   }
 

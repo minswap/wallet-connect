@@ -14,8 +14,8 @@ interface Props {
 export default function AccountCard({ name, baseAddress, rewardAddress }: Props) {
   const [copied, setCopied] = useState(false);
 
-  function onCopy() {
-    navigator?.clipboard?.writeText(rewardAddress);
+  async function onCopy() {
+    await navigator?.clipboard?.writeText(rewardAddress);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   }

@@ -7,7 +7,7 @@ export default function AccountPicker() {
 
   async function onSelect(value: string) {
     if (!wcWallet) return;
-    SettingsStore.changeAccount(Number(value));
+    await SettingsStore.changeAccount(Number(value));
   }
 
   return (

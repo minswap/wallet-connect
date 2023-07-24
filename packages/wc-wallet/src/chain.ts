@@ -44,6 +44,7 @@ export enum CARDANO_SIGNING_METHODS {
   CARDANO_SIGN_DATA = 'cardano_signData',
   CARDANO_GET_USED_ADDRESSES = 'cardano_getUsedAddresses'
 }
+
 export enum GENERIC_EVENTS {
   NETWORK_CHANGE = 'chainChanged',
   ACCOUNT_CHANGE = 'accountsChanged'

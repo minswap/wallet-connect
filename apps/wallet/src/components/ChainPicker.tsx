@@ -6,9 +6,9 @@ import SettingsStore from '@/store/SettingsStore';
 export default function ChainPicker() {
   const { chain, wcWallet } = useSnapshot(SettingsStore.state);
 
-  function onSelect(value: CHAIN) {
+  async function onSelect(value: CHAIN) {
     if (!wcWallet) return;
-    SettingsStore.changeChain(value);
+    await SettingsStore.changeChain(value);
   }
 
   return (
