@@ -45,13 +45,17 @@ export enum CARDANO_SIGNING_METHODS {
   CARDANO_SIGN_DATA = 'cardano_signData'
 }
 
-export enum CARDANO_RPC_METHODS {
+export enum CARDANO_WALLET_METHODS {
   CARDANO_GET_UNUSED_ADDRESSES = 'cardano_getUnusedAddresses',
   CARDANO_GET_USED_ADDRESSES = 'cardano_getUsedAddresses',
   CARDANO_GET_CHANGE_ADDRESSES = 'cardano_getChangeAddress',
+  CARDANO_GET_NETWORK_ID = 'cardano_getNetworkId'
+}
+
+export enum CARDANO_RPC_METHODS {
   CARDANO_GET_BALANCE = 'cardano_getBalance',
   CARDANO_GET_UTXOS = 'cardano_getUtxos',
-  CARDANO_GET_NETWORK_ID = 'cardano_getNetworkId'
+  CARDANO_SUBMIT_TX = 'cardano_submitTx'
 }
 
 export enum GENERIC_EVENTS {
@@ -65,12 +69,13 @@ export const getNetworkIdFromChainId = (chainId: string): NetworkID => {
 
 export const SESSION_PROPOSAL_METHODS = [
   ...Object.values(CARDANO_SIGNING_METHODS),
-  CARDANO_RPC_METHODS.CARDANO_GET_USED_ADDRESSES
+  CARDANO_WALLET_METHODS.CARDANO_GET_USED_ADDRESSES
 ];
 
 export const SESSION_OPTIONAL_METHODS = [
   ...Object.values(CARDANO_SIGNING_METHODS),
-  ...Object.values(CARDANO_RPC_METHODS)
+  ...Object.values(CARDANO_RPC_METHODS),
+  ...Object.values(CARDANO_WALLET_METHODS)
 ];
 export const SESSION_PROPOSAL_EVENTS = Object.values(GENERIC_EVENTS);
 

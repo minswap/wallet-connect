@@ -1,5 +1,5 @@
 import {
-  CARDANO_RPC_METHODS,
+  CARDANO_WALLET_METHODS,
   CardanoWcProvider,
   CHAIN,
   EnabledAPI,
@@ -54,7 +54,7 @@ export default function Index() {
       const enabledApi = await walletConnectConnector.enable();
       setWc(walletConnectConnector);
       setEnabledApi(enabledApi);
-      enabledApi.onAccountChange((account: string) => {
+      await enabledApi.onAccountChange((account: string) => {
         console.info('account changed', account);
       });
       const provider = walletConnectConnector.getProvider();
@@ -74,7 +74,7 @@ export default function Index() {
     await timeoutPromise(
       provider
         .request({
-          method: CARDANO_RPC_METHODS.CARDANO_GET_USED_ADDRESSES,
+          method: CARDANO_WALLET_METHODS.CARDANO_GET_USED_ADDRESSES,
           params: []
         })
         .then(addr => {
