@@ -6,7 +6,12 @@ import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provi
 import { DEFAULT_LOGGER } from '../constants';
 import { TRpc } from '../types';
 import { EnabledAPI } from '../types/cip30';
-import { CARDANO_EVENTS, CARDANO_RPC_METHODS, CARDANO_SIGNING_METHODS, CHAIN } from './chain';
+import {
+  CHAIN,
+  GENERIC_EVENTS,
+  getOptionalCardanoNamespace,
+  getRequiredCardanoNamespace
+} from './chain';
 import { EnabledWalletEmulator } from './enabledWalletEmulator';
 import { CardanoWcProviderOpts } from './types';
 
@@ -207,29 +212,32 @@ export class CardanoWcProvider {
 
   private onSessionEvent = async (args: SignClientTypes.EventArguments['session_event']) => {
     const eventName = args.params.event.name;
-    if (CARDANO_EVENTS.CARDANO_ACCOUNT_CHANGE === eventName) {
-      const isEnabled = await this.isEnabled();
-      if (isEnabled) {
-        const account = args.params.event.data;
-        const stakeAddress = account.split(':')[2].split('-')[0];
-        const baseAddress = account.split(':')[2].split('-')[1];
-        (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
-        (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
-      }
+    if (GENERIC_EVENTS.NETWORK_CHANGE === eventName) {
+      this.onChainChange(args.params.event.data);
+    } else if (GENERIC_EVENTS.ACCOUNT_CHANGE === eventName) {
+      this.onAccountChange(args.params.event.data);
     }
-    if (CARDANO_EVENTS.CARDANO_NETWORK_CHANGE === eventName) {
-      const provider = this.getProvider();
-      const account = args.params.event.data;
+  };
+
+  private onAccountChange = async (account: string) => {
+    const isEnabled = await this.isEnabled();
+    if (isEnabled) {
+      const stakeAddress = account.split(':')[2].split('-')[0];
+      const baseAddress = account.split(':')[2].split('-')[1];
+      (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
+      (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
+    }
+  };
+
+  private onChainChange = async (account: string) => {
+    const isEnabled = await this.isEnabled();
+    if (isEnabled) {
       const chainId = account.split(':')[1];
-      provider.setDefaultChain(chainId);
-      // TODO: Find why default chain is not set
-      console.info('provider default chain updated to: ', chainId);
-      const isEnabled = await this.isEnabled();
-      if (isEnabled) {
-        (this.enabledApi as EnabledWalletEmulator).chain = `cip34:${chainId}` as CHAIN;
-      }
-    } else {
-      console.info('session_event', args);
+      const stakeAddress = account.split(':')[2].split('-')[0];
+      const baseAddress = account.split(':')[2].split('-')[1];
+      (this.enabledApi as EnabledWalletEmulator).chain = `cip34:${chainId}` as CHAIN;
+      (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
+      (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
     }
   };
 
@@ -238,57 +246,23 @@ export class CardanoWcProvider {
   };
 
   private registerEventListeners() {
-    if (!this.provider) return;
-    this.provider.on('session_event', this.onSessionEvent);
-    this.provider.on('session_ping', this.onSessionPing);
-    this.provider.on('session_delete', this.onSessionDelete);
-    this.provider.on('display_uri', this.onDisplayUri);
-    this.provider.on('session_update', this.onSessionUpdate);
+    const provider = this.getProvider();
+    provider.on('session_event', this.onSessionEvent);
+    provider.on('session_ping', this.onSessionPing);
+    provider.on('session_delete', this.onSessionDelete);
+    provider.on('display_uri', this.onDisplayUri);
+    provider.on('session_update', this.onSessionUpdate);
   }
 
   private removeListeners() {
-    if (!this.provider) return;
-    this.provider.removeListener('session_event', this.onSessionEvent);
-    this.provider.removeListener('session_ping', this.onSessionPing);
-    this.provider.removeListener('session_delete', this.onSessionDelete);
-    this.provider.removeListener('display_uri', this.onDisplayUri);
-    this.provider.removeListener('session_update', this.onSessionUpdate);
+    const provider = this.getProvider();
+    provider.removeListener('session_event', this.onSessionEvent);
+    provider.removeListener('session_ping', this.onSessionPing);
+    provider.removeListener('session_delete', this.onSessionDelete);
+    provider.removeListener('display_uri', this.onDisplayUri);
+    provider.removeListener('session_update', this.onSessionUpdate);
   }
 }
-
-const SESSION_PROPOSAL_METHODS = [
-  ...Object.values(CARDANO_SIGNING_METHODS),
-  CARDANO_RPC_METHODS.CARDANO_GET_USED_ADDRESSES
-];
-const SESSION_OPTIONAL_METHODS = [
-  ...Object.values(CARDANO_SIGNING_METHODS),
-  ...Object.values(CARDANO_RPC_METHODS)
-];
-const SESSION_PROPOSAL_EVENTS = Object.values(CARDANO_EVENTS);
-
-const getRequiredCardanoNamespace = (chains: CHAIN[]) => {
-  const cardanoNamespace = {
-    cip34: {
-      chains,
-      methods: SESSION_PROPOSAL_METHODS,
-      events: SESSION_PROPOSAL_EVENTS,
-      rpcMap: {}
-    }
-  };
-  return cardanoNamespace;
-};
-
-const getOptionalCardanoNamespace = () => {
-  const cardanoNamespace = {
-    cip34: {
-      chains: Object.values(CHAIN),
-      methods: SESSION_OPTIONAL_METHODS,
-      events: SESSION_PROPOSAL_EVENTS,
-      rpcMap: {}
-    }
-  };
-  return cardanoNamespace;
-};
 
 const getWeb3Modal = (projectId: string, chains: CHAIN[]) => {
   try {

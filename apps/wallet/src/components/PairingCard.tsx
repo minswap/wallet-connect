@@ -2,7 +2,7 @@ import { Avatar, Button, Card, Link, Text, Tooltip } from '@nextui-org/react';
 import Image from 'next/image';
 import { useState } from 'react';
 
-import { truncate } from '@/utils';
+import { truncate } from '@/wc-utils';
 
 /**
  * Types

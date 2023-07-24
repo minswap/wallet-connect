@@ -18,5 +18,5 @@
     "noImplicitReturns": true,
     "skipLibCheck": true
   },
-  "include": ["src", "../../apps/wallet/src/cardano-wallet"]
+  "include": ["src"]
 }

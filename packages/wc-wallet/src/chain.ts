@@ -44,10 +44,9 @@ export enum CARDANO_SIGNING_METHODS {
   CARDANO_SIGN_DATA = 'cardano_signData',
   CARDANO_GET_USED_ADDRESSES = 'cardano_getUsedAddresses'
 }
-
-export enum CARDANO_EVENTS {
-  CARDANO_NETWORK_CHANGE = 'cardano_onNetworkChange',
-  CARDANO_ACCOUNT_CHANGE = 'cardano_onAccountChange'
+export enum GENERIC_EVENTS {
+  NETWORK_CHANGE = 'chainChanged',
+  ACCOUNT_CHANGE = 'accountsChanged'
 }
 
 export const getNetworkIdFromChainId = (chainId: string): NetworkID => {

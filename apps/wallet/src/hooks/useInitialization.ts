@@ -3,7 +3,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSnapshot } from 'valtio';
 
 import SettingsStore from '@/store/SettingsStore';
-import { createCardanoWallet, createCardanoWalletConnector } from '@/utils';
+import { createCardanoWalletConnector } from '@/wc-utils';
+import { createCardanoWallet } from '@/utils';
 
 export default function useInitialization() {
   const [initialized, setInitialized] = useState(false);

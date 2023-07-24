@@ -33,7 +33,8 @@ export const CARDANO_TEST_CHAINS = {
     type: 'cip34',
     networkId: NetworkID.TESTNET,
     protocolMagic: '2',
-    name: 'Cardano Testnet Preview'
+    name: 'Cardano Testnet Preview',
+    id: '0-2'
   }
 };
 
@@ -53,11 +54,62 @@ export enum CARDANO_RPC_METHODS {
   CARDANO_GET_NETWORK_ID = 'cardano_getNetworkId'
 }
 
-export enum CARDANO_EVENTS {
-  CARDANO_NETWORK_CHANGE = 'cardano_onNetworkChange',
-  CARDANO_ACCOUNT_CHANGE = 'cardano_onAccountChange'
+export enum GENERIC_EVENTS {
+  NETWORK_CHANGE = 'chainChanged',
+  ACCOUNT_CHANGE = 'accountsChanged'
 }
 
 export const getNetworkIdFromChainId = (chainId: string): NetworkID => {
   return CARDANO_CHAINS[chainId as keyof typeof CARDANO_CHAINS].networkId;
+};
+
+export const SESSION_PROPOSAL_METHODS = [
+  ...Object.values(CARDANO_SIGNING_METHODS),
+  CARDANO_RPC_METHODS.CARDANO_GET_USED_ADDRESSES
+];
+
+export const SESSION_OPTIONAL_METHODS = [
+  ...Object.values(CARDANO_SIGNING_METHODS),
+  ...Object.values(CARDANO_RPC_METHODS)
+];
+export const SESSION_PROPOSAL_EVENTS = Object.values(GENERIC_EVENTS);
+
+export const getRequiredCardanoNamespace = (chains: CHAIN[]) => {
+  const cardanoNamespace = {
+    cip34: {
+      chains,
+      methods: SESSION_PROPOSAL_METHODS,
+      events: SESSION_PROPOSAL_EVENTS,
+      // TODO: fix this in universal provider
+      // Hack: since universal provider doesn't allow addition of new rpc url when a new chain selection
+      rpcMap: chainsToRpcMap(Object.keys(CARDANO_CHAINS) as CHAIN[])
+    }
+  };
+  return cardanoNamespace;
+};
+
+export function chainToRpc(chain: CHAIN): string {
+  const endpoint = `https://rpc.walletconnect.com/v1?chainId=${chain}`;
+  return endpoint;
+}
+
+export const chainsToRpcMap = (chains: CHAIN[]): Record<string, string> => {
+  const rpcMap: Record<string, string> = {};
+  for (const chain of chains) {
+    rpcMap[CARDANO_CHAINS[chain].id] = chainToRpc(chain);
+  }
+  return rpcMap;
+};
+
+// Required for universal provider
+export const getOptionalCardanoNamespace = () => {
+  const cardanoNamespace = {
+    cip34: {
+      chains: Object.values(CHAIN),
+      methods: SESSION_OPTIONAL_METHODS,
+      events: SESSION_PROPOSAL_EVENTS,
+      rpcMap: chainsToRpcMap(Object.values(CHAIN))
+    }
+  };
+  return cardanoNamespace;
 };

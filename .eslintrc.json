@@ -1,6 +1,9 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": ["./tsconfig.json"],
+  },
   "ignorePatterns": [
     "*.d.ts",
     "*.config.js",
@@ -45,6 +48,7 @@
       }
     ],
     "unicorn/no-array-for-each": "error",
-    "unicorn/prefer-regexp-test": "error"
+    "unicorn/prefer-regexp-test": "error",
+    "@typescript-eslint/no-floating-promises": "warn"
   }
 }

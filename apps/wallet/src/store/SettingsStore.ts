@@ -3,13 +3,8 @@ import { SignClientTypes } from '@walletconnect/types';
 import { proxy } from 'valtio';
 
 import { CardanoWallet } from '@/cardanoWallet';
-import {
-  createCardanoWallet,
-  onAccountChange,
-  onChainChange,
-  onSessionProposal,
-  onSessionRequest
-} from '@/utils';
+import { createCardanoWallet } from '@/utils';
+import { onAccountChange, onChainChange, onSessionProposal, onSessionRequest } from '@/wc-utils';
 
 interface State {
   chain: CHAIN;
@@ -49,9 +44,8 @@ const SettingsStore = {
   async changeChain(chain: CHAIN) {
     this.setChain(chain);
     const wallet = await createCardanoWallet(state.chain, state.account);
-    const prevChain = state.wallet?.chain as CHAIN;
     this.setWallet(wallet);
-    await onChainChange(prevChain, state.chain, state.wcWallet, state.wallet);
+    await onChainChange(state.chain, state.wcWallet, state.wallet);
   },
   setWeb3Wallet(wcWallet: CardanoWcConnector) {
     // Only to be called one time

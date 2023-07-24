@@ -4,9 +4,9 @@ import UniversalProvider from '@walletconnect/universal-provider';
 import { TRpc } from '../types';
 import type { Cbor, DataSignature, EnabledAPI, EnabledWalletEmulatorParams } from '../types/cip30';
 import {
-  CARDANO_EVENTS,
   CARDANO_SIGNING_METHODS,
   CHAIN,
+  GENERIC_EVENTS,
   getNetworkIdFromChainId,
   NetworkID
 } from './chain';
@@ -122,7 +122,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
   async onAccountChange(callback: (account: string) => void) {
     return new Promise<void>((resolve, reject) => {
       try {
-        this._provider.on(CARDANO_EVENTS.CARDANO_ACCOUNT_CHANGE, callback);
+        this._provider.on(GENERIC_EVENTS.ACCOUNT_CHANGE, callback);
         resolve();
       } catch (e) {
         reject(e);
@@ -130,10 +130,10 @@ export class EnabledWalletEmulator implements EnabledAPI {
     });
   }
 
-  async onNetworkChange(callback: (account: string) => void) {
+  async onNetworkChange(callback: (chainId: string) => void) {
     return new Promise<void>((resolve, reject) => {
       try {
-        this._provider.on(CARDANO_EVENTS.CARDANO_NETWORK_CHANGE, callback);
+        this._provider.on(GENERIC_EVENTS.NETWORK_CHANGE, callback);
         resolve();
       } catch (e) {
         reject(e);
