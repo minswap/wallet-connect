@@ -14,7 +14,6 @@ export default function SessionPage() {
 
   const [topic, setTopic] = useState<string | null>(null);
   const [session, setSession] = useState<SessionTypes.Struct | null>(null);
-  const [updated, setUpdated] = useState(new Date());
   const { query, push } = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -48,22 +47,6 @@ export default function SessionPage() {
     setLoading(false);
   }
 
-  const newNs = {
-    cip34: {
-      accounts: ['cip34:0-1:stake_test1urmjjjhm0dtuxls4lky2k7wftmq9mk8mgvu8fkh27hhd3aq7k4jz8'],
-      methods: ['cardano_signTx'],
-      events: []
-    }
-  };
-
-  async function onSessionUpdate() {
-    if (!topic) return;
-    setLoading(true);
-    await wcWallet?.web3wallet.updateSession({ topic, namespaces: newNs });
-    setUpdated(new Date());
-    setLoading(false);
-  }
-
   return (
     <Fragment>
       <PageHeader title="Session Details" />
@@ -88,11 +71,6 @@ export default function SessionPage() {
         <Text css={{ color: '$gray400' }}>{expiryDate.toDateString()}</Text>
       </Row>
 
-      <Row justify="space-between">
-        <Text h5>Last Updated</Text>
-        <Text css={{ color: '$gray400' }}>{updated.toDateString()}</Text>
-      </Row>
-
       <Row css={{ marginTop: '$10' }}>
         <Button flat css={{ width: '100%' }} color="error" onClick={onDeleteSession}>
           {loading ? <Loading size="sm" color="error" /> : 'Delete'}
@@ -102,12 +80,6 @@ export default function SessionPage() {
       <Row css={{ marginTop: '$10' }}>
         <Button flat css={{ width: '100%' }} color="primary" onClick={onSessionPing}>
           {loading ? <Loading size="sm" color="primary" /> : 'Ping'}
-        </Button>
-      </Row>
-
-      <Row css={{ marginTop: '$10' }}>
-        <Button flat css={{ width: '100%' }} color="warning" onClick={onSessionUpdate}>
-          {loading ? <Loading size="sm" color="warning" /> : 'Update'}
         </Button>
       </Row>
     </Fragment>

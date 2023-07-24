@@ -5,15 +5,17 @@ export enum NetworkID {
   TESTNET = 0
 }
 
+export const CARDANO_NAMESPACE_NAME = 'cip34';
+
 export enum CHAIN {
-  MAINNET = 'cip34:1-764824073',
-  TESTNET_PREPROD = 'cip34:0-1',
-  TESTNET_PREVIEW = 'cip34:0-2'
+  MAINNET = `${CARDANO_NAMESPACE_NAME}:1-764824073`,
+  TESTNET_PREPROD = `${CARDANO_NAMESPACE_NAME}:0-1`,
+  TESTNET_PREVIEW = `${CARDANO_NAMESPACE_NAME}:0-2`
 }
 
 export const CARDANO_MAINNET_CHAINS = {
   [CHAIN.MAINNET]: {
-    type: 'cip34',
+    type: CARDANO_NAMESPACE_NAME,
     networkId: NetworkID.MAINNET,
     protocolMagic: '764824073',
     name: 'Cardano Mainnet',
@@ -23,17 +25,18 @@ export const CARDANO_MAINNET_CHAINS = {
 
 export const CARDANO_TEST_CHAINS = {
   [CHAIN.TESTNET_PREPROD]: {
-    type: 'cip34',
+    type: CARDANO_NAMESPACE_NAME,
     networkId: NetworkID.TESTNET,
     protocolMagic: '1',
     name: 'Cardano Testnet Preprod',
     id: '0-1'
   },
   [CHAIN.TESTNET_PREVIEW]: {
-    type: 'cip34',
+    type: CARDANO_NAMESPACE_NAME,
     networkId: NetworkID.TESTNET,
     protocolMagic: '2',
-    name: 'Cardano Testnet Preview'
+    name: 'Cardano Testnet Preview',
+    id: '0-2'
   }
 };
 

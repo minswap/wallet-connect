@@ -4,7 +4,7 @@ import { ICore, PairingTypes, SessionTypes, SignClientTypes } from '@walletconne
 import { getSdkError } from '@walletconnect/utils';
 import { IWeb3Wallet, Web3Wallet, Web3WalletTypes } from '@walletconnect/web3wallet';
 
-import { CHAIN, formatAccount, GENERIC_EVENTS } from './chain';
+import { CARDANO_NAMESPACE_NAME, CHAIN, formatAccount, GENERIC_EVENTS } from './chain';
 
 export interface ICardanoWcConnectorParams {
   projectId: string;
@@ -132,9 +132,10 @@ export class CardanoWcConnector {
     for (const topic of Object.keys(sessions)) {
       const session = sessions[topic];
       // TODO: Add support for multiple namespace
-      const chainIdInOptionalChains = session.optionalNamespaces?.cip34?.chains?.includes(chain);
+      const chainIdInOptionalChains =
+        session.optionalNamespaces?.[CARDANO_NAMESPACE_NAME]?.chains?.includes(chain);
       if (!chainIdInOptionalChains) continue;
-      const sessionHasAccount = session.namespaces.cip34.accounts.some(
+      const sessionHasAccount = session.namespaces[CARDANO_NAMESPACE_NAME].accounts.some(
         account => account === newAccount
       );
       if (!sessionHasAccount) {
@@ -146,9 +147,9 @@ export class CardanoWcConnector {
             namespaces: {
               ...namespaces,
               ...{
-                cip34: {
-                  ...namespaces.cip34,
-                  accounts: namespaces.cip34.accounts.concat(newAccount)
+                [CARDANO_NAMESPACE_NAME]: {
+                  ...namespaces[CARDANO_NAMESPACE_NAME],
+                  accounts: namespaces[CARDANO_NAMESPACE_NAME].accounts.concat(newAccount)
                 }
               }
             }
@@ -174,7 +175,7 @@ export class CardanoWcConnector {
     for (const topic of Object.keys(sessions)) {
       const session = sessions[topic];
       // TODO: Add support for multiple namespace
-      const sessionHasNewChain = session.namespaces.cip34.accounts.some(account =>
+      const sessionHasNewChain = session.namespaces[CARDANO_NAMESPACE_NAME].accounts.some(account =>
         account.startsWith(newChain)
       );
       if (!sessionHasNewChain) {
@@ -187,10 +188,10 @@ export class CardanoWcConnector {
             namespaces: {
               ...namespaces,
               ...{
-                cip34: {
-                  ...namespaces.cip34,
-                  accounts: namespaces.cip34.accounts.concat(newAccount),
-                  chains: namespaces.cip34.chains?.concat(newChain) ?? [newChain]
+                [CARDANO_NAMESPACE_NAME]: {
+                  ...namespaces[CARDANO_NAMESPACE_NAME],
+                  accounts: namespaces[CARDANO_NAMESPACE_NAME].accounts.concat(newAccount),
+                  chains: namespaces[CARDANO_NAMESPACE_NAME].chains?.concat(newChain) ?? [newChain]
                 }
               }
             }

@@ -5,15 +5,17 @@ export enum NetworkID {
   MAINNET = 1
 }
 
+export const CARDANO_NAMESPACE_NAME = 'cip34';
+
 export enum CHAIN {
-  MAINNET = 'cip34:1-764824073',
-  TESTNET_PREPROD = 'cip34:0-1',
-  TESTNET_PREVIEW = 'cip34:0-2'
+  MAINNET = `${CARDANO_NAMESPACE_NAME}:1-764824073`,
+  TESTNET_PREPROD = `${CARDANO_NAMESPACE_NAME}:0-1`,
+  TESTNET_PREVIEW = `${CARDANO_NAMESPACE_NAME}:0-2`
 }
 
 export const CARDANO_MAINNET_CHAINS = {
   [CHAIN.MAINNET]: {
-    type: 'cip34',
+    type: CARDANO_NAMESPACE_NAME,
     networkId: NetworkID.MAINNET,
     protocolMagic: '764824073',
     name: 'Cardano Mainnet',
@@ -23,14 +25,14 @@ export const CARDANO_MAINNET_CHAINS = {
 
 export const CARDANO_TEST_CHAINS = {
   [CHAIN.TESTNET_PREPROD]: {
-    type: 'cip34',
+    type: CARDANO_NAMESPACE_NAME,
     networkId: NetworkID.TESTNET,
     protocolMagic: '1',
     name: 'Cardano Testnet Preprod',
     id: '0-1'
   },
   [CHAIN.TESTNET_PREVIEW]: {
-    type: 'cip34',
+    type: CARDANO_NAMESPACE_NAME,
     networkId: NetworkID.TESTNET,
     protocolMagic: '2',
     name: 'Cardano Testnet Preview',
@@ -81,7 +83,7 @@ export const SESSION_PROPOSAL_EVENTS = Object.values(CHAIN_EVENTS);
 
 export const getRequiredCardanoNamespace = (chains: CHAIN[]) => {
   const cardanoNamespace = {
-    cip34: {
+    [CARDANO_NAMESPACE_NAME]: {
       chains,
       methods: SESSION_PROPOSAL_METHODS,
       events: SESSION_PROPOSAL_EVENTS,
@@ -109,7 +111,7 @@ export const chainsToRpcMap = (chains: CHAIN[]): Record<string, string> => {
 // Required for universal provider
 export const getOptionalCardanoNamespace = () => {
   const cardanoNamespace = {
-    cip34: {
+    [CARDANO_NAMESPACE_NAME]: {
       chains: Object.values(CHAIN),
       methods: SESSION_OPTIONAL_METHODS,
       events: SESSION_PROPOSAL_EVENTS,

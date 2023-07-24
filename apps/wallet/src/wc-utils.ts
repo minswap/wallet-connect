@@ -1,4 +1,5 @@
 import {
+  CARDANO_NAMESPACE_NAME,
   CARDANO_SIGNING_METHODS,
   CardanoWcConnector,
   CHAIN,
@@ -48,7 +49,7 @@ export const onSessionRequest = async (
   } else if (chainId !== wallet?.chain) {
     response = formatJsonRpcError(id, getSdkError('UNSUPPORTED_CHAINS'));
   } else if (
-    !sessions[topic].namespaces.cip34.accounts.some(account =>
+    !sessions[topic].namespaces[CARDANO_NAMESPACE_NAME].accounts.some(account =>
       account.includes(wallet.getRewardAddress())
     )
   ) {
@@ -91,13 +92,14 @@ export const onSessionProposal = async (
   const namespaces: SessionTypes.Namespaces = {};
   const accounts: string[] = [];
   let requiresChainUpdate = false;
-  for (const key of Object.keys(requiredNamespaces)) {
-    if (key !== 'cip34') {
-      // TODO: Add support for multiple namespace
-      await wcWallet.rejectSessionProposal(proposal, getSdkError('UNSUPPORTED_NAMESPACE_KEY'));
-      return;
-    }
-    const chainIds = requiredNamespaces[key].chains as CHAIN[];
+  const namespaceNames = Object.keys(requiredNamespaces);
+  if (namespaceNames.some(namespaceName => namespaceName !== CARDANO_NAMESPACE_NAME)) {
+    // TODO: Add support for multiple namespace
+    await wcWallet.rejectSessionProposal(proposal, getSdkError('UNSUPPORTED_NAMESPACE_KEY'));
+    return;
+  }
+  for (const namespaceName of namespaceNames) {
+    const chainIds = requiredNamespaces[namespaceName].chains as CHAIN[];
     if (chainIds)
       for (const chainId of chainIds) {
         const wallet = await createCardanoWallet(chainId, account); // derive wallet or can fetch from a store
@@ -105,7 +107,6 @@ export const onSessionProposal = async (
         const baseAddress = wallet.getBaseAddress();
         accounts.push(formatAccount(chainId, rewardAddress, baseAddress));
       }
-    // TODO: check if chain is in list of optional chains
     if (!chainIds.includes(wallet.chain)) {
       // when chain is not in list of required chains, add it to list of chains
       // eslint-disable-next-line unused-imports/no-unused-vars
@@ -115,10 +116,10 @@ export const onSessionProposal = async (
       const baseAddress = wallet.getBaseAddress();
       accounts.push(formatAccount(wallet.chain, rewardAddress, baseAddress));
     }
-    namespaces[key] = {
+    namespaces[namespaceName] = {
       accounts,
-      methods: requiredNamespaces[key].methods,
-      events: requiredNamespaces[key].events,
+      methods: requiredNamespaces[namespaceName].methods,
+      events: requiredNamespaces[namespaceName].events,
       chains: chainIds
     };
   }

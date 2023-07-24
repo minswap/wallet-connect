@@ -7,6 +7,7 @@ import { DEFAULT_LOGGER } from '../constants';
 import { TRpc } from '../types';
 import { EnabledAPI } from '../types/cip30';
 import {
+  CARDANO_NAMESPACE_NAME,
   CHAIN,
   CHAIN_EVENTS,
   getOptionalCardanoNamespace,
@@ -83,7 +84,8 @@ export class CardanoWcProvider {
   getDefaultChainId(): string {
     const provider = this.getProvider();
     const chainId =
-      provider.namespaces?.cip34.defaultChain || provider.namespaces?.cip34.chains[0].split(':')[1];
+      provider.namespaces?.[CARDANO_NAMESPACE_NAME].defaultChain ||
+      provider.namespaces?.[CARDANO_NAMESPACE_NAME].chains[0].split(':')[1];
     if (!chainId) throw new Error('Default chain not set');
     return chainId;
   }
@@ -117,12 +119,14 @@ export class CardanoWcProvider {
     const provider = this.getProvider();
     invariant(provider.session, 'Provider not initialized. Call init() first');
     const defaultChainId = this.getDefaultChainId();
-    const addresses = provider.session.namespaces.cip34.accounts[0].split(':')[2].split('-');
+    const addresses = provider.session.namespaces[CARDANO_NAMESPACE_NAME].accounts[0]
+      .split(':')[2]
+      .split('-');
     const stakeAddress = addresses[0];
     const baseAddress = addresses[1];
     this.enabledApi = new EnabledWalletEmulator({
       provider: provider,
-      chain: `cip34:${defaultChainId}` as CHAIN,
+      chain: `${CARDANO_NAMESPACE_NAME}:${defaultChainId}` as CHAIN,
       rpc: this.rpc,
       stakeAddress,
       baseAddress
@@ -223,7 +227,8 @@ export class CardanoWcProvider {
       const chainId = account.split(':')[1];
       const stakeAddress = account.split(':')[2].split('-')[0];
       const baseAddress = account.split(':')[2].split('-')[1];
-      (this.enabledApi as EnabledWalletEmulator).chain = `cip34:${chainId}` as CHAIN;
+      (this.enabledApi as EnabledWalletEmulator).chain =
+        `${CARDANO_NAMESPACE_NAME}:${chainId}` as CHAIN;
       (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
       (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
       (this.enabledApi as EnabledWalletEmulator).events.emit(CHAIN_EVENTS.NETWORK_CHANGE, account);

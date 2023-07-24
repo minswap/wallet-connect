@@ -3,7 +3,6 @@ import {
   CardanoWcProvider,
   CHAIN,
   EnabledAPI,
-  EnabledWalletEmulator,
   REGIONALIZED_RELAYER_ENDPOINTS
 } from '@minswap/wc-dapp';
 import { Button, Input, Layout, Page } from '@vercel/examples-ui';
