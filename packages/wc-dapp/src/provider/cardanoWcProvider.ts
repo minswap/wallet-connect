@@ -15,7 +15,6 @@ import {
 import { EnabledWalletEmulator } from './enabledWalletEmulator';
 import { CardanoWcProviderOpts } from './types';
 
-// Designed to support only one chain upon initialization
 export class CardanoWcProvider {
   private modal: WalletConnectModal | undefined;
   private enabled = false;
@@ -65,6 +64,57 @@ export class CardanoWcProvider {
     });
   }
 
+  async enable() {
+    const session = this.provider?.session;
+    // Edge Case: sometimes pairing is lost, so we disconnect session and reconnect
+    const pairingTopic = session?.pairingTopic;
+    const hasPairing = this.getSessionPair(pairingTopic);
+    if (!hasPairing && session) {
+      this.disconnect();
+    }
+    if (!session) {
+      await this.connect();
+    } else {
+      await this.loadPersistedSession();
+    }
+    if (!this.provider) throw new Error('Provider not initialized');
+    if (!this.enabledApi) throw new Error('Enabled API not initialized');
+    return this.enabledApi;
+  }
+
+  getDefaultChainId(): string {
+    const provider = this.getProvider();
+    const chainId =
+      provider.namespaces?.cip34.defaultChain || provider.namespaces?.cip34.chains[0].split(':')[1];
+    if (!chainId) throw new Error('Default chain not set');
+    return chainId;
+  }
+
+  getProvider(): UniversalProvider {
+    if (!this.provider) throw new Error('Provider not initialized. Call init() first');
+    return this.provider;
+  }
+
+  public async disconnect(): Promise<void> {
+    const provider = this.getProvider();
+    if (provider.session) {
+      try {
+        await provider.disconnect();
+      } catch (error) {
+        console.info('disconnect error', (error as Error).message);
+        // bc wagmi does this
+        if (!/No matching key/i.test((error as Error).message)) throw error;
+      } finally {
+        this.removeListeners();
+        this.reset();
+      }
+    }
+  }
+
+  private async isEnabled(): Promise<boolean> {
+    return Promise.resolve(this.enabled);
+  }
+
   private async loadPersistedSession() {
     const provider = this.getProvider();
     invariant(provider.session, 'Provider not initialized. Call init() first');
@@ -87,34 +137,6 @@ export class CardanoWcProvider {
     return pairings?.find(pairing => pairing.topic === pairingTopic);
   }
 
-  public async enable() {
-    const session = this.provider?.session;
-    // Edge Case: sometimes pairing is lost, so we disconnect session and reconnect
-    const pairingTopic = session?.pairingTopic;
-    const hasPairing = this.getSessionPair(pairingTopic);
-    if (!hasPairing && session) {
-      this.disconnect();
-    }
-    if (!session) {
-      await this.connect();
-    } else {
-      await this.loadPersistedSession();
-    }
-    if (!this.provider) throw new Error('Provider not initialized');
-    if (!this.enabledApi) throw new Error('Enabled API not initialized');
-    return this.enabledApi;
-  }
-
-  /**
-   * Connect to user's wallet.
-   *
-   * If `WalletConnectConnector` was configured with `qrcode = true`, this will
-   * open a QRCodeModal, where the user will scan the qrcode and then this
-   * function will resolve/return the address of the wallet.
-   *
-   * If `qrcode = false`, this will return the pairing URI used to generate the
-   * QRCode.
-   */
   private async connect(opts: { pairingTopic?: ConnectParams['pairingTopic'] } = {}) {
     invariant(this.chains, 'Chain not set. Call init() first');
     const provider = this.getProvider();
@@ -154,43 +176,10 @@ export class CardanoWcProvider {
     }
   }
 
-  public async disconnect(): Promise<void> {
-    const provider = this.getProvider();
-    if (provider.session) {
-      try {
-        await provider.disconnect();
-      } catch (error) {
-        console.info('disconnect error', (error as Error).message);
-        // bc wagmi does this
-        if (!/No matching key/i.test((error as Error).message)) throw error;
-      } finally {
-        this.removeListeners();
-        this.reset();
-      }
-    }
-  }
-
   private reset() {
     this.provider = undefined;
     this.enabled = false;
     this.enabledApi = undefined;
-  }
-
-  public async isEnabled(): Promise<boolean> {
-    return Promise.resolve(this.enabled);
-  }
-
-  public getProvider(): UniversalProvider {
-    if (!this.provider) throw new Error('Provider not initialized. Call init() first');
-    return this.provider;
-  }
-
-  getDefaultChainId(): string {
-    const provider = this.getProvider();
-    const chainId =
-      provider.namespaces?.cip34.defaultChain || provider.namespaces?.cip34.chains[0].split(':')[1];
-    if (!chainId) throw new Error('Default chain not set');
-    return chainId;
   }
 
   private onDisplayUri = (uri: string) => {
@@ -267,7 +256,7 @@ export class CardanoWcProvider {
 const getWeb3Modal = (projectId: string, chains: CHAIN[]) => {
   try {
     return new WalletConnectModal({
-      projectId: projectId,
+      projectId,
       chains,
       enableExplorer: false
     });
