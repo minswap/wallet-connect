@@ -92,6 +92,10 @@ export class CardanoWcConnector {
     return new Date(session.expiry * 1000);
   }
 
+  async ping(topic: string) {
+    return this.web3wallet.engine.signClient.ping({ topic });
+  }
+
   async disconnectSession(topic: string, reason?: ErrorResponse) {
     this.getSession(topic);
     await this.web3wallet.disconnectSession({
@@ -100,6 +104,11 @@ export class CardanoWcConnector {
     });
   }
 
+  /**
+   *
+   * Events
+   *
+   */
   async emitAccountChanged(chain: CHAIN, rewardAddress: string, baseAddress: string) {
     const sessions = this.getSessions();
     const newAccount = formatAccount(chain, rewardAddress, baseAddress);
@@ -172,7 +181,7 @@ export class CardanoWcConnector {
 
   /**
    *
-   * Requests
+   * Session Proposal
    *
    */
   approveSessionProposal = async (
@@ -199,8 +208,4 @@ export class CardanoWcConnector {
       reason
     });
   };
-
-  async ping(topic: string) {
-    return this.web3wallet.engine.signClient.ping({ topic });
-  }
 }

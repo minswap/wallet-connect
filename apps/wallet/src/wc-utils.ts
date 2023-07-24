@@ -1,10 +1,8 @@
 import {
-  CARDANO_CHAINS,
   CARDANO_SIGNING_METHODS,
   CardanoWcConnector,
   CHAIN,
-  formatAccount,
-  TCardanoChain
+  formatAccount
 } from '@minswap/wc-wallet';
 import {
   formatJsonRpcError,
@@ -15,7 +13,7 @@ import { SessionTypes, SignClientTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
 
 import { CardanoWallet } from '@/cardanoWallet';
-import { createCardanoWallet } from './utils';
+import { createCardanoWallet } from '@/utils';
 
 export async function createCardanoWalletConnector(relayerRegionURL: string) {
   const connector = await CardanoWcConnector.init({
@@ -71,7 +69,7 @@ export const onSessionRequest = async (
     }
   }
 
-  await wcWallet?.web3wallet.respondSessionRequest({
+  await wcWallet.web3wallet.respondSessionRequest({
     topic,
     response
   });
@@ -92,7 +90,7 @@ export const onSessionProposal = async (
   let requiresChainUpdate = false;
   for (const key of Object.keys(requiredNamespaces)) {
     if (key !== 'cip34') {
-      await wcWallet?.rejectSessionProposal(proposal, getSdkError('UNSUPPORTED_NAMESPACE_KEY'));
+      await wcWallet.rejectSessionProposal(proposal, getSdkError('UNSUPPORTED_NAMESPACE_KEY'));
       return;
     }
     const chainIds = requiredNamespaces[key].chains as CHAIN[];
