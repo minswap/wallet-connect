@@ -12,15 +12,6 @@ export interface ICardanoWcConnectorParams {
   metadata: Web3WalletTypes.Metadata;
 }
 
-// const TIMEOUT_ERR_MESSAGE = 'request timed out!';
-
-// const timeoutPromise = (fn: Promise<unknown>, ms = 5000) => {
-//   return new Promise((resolve, reject) => {
-//     fn.then(res => resolve(res)).catch(err => reject(err));
-//     setTimeout(() => resolve(TIMEOUT_ERR_MESSAGE), ms);
-//   });
-// };
-
 export class CardanoWcConnector {
   readonly core: ICore;
   readonly web3wallet: IWeb3Wallet;
