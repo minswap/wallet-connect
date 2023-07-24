@@ -1,4 +1,4 @@
-import { CARDANO_CHAINS, CHAIN, TCardanoChain } from '@minswap/wc-wallet';
+import { CARDANO_CHAINS, CHAIN } from '@minswap/wc-wallet';
 
 import { CardanoWallet } from './cardanoWallet';
 
@@ -28,7 +28,7 @@ export function truncate(value: string, length: number) {
 }
 
 export function formatChainName(chainId: string) {
-  return CARDANO_CHAINS[chainId as TCardanoChain]?.name ?? chainId;
+  return CARDANO_CHAINS[chainId as CHAIN]?.name ?? chainId;
 }
 
 export function sleep(ms: number) {

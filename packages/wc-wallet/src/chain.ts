@@ -1,5 +1,3 @@
-export type TCardanoChain = keyof typeof CARDANO_MAINNET_CHAINS;
-
 export enum NetworkID {
   MAINNET = 1,
   TESTNET = 0
@@ -54,7 +52,7 @@ export enum GENERIC_EVENTS {
 }
 
 export const getNetworkIdFromChainId = (chainId: string): NetworkID => {
-  return CARDANO_CHAINS[chainId as keyof typeof CARDANO_CHAINS].networkId;
+  return CARDANO_CHAINS[chainId as CHAIN].networkId;
 };
 
 export function formatAccount(chainId: CHAIN, stakeAddress: string, baseAddress: string) {

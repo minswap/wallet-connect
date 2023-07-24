@@ -1,5 +1,3 @@
-export type TCardanoChain = keyof typeof CARDANO_MAINNET_CHAINS;
-
 export enum NetworkID {
   TESTNET = 0,
   MAINNET = 1
@@ -87,7 +85,7 @@ export const getRequiredCardanoNamespace = (chains: CHAIN[]) => {
       chains,
       methods: SESSION_PROPOSAL_METHODS,
       events: SESSION_PROPOSAL_EVENTS,
-      // TODO: fix this in universal provider
+      // TODO: Fix this in universal provider
       // Hack: since universal provider doesn't allow addition of new rpc url when a new chain selection
       rpcMap: chainsToRpcMap(Object.keys(CARDANO_CHAINS) as CHAIN[])
     }

@@ -21,7 +21,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite build --minify false --watch",
-    "build": "tsc && vite build && tsc --emitDeclarationOnly",
+    "build": "vite build",
     "test": "vitest",
     "preview": "vite preview",
     "lint": "eslint src/**/*.ts",

@@ -39,9 +39,8 @@ export const onSessionRequest = async (
   const { params, id, topic } = requestEvent;
   const { request, chainId } = params;
 
-  let response: JsonRpcResponse;
-
   const sessions = wcWallet.getSessions();
+  let response: JsonRpcResponse;
 
   if (!sessions[requestEvent.topic]) {
     console.warn(`WC2 invalid session topic ${requestEvent.topic}`);
@@ -67,12 +66,11 @@ export const onSessionRequest = async (
         break;
       }
       default:
-        // TODO: error response not propagated to dapp
+        // TODO: Error response not propagated to dApp
         // Search for: Error code is not in server code range
         response = formatJsonRpcError(id, getSdkError('INVALID_METHOD'));
     }
   }
-
   await wcWallet.web3wallet.respondSessionRequest({
     topic,
     response
@@ -109,7 +107,6 @@ export const onSessionProposal = async (
       }
     if (!chainIds.includes(wallet.chain)) {
       // when chain is not in list of required chains, add it to list of chains
-      // eslint-disable-next-line unused-imports/no-unused-vars
       requiresChainUpdate = true;
       chainIds.push(wallet.chain);
       const rewardAddress = wallet.getRewardAddress();
@@ -126,7 +123,9 @@ export const onSessionProposal = async (
 
   await wcWallet?.approveSessionProposal(proposal, namespaces);
   if (requiresChainUpdate) {
-    await sleep(5000); // Just additional delay to make sure the session is established
+    // Hack: Additional delay to give time for session to be established
+    // Unsafe bc session might not be established in 5s but it is a safe assumption
+    await sleep(5000);
     await onChainChange(wallet.chain, wcWallet, wallet);
   }
 };

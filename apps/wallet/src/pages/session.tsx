@@ -27,8 +27,6 @@ export default function SessionPage() {
 
   if (!session) return null;
 
-  // Get necessary data from session
-  const expiryDate = new Date(session.expiry * 1000);
   const { namespaces } = session;
 
   // Handle deletion of a session
@@ -68,7 +66,9 @@ export default function SessionPage() {
 
       <Row justify="space-between">
         <Text h5>Expiry</Text>
-        <Text css={{ color: '$gray400' }}>{expiryDate.toDateString()}</Text>
+        <Text css={{ color: '$gray400' }}>
+          {wcWallet?.getSessionExpiry(session.topic).toLocaleTimeString()}
+        </Text>
       </Row>
 
       <Row css={{ marginTop: '$10' }}>
