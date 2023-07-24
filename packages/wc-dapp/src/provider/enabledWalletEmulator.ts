@@ -36,6 +36,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
 
   set chain(chain: CHAIN) {
     this._chain = chain;
+    this._networkId = getNetworkIdFromChainId(chain);
   }
 
   set baseAddress(baseAddress: string) {
