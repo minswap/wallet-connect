@@ -27,7 +27,7 @@ export class CardanoWcProvider {
   private enabledApi: EnabledAPI | undefined;
   private qrcode: boolean;
 
-  constructor({
+  private constructor({
     provider,
     qrcode,
     modal,
