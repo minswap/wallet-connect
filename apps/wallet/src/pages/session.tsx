@@ -20,8 +20,12 @@ export default function SessionPage() {
   useEffect(() => {
     if (query?.topic && wcWallet) {
       setTopic(query.topic as string);
-      const session = wcWallet.getSession(query.topic as string);
-      setSession(session);
+      try {
+        const session = wcWallet.getSession(query.topic as string);
+        setSession(session);
+      } catch (e) {
+        setSession(null);
+      }
     }
   }, [query, setSession, wcWallet]);
 
@@ -34,8 +38,7 @@ export default function SessionPage() {
     if (!topic) return;
     setLoading(true);
     await wcWallet?.disconnectSession(topic);
-    await push('/sessions');
-    setLoading(false);
+    void push('/sessions');
   }
 
   async function onSessionPing() {
@@ -67,7 +70,7 @@ export default function SessionPage() {
       <Row justify="space-between">
         <Text h5>Expiry</Text>
         <Text css={{ color: '$gray400' }}>
-          {wcWallet?.getSessionExpiry(session.topic).toLocaleTimeString()}
+          {wcWallet?.getSessionExpiry(session.topic)?.toLocaleString()}
         </Text>
       </Row>
 

@@ -17,7 +17,11 @@ export default function SessionsPage() {
       </Fragment>
     );
   }
-  const [sessions, _] = useState(Object.values(wcWallet.getSessions()));
+  const [sessions, setSessions] = useState(Object.values(wcWallet.getSessions()));
+
+  wcWallet.web3wallet.on('session_delete', () => {
+    setSessions(Object.values(wcWallet.getSessions()));
+  });
 
   return (
     <Fragment>

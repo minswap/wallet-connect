@@ -84,12 +84,13 @@ export class CardanoWcConnector {
     return session;
   }
 
-  getSessionExpiry(topic: string): Date {
-    const session = this.getSession(topic);
-    if (!session) {
-      throw new Error('Session not found');
+  getSessionExpiry(topic: string): Date | null {
+    try {
+      const session = this.getSession(topic);
+      return new Date(session.expiry * 1000);
+    } catch (e) {
+      return null;
     }
-    return new Date(session.expiry * 1000);
   }
 
   async ping(topic: string) {
@@ -104,6 +105,7 @@ export class CardanoWcConnector {
         reason: reason ?? getSdkError('USER_DISCONNECTED')
       });
     } catch (err) {
+      console.warn('using fallback method to disconnect session', err);
       // Fallback method because of bug in wc2 sdk
       await this.web3wallet.engine.signClient.session.delete(
         topic,
