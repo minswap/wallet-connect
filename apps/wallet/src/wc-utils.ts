@@ -85,7 +85,7 @@ export const onSessionProposal = async (
 ) => {
   if (!wcWallet || !wallet) return;
   const { params } = proposal;
-  const { requiredNamespaces } = params;
+  const { requiredNamespaces, optionalNamespaces } = params;
 
   const namespaces: SessionTypes.Namespaces = {};
   const accounts: string[] = [];
@@ -100,6 +100,15 @@ export const onSessionProposal = async (
     const chainIds = requiredNamespaces[namespaceName].chains as CHAIN[];
     if (chainIds)
       for (const chainId of chainIds) {
+        const chainInOptionalChains =
+          optionalNamespaces?.[CARDANO_NAMESPACE_NAME]?.chains?.includes(chainId);
+        if (!chainInOptionalChains) {
+          await wcWallet.rejectSessionProposal(proposal, {
+            code: 1,
+            message: `${chainId} not in optional namespaces`
+          });
+          return;
+        }
         const wallet = await createCardanoWallet(chainId, account); // derive wallet or can fetch from a store
         const rewardAddress = wallet.getRewardAddress();
         const baseAddress = wallet.getBaseAddress();

@@ -123,9 +123,9 @@ export class CardanoWcConnector {
     for (const topic of Object.keys(sessions)) {
       const session = sessions[topic];
       // TODO: Add support for multiple namespace
-      const chainIdInOptionalChains =
+      const chainInOptionalChains =
         session.optionalNamespaces?.[CARDANO_NAMESPACE_NAME]?.chains?.includes(chain);
-      if (!chainIdInOptionalChains) continue;
+      if (!chainInOptionalChains) continue;
       const sessionHasAccount = session.namespaces[CARDANO_NAMESPACE_NAME].accounts.some(
         account => account === newAccount
       );
@@ -165,14 +165,13 @@ export class CardanoWcConnector {
     for (const topic of Object.keys(sessions)) {
       const session = sessions[topic];
       // TODO: Add support for multiple namespace
-      const sessionHasNewChain = session.namespaces[CARDANO_NAMESPACE_NAME].accounts.some(account =>
-        account.startsWith(newChain)
-      );
-      if (!sessionHasNewChain) {
-        const chainInOptionalChains = session.optionalNamespaces?.[
-          CARDANO_NAMESPACE_NAME
-        ]?.chains?.some(chain => chain === newChain);
-        if (chainInOptionalChains) {
+      const chainInOptionalChains =
+        session.optionalNamespaces?.[CARDANO_NAMESPACE_NAME]?.chains?.includes(newChain);
+      if (chainInOptionalChains) {
+        const sessionHasNewChain = session.namespaces[CARDANO_NAMESPACE_NAME].accounts.some(
+          account => account.startsWith(newChain)
+        );
+        if (sessionHasNewChain) {
           const namespaces = session.namespaces;
           try {
             await this.web3wallet.updateSession({
@@ -193,21 +192,21 @@ export class CardanoWcConnector {
           } catch (e: unknown) {
             console.warn(`WC2::updateSession can't update session topic=${topic}`, e);
           }
-          try {
-            await this.web3wallet.emitSessionEvent({
-              topic,
-              event: {
-                name: GENERIC_EVENTS.NETWORK_CHANGE,
-                data: newAccount
-              },
-              chainId: newChain
-            });
-          } catch (e: unknown) {
-            if ((e as Error).message.includes('Missing or invalid. emit() chainId:')) {
-              console.warn('ignored emit network change event, since session is not updated yet');
-            } else {
-              throw e;
-            }
+        }
+        try {
+          await this.web3wallet.emitSessionEvent({
+            topic,
+            event: {
+              name: GENERIC_EVENTS.NETWORK_CHANGE,
+              data: newAccount
+            },
+            chainId: newChain
+          });
+        } catch (e: unknown) {
+          if ((e as Error).message.includes('Missing or invalid. emit() chainId:')) {
+            console.warn('ignored emit network change event, since session is not updated yet');
+          } else {
+            throw e;
           }
         }
       }
