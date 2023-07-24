@@ -42,7 +42,10 @@ export const onSessionRequest = async (
 
   const sessions = wcWallet.getSessions();
 
-  if (chainId !== wallet?.chain) {
+  if (!sessions[requestEvent.topic]) {
+    console.warn(`WC2 invalid session topic ${requestEvent.topic}`);
+    response = formatJsonRpcError(id, getSdkError('INVALID_EVENT'));
+  } else if (chainId !== wallet?.chain) {
     response = formatJsonRpcError(id, getSdkError('UNSUPPORTED_CHAINS'));
   } else if (
     !sessions[topic].namespaces.cip34.accounts.some(account =>
@@ -87,7 +90,6 @@ export const onSessionProposal = async (
 
   const namespaces: SessionTypes.Namespaces = {};
   const accounts: string[] = [];
-  let requiresChainUpdate = false;
   for (const key of Object.keys(requiredNamespaces)) {
     if (key !== 'cip34') {
       // TODO: Add support for multiple namespace
@@ -102,10 +104,9 @@ export const onSessionProposal = async (
         const baseAddress = wallet.getBaseAddress();
         accounts.push(formatAccount(chainId, rewardAddress, baseAddress));
       }
+    // TODO: check if chain is in list of optional chains
     if (!chainIds.includes(wallet.chain)) {
       // when chain is not in list of required chains, add it to list of chains
-      // eslint-disable-next-line unused-imports/no-unused-vars
-      requiresChainUpdate = true;
       chainIds.push(wallet.chain);
       const rewardAddress = wallet.getRewardAddress();
       const baseAddress = wallet.getBaseAddress();
@@ -118,11 +119,7 @@ export const onSessionProposal = async (
       chains: chainIds
     };
   }
-
-  await wcWallet?.approveSessionProposal(proposal, namespaces);
-  // if (requiresChainUpdate) {
-  //   await onChainChange(wallet.chain, wcWallet, wallet);
-  // }
+  await wcWallet.approveSessionProposal(proposal, namespaces);
 };
 
 export const onAccountChange = async (

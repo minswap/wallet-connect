@@ -1,4 +1,5 @@
-import { CHAIN, CARDANO_CHAINS, TCardanoChain } from '@minswap/wc-wallet';
+import { CARDANO_CHAINS, CHAIN, TCardanoChain } from '@minswap/wc-wallet';
+
 import { CardanoWallet } from './cardanoWallet';
 
 export async function createCardanoWallet(chain: CHAIN, account: number) {

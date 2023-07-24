@@ -13,8 +13,7 @@ import { WalletConnectRpc } from '../utils/rpc';
 
 const TIMEOUT_ERR_MESSAGE = 'request timed out!';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const timeoutPromise = (fn: Promise<any>, ms = 5000) => {
+const timeoutPromise = (fn: Promise<unknown>, ms = 5000) => {
   return new Promise((resolve, reject) => {
     fn.then(res => resolve(res)).catch(err => reject(err));
     setTimeout(() => reject(TIMEOUT_ERR_MESSAGE), ms);
@@ -56,11 +55,9 @@ export default function Index() {
       setBaseAddr((await localEnabledApi.getUsedAddresses())[0]);
       setChain(walletConnectConnector?.getDefaultChainId());
       await localEnabledApi.onAccountChange((account: string) => {
-        console.log('account change', account);
         setBaseAddr(account.split(':')[2].split('-')[1]);
       });
       await localEnabledApi.onNetworkChange((account: string) => {
-        console.log(account);
         setBaseAddr(account.split(':')[2].split('-')[1]);
         setChain(account.split(':')[1]);
       });
@@ -68,6 +65,7 @@ export default function Index() {
       provider.on('disconnect', () => {
         reset();
       });
+      // TODO: when the account/chain changes the enable api object doesn't change
     } catch (error) {
       console.error('[APP] wallet connect init error: ', error);
     }

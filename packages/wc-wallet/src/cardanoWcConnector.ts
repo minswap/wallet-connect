@@ -1,5 +1,5 @@
 import { Core } from '@walletconnect/core';
-import { ErrorResponse } from '@walletconnect/jsonrpc-utils';
+import { ErrorResponse, formatJsonRpcError } from '@walletconnect/jsonrpc-utils';
 import { ICore, PairingTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
 import { IWeb3Wallet, Web3Wallet, Web3WalletTypes } from '@walletconnect/web3wallet';
@@ -11,6 +11,15 @@ export interface ICardanoWcConnectorParams {
   relayerRegionUrl: string;
   metadata: Web3WalletTypes.Metadata;
 }
+
+// const TIMEOUT_ERR_MESSAGE = 'request timed out!';
+
+// const timeoutPromise = (fn: Promise<unknown>, ms = 5000) => {
+//   return new Promise((resolve, reject) => {
+//     fn.then(res => resolve(res)).catch(err => reject(err));
+//     setTimeout(() => resolve(TIMEOUT_ERR_MESSAGE), ms);
+//   });
+// };
 
 export class CardanoWcConnector {
   readonly core: ICore;
@@ -98,10 +107,18 @@ export class CardanoWcConnector {
 
   async disconnectSession(topic: string, reason?: ErrorResponse) {
     this.getSession(topic);
-    await this.web3wallet.disconnectSession({
-      topic,
-      reason: reason ?? getSdkError('USER_DISCONNECTED')
-    });
+    try {
+      await this.web3wallet.disconnectSession({
+        topic: topic,
+        reason: reason ?? getSdkError('USER_DISCONNECTED')
+      });
+    } catch (err) {
+      // Fallback method because of bug in wc2 sdk
+      await this.web3wallet.engine.signClient.session.delete(
+        topic,
+        getSdkError('USER_DISCONNECTED')
+      );
+    }
   }
 
   /**
@@ -122,15 +139,23 @@ export class CardanoWcConnector {
       );
       if (!sessionHasAccount) {
         const namespaces = session.namespaces;
-        await this.web3wallet.updateSession({
-          topic,
-          namespaces: {
-            ...namespaces,
-            ...{
-              cip34: { ...namespaces.cip34, accounts: namespaces.cip34.accounts.concat(newAccount) }
+        // Hack: we need to timeout the promise when the dapp is not online
+        try {
+          await this.web3wallet.updateSession({
+            topic,
+            namespaces: {
+              ...namespaces,
+              ...{
+                cip34: {
+                  ...namespaces.cip34,
+                  accounts: namespaces.cip34.accounts.concat(newAccount)
+                }
+              }
             }
-          }
-        });
+          });
+        } catch (e: unknown) {
+          console.warn(`WC2::updateSession can't update session topic=${topic}`, e);
+        }
       }
       await this.web3wallet.emitSessionEvent({
         topic,
@@ -155,29 +180,42 @@ export class CardanoWcConnector {
       if (!sessionHasNewChain) {
         // TODO: check if chain id in list of optional chains
         const namespaces = session.namespaces;
-        await this.web3wallet.updateSession({
-          topic,
-          namespaces: {
-            ...namespaces,
-            ...{
-              cip34: {
-                ...namespaces.cip34,
-                accounts: namespaces.cip34.accounts.concat(newAccount),
-                chains: namespaces.cip34.chains?.concat(newChain) ?? [newChain]
+        // Hack: we need to timeout the promise when the dapp is not online
+        try {
+          await this.web3wallet.updateSession({
+            topic,
+            namespaces: {
+              ...namespaces,
+              ...{
+                cip34: {
+                  ...namespaces.cip34,
+                  accounts: namespaces.cip34.accounts.concat(newAccount),
+                  chains: namespaces.cip34.chains?.concat(newChain) ?? [newChain]
+                }
               }
             }
-          }
-        });
+          });
+        } catch (e: unknown) {
+          console.warn(`WC2::updateSession can't update session topic=${topic}`, e);
+        }
       }
       // cannot emit network change event if prev chain id is not in session chains
-      await this.web3wallet.emitSessionEvent({
-        topic,
-        event: {
-          name: GENERIC_EVENTS.NETWORK_CHANGE,
-          data: newAccount
-        },
-        chainId: newChain
-      });
+      try {
+        await this.web3wallet.emitSessionEvent({
+          topic,
+          event: {
+            name: GENERIC_EVENTS.NETWORK_CHANGE,
+            data: newAccount
+          },
+          chainId: newChain
+        });
+      } catch (e: unknown) {
+        if ((e as Error).message.includes('Missing or invalid. emit() chainId:')) {
+          console.warn('ignored emit network change event, since session is not updated yet');
+        } else {
+          throw e;
+        }
+      }
     }
   }
 
@@ -209,5 +247,30 @@ export class CardanoWcConnector {
       id,
       reason
     });
+  };
+
+  removePendings = async () => {
+    const pending = this.web3wallet.getPendingSessionProposals() || {};
+    for (const session of Object.values(pending)) {
+      this.web3wallet
+        .rejectSession({
+          id: session.id,
+          reason: { code: 1, message: 'Auto remove' }
+        })
+        .catch(err => {
+          console.warn(`Can't remove pending session ${session.id}`, err);
+        });
+    }
+    const requests = this.web3wallet.getPendingSessionRequests() || [];
+    for (const request of requests) {
+      try {
+        await this.web3wallet.respondSessionRequest({
+          topic: request.topic,
+          response: formatJsonRpcError(request.id, { code: 1, message: 'Auto remove' })
+        });
+      } catch (err) {
+        console.warn(`Can't remove request ${request.id}`, err);
+      }
+    }
   };
 }
