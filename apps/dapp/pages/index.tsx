@@ -3,6 +3,7 @@ import {
   CardanoWcProvider,
   CHAIN,
   EnabledAPI,
+  EnabledWalletEmulator,
   REGIONALIZED_RELAYER_ENDPOINTS
 } from '@minswap/wc-dapp';
 import { Button, Input, Layout, Page } from '@vercel/examples-ui';
@@ -53,7 +54,7 @@ export default function Index() {
       setWc(walletConnectConnector);
       setEnabledApi(localEnabledApi);
       setBaseAddr((await localEnabledApi.getUsedAddresses())[0]);
-      setChain(walletConnectConnector?.getDefaultChainId());
+      setChain(walletConnectConnector.getDefaultChainId());
       await localEnabledApi.onAccountChange((account: string) => {
         setBaseAddr(account.split(':')[2].split('-')[1]);
       });
@@ -65,7 +66,6 @@ export default function Index() {
       provider.on('disconnect', () => {
         reset();
       });
-      // TODO: when the account/chain changes the enable api object doesn't change
     } catch (error) {
       console.error('[APP] wallet connect init error: ', error);
     }

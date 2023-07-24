@@ -13,12 +13,12 @@ import { SessionTypes, SignClientTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
 
 import { CardanoWallet } from '@/cardanoWallet';
-import { createCardanoWallet } from '@/utils';
+import { createCardanoWallet, sleep } from '@/utils';
 
-export async function createCardanoWalletConnector(relayerRegionURL: string) {
+export async function createCardanoWalletConnector(relayerRegionUrl: string) {
   const connector = await CardanoWcConnector.init({
     projectId: process.env['NEXT_PUBLIC_WC_PROJECT_ID'] ?? '9635b09fa7cd4617a49fcff9bba19952',
-    relayerRegionUrl: relayerRegionURL,
+    relayerRegionUrl,
     metadata: {
       name: 'Cardano Web3Wallet',
       description: 'Cardano Web3Wallet for WalletConnect',
@@ -90,6 +90,7 @@ export const onSessionProposal = async (
 
   const namespaces: SessionTypes.Namespaces = {};
   const accounts: string[] = [];
+  let requiresChainUpdate = false;
   for (const key of Object.keys(requiredNamespaces)) {
     if (key !== 'cip34') {
       // TODO: Add support for multiple namespace
@@ -107,6 +108,8 @@ export const onSessionProposal = async (
     // TODO: check if chain is in list of optional chains
     if (!chainIds.includes(wallet.chain)) {
       // when chain is not in list of required chains, add it to list of chains
+      // eslint-disable-next-line unused-imports/no-unused-vars
+      requiresChainUpdate = true;
       chainIds.push(wallet.chain);
       const rewardAddress = wallet.getRewardAddress();
       const baseAddress = wallet.getBaseAddress();
@@ -119,7 +122,12 @@ export const onSessionProposal = async (
       chains: chainIds
     };
   }
-  await wcWallet.approveSessionProposal(proposal, namespaces);
+
+  await wcWallet?.approveSessionProposal(proposal, namespaces);
+  if (requiresChainUpdate) {
+    await sleep(5000); // Just additional delay to make sure the session is established
+    await onChainChange(wallet.chain, wcWallet, wallet);
+  }
 };
 
 export const onAccountChange = async (

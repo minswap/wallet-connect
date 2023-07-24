@@ -30,3 +30,7 @@ export function truncate(value: string, length: number) {
 export function formatChainName(chainId: string) {
   return CARDANO_CHAINS[chainId as TCardanoChain]?.name ?? chainId;
 }
+
+export function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
