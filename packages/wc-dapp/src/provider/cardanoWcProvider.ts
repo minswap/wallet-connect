@@ -1,6 +1,6 @@
 import invariant from '@minswap/tiny-invariant';
 import { WalletConnectModal } from '@walletconnect/modal';
-import { PairingTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
+import { SessionTypes, SignClientTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
 import { DEFAULT_LOGGER } from '../constants';
@@ -18,7 +18,6 @@ import { CardanoWcProviderOpts } from './types';
 
 export class CardanoWcProvider {
   private modal: WalletConnectModal | undefined;
-  private enabled = false;
   private chains: CHAIN[] | undefined;
   private rpc: TRpc;
   private provider: UniversalProvider | undefined;
@@ -114,7 +113,6 @@ export class CardanoWcProvider {
       stakeAddress
     });
     await (this.enabledApi as EnabledWalletEmulator).loadBaseAddress();
-    this.enabled = true;
   }
 
   private async connect(opts: { pairingTopic?: ConnectParams['pairingTopic'] } = {}) {
@@ -158,7 +156,6 @@ export class CardanoWcProvider {
 
   private reset() {
     this.provider = undefined;
-    this.enabled = false;
     this.enabledApi = undefined;
   }
 
