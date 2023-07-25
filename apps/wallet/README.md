@@ -1,9 +1,11 @@
-# App
+# Wallet
 
-This is the Next.js app for this monorepo. You can run it with the following command from the root of the monorepo:
+Cardano Wallet as Proof of Concept for wallet connect integration.
 
-```bash
-pnpm dev
-```
+See `wc-utils` for the events callbacks.
 
-The app should be up and running at http://localhost:3000.
+See [wc-wallet docs](../../packages/wc-wallet/README.md) for more info.
+
+## Acknowledgement
+
+This wallet was built from a fork of https://github.com/WalletConnect/web-examples/tree/main/wallets/react-web3wallet.

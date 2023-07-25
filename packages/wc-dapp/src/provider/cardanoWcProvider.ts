@@ -119,7 +119,8 @@ export class CardanoWcProvider {
     const provider = this.getProvider();
     invariant(provider.session, 'Provider not initialized. Call init() first');
     const defaultChainId = this.getDefaultChainId();
-    const addresses = provider.session.namespaces[CARDANO_NAMESPACE_NAME].accounts[0]
+    const addresses = provider.session.namespaces[CARDANO_NAMESPACE_NAME].accounts
+      .filter(account => account.includes(defaultChainId))[0]
       .split(':')[2]
       .split('-');
     const stakeAddress = addresses[0];
@@ -192,8 +193,7 @@ export class CardanoWcProvider {
     }
   };
 
-  private onSessionDelete = (args: Omit<SignClientTypes.BaseEventArgs, 'params'>) => {
-    console.info('session delete', args);
+  private onSessionDelete = () => {
     this.reset();
   };
 
@@ -235,7 +235,7 @@ export class CardanoWcProvider {
     }
   };
 
-  private onSessionUpdate = (args: unknown) => {
+  private onSessionUpdate = (args: SignClientTypes.EventArguments['session_update']) => {
     console.info('session_update', args);
   };
 
