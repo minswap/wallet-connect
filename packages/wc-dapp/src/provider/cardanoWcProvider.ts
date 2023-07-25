@@ -64,18 +64,7 @@ export class CardanoWcProvider {
   }
 
   async enable() {
-    const session = this.provider?.session;
-    // Edge Case: sometimes pairing is lost, so we disconnect session and reconnect
-    const pairingTopic = session?.pairingTopic;
-    const hasPairing = this.getSessionPair(pairingTopic);
-    if (!hasPairing && session) {
-      await this.disconnect();
-    }
-    if (!session) {
-      await this.connect();
-    } else {
-      await this.loadPersistedSession();
-    }
+    await this.connect();
     if (!this.provider) throw new Error('Provider not initialized');
     if (!this.enabledApi) throw new Error('Enabled API not initialized');
     return this.enabledApi;
@@ -111,33 +100,21 @@ export class CardanoWcProvider {
     }
   }
 
-  private async isEnabled(): Promise<boolean> {
-    return Promise.resolve(this.enabled);
-  }
-
   private async loadPersistedSession() {
     const provider = this.getProvider();
     invariant(provider.session, 'Provider not initialized. Call init() first');
     const defaultChainId = this.getDefaultChainId();
-    const addresses = provider.session.namespaces[CARDANO_NAMESPACE_NAME].accounts
+    const stakeAddress = provider.session.namespaces[CARDANO_NAMESPACE_NAME].accounts
       .filter(account => account.includes(defaultChainId))[0]
-      .split(':')[2]
-      .split('-');
-    const stakeAddress = addresses[0];
-    const baseAddress = addresses[1];
+      .split(':')[2];
     this.enabledApi = new EnabledWalletEmulator({
       provider: provider,
       chain: `${CARDANO_NAMESPACE_NAME}:${defaultChainId}` as CHAIN,
       rpc: this.rpc,
-      stakeAddress,
-      baseAddress
+      stakeAddress
     });
+    await (this.enabledApi as EnabledWalletEmulator).loadBaseAddress();
     this.enabled = true;
-  }
-
-  private getSessionPair(pairingTopic: string | undefined): PairingTypes.Struct | undefined {
-    const pairings = this.getProvider()?.client?.pairing.getAll({ active: true });
-    return pairings?.find(pairing => pairing.topic === pairingTopic);
   }
 
   private async connect(opts: { pairingTopic?: ConnectParams['pairingTopic'] } = {}) {
@@ -204,36 +181,36 @@ export class CardanoWcProvider {
   private onSessionEvent = async (args: SignClientTypes.EventArguments['session_event']) => {
     const eventName = args.params.event.name;
     if (eventName === CHAIN_EVENTS.NETWORK_CHANGE) {
-      await this.onChainChange(args.params.event.data);
+      // await this.onChainChange(args.params.event.data);
     } else if (eventName === CHAIN_EVENTS.ACCOUNT_CHANGE) {
-      await this.onAccountChange(args.params.event.data);
+      // await this.onAccountChange(args.params.event.data);
     }
   };
 
-  private onAccountChange = async (account: string) => {
-    const isEnabled = await this.isEnabled();
-    if (isEnabled) {
-      const stakeAddress = account.split(':')[2].split('-')[0];
-      const baseAddress = account.split(':')[2].split('-')[1];
-      (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
-      (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
-      (this.enabledApi as EnabledWalletEmulator).events.emit(CHAIN_EVENTS.ACCOUNT_CHANGE, account);
-    }
-  };
+  // private onAccountChange = async (account: string) => {
+  //   const isEnabled = await this.isEnabled();
+  //   if (isEnabled) {
+  //     const stakeAddress = account.split(':')[2].split('-')[0];
+  //     const baseAddress = account.split(':')[2].split('-')[1];
+  //     (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
+  //     (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
+  //     (this.enabledApi as EnabledWalletEmulator).events.emit(CHAIN_EVENTS.ACCOUNT_CHANGE, account);
+  //   }
+  // };
 
-  private onChainChange = async (account: string) => {
-    const isEnabled = await this.isEnabled();
-    if (isEnabled) {
-      const chainId = account.split(':')[1];
-      const stakeAddress = account.split(':')[2].split('-')[0];
-      const baseAddress = account.split(':')[2].split('-')[1];
-      (this.enabledApi as EnabledWalletEmulator).chain =
-        `${CARDANO_NAMESPACE_NAME}:${chainId}` as CHAIN;
-      (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
-      (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
-      (this.enabledApi as EnabledWalletEmulator).events.emit(CHAIN_EVENTS.NETWORK_CHANGE, account);
-    }
-  };
+  // private onChainChange = async (account: string) => {
+  //   const isEnabled = await this.isEnabled();
+  //   if (isEnabled) {
+  //     const chainId = account.split(':')[1];
+  //     const stakeAddress = account.split(':')[2].split('-')[0];
+  //     const baseAddress = account.split(':')[2].split('-')[1];
+  //     (this.enabledApi as EnabledWalletEmulator).chain =
+  //       `${CARDANO_NAMESPACE_NAME}:${chainId}` as CHAIN;
+  //     (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
+  //     (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
+  //     (this.enabledApi as EnabledWalletEmulator).events.emit(CHAIN_EVENTS.NETWORK_CHANGE, account);
+  //   }
+  // };
 
   private onSessionUpdate = (args: SignClientTypes.EventArguments['session_update']) => {
     console.info('session_update', args);
