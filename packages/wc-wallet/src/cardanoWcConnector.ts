@@ -6,6 +6,11 @@ import { IWeb3Wallet, Web3Wallet, Web3WalletTypes } from '@walletconnect/web3wal
 
 import { CARDANO_NAMESPACE_NAME, CHAIN, formatAccount, GENERIC_EVENTS } from './chain';
 
+// TODO: move to utils
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 export interface ICardanoWcConnectorParams {
   projectId: string;
   relayerRegionUrl: string;
@@ -134,7 +139,7 @@ export class CardanoWcConnector {
       if (!sessionHasAccount) {
         const namespaces = session.namespaces;
         try {
-          await this.web3wallet.updateSession({
+          void this.web3wallet.updateSession({
             topic,
             namespaces: {
               ...namespaces,
@@ -146,6 +151,7 @@ export class CardanoWcConnector {
               }
             }
           });
+          await sleep(2000);
         } catch (e: unknown) {
           console.warn(`WC2::updateSession can't update session topic=${topic}`, e);
         }
@@ -158,6 +164,7 @@ export class CardanoWcConnector {
         },
         chainId: chain
       });
+      console.log('emitted account change event');
     }
   }
 
@@ -176,7 +183,7 @@ export class CardanoWcConnector {
       if (!sessionHasNewChain) {
         const namespaces = session.namespaces;
         try {
-          await this.web3wallet.updateSession({
+          void this.web3wallet.updateSession({
             topic,
             namespaces: {
               ...namespaces,
@@ -189,6 +196,7 @@ export class CardanoWcConnector {
               }
             }
           });
+          await sleep(2000);
         } catch (e: unknown) {
           console.warn(`WC2::updateSession can't update session topic=${topic}`, e);
         }
@@ -202,6 +210,7 @@ export class CardanoWcConnector {
           },
           chainId: newChain
         });
+        console.log('network change event emitted');
       } catch (e: unknown) {
         if ((e as Error).message.includes('Missing or invalid. emit() chainId:')) {
           console.warn('ignored emit network change event, since session is not updated yet');
