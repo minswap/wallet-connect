@@ -5,11 +5,7 @@ import { getSdkError } from '@walletconnect/utils';
 import { IWeb3Wallet, Web3Wallet, Web3WalletTypes } from '@walletconnect/web3wallet';
 
 import { CARDANO_NAMESPACE_NAME, CHAIN, formatAccount, GENERIC_EVENTS } from './chain';
-
-// TODO: move to utils
-function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+import { TIMEOUT_ERR_MESSAGE, timeoutPromise } from './utils';
 
 export interface ICardanoWcConnectorParams {
   projectId: string;
@@ -139,19 +135,27 @@ export class CardanoWcConnector {
       if (!sessionHasAccount) {
         const namespaces = session.namespaces;
         try {
-          void this.web3wallet.updateSession({
-            topic,
-            namespaces: {
-              ...namespaces,
-              ...{
-                [CARDANO_NAMESPACE_NAME]: {
-                  ...namespaces[CARDANO_NAMESPACE_NAME],
-                  accounts: namespaces[CARDANO_NAMESPACE_NAME].accounts.concat(newAccount)
+          // when dapp is offline and wallet cannot update session, so we timeout after 5s to put request to queue
+          await timeoutPromise(
+            this.web3wallet.updateSession({
+              topic,
+              namespaces: {
+                ...namespaces,
+                ...{
+                  [CARDANO_NAMESPACE_NAME]: {
+                    ...namespaces[CARDANO_NAMESPACE_NAME],
+                    accounts: namespaces[CARDANO_NAMESPACE_NAME].accounts.concat(newAccount)
+                  }
                 }
               }
+            })
+          ).catch(err => {
+            if (err === TIMEOUT_ERR_MESSAGE) {
+              console.info('Timed out update session on account change');
+            } else {
+              throw err;
             }
           });
-          await sleep(2000);
         } catch (e: unknown) {
           console.warn(`WC2::updateSession can't update session topic=${topic}`, e);
         }
@@ -164,7 +168,6 @@ export class CardanoWcConnector {
         },
         chainId: chain
       });
-      console.log('emitted account change event');
     }
   }
 
@@ -183,20 +186,30 @@ export class CardanoWcConnector {
       if (!sessionHasNewChain) {
         const namespaces = session.namespaces;
         try {
-          void this.web3wallet.updateSession({
-            topic,
-            namespaces: {
-              ...namespaces,
-              ...{
-                [CARDANO_NAMESPACE_NAME]: {
-                  ...namespaces[CARDANO_NAMESPACE_NAME],
-                  accounts: namespaces[CARDANO_NAMESPACE_NAME].accounts.concat(newAccount),
-                  chains: namespaces[CARDANO_NAMESPACE_NAME].chains?.concat(newChain) ?? [newChain]
+          // when dapp is offline and wallet cannot update session, so we timeout after 5s to put event to queue
+          await timeoutPromise(
+            this.web3wallet.updateSession({
+              topic,
+              namespaces: {
+                ...namespaces,
+                ...{
+                  [CARDANO_NAMESPACE_NAME]: {
+                    ...namespaces[CARDANO_NAMESPACE_NAME],
+                    accounts: namespaces[CARDANO_NAMESPACE_NAME].accounts.concat(newAccount),
+                    chains: namespaces[CARDANO_NAMESPACE_NAME].chains?.concat(newChain) ?? [
+                      newChain
+                    ]
+                  }
                 }
               }
+            })
+          ).catch(err => {
+            if (err === TIMEOUT_ERR_MESSAGE) {
+              console.info('Timed out update session on account change');
+            } else {
+              throw err;
             }
           });
-          await sleep(2000);
         } catch (e: unknown) {
           console.warn(`WC2::updateSession can't update session topic=${topic}`, e);
         }
@@ -210,8 +223,8 @@ export class CardanoWcConnector {
           },
           chainId: newChain
         });
-        console.log('network change event emitted');
       } catch (e: unknown) {
+        // when session is not updated yet, we ignore the chain change event
         if ((e as Error).message.includes('Missing or invalid. emit() chainId:')) {
           console.warn('ignored emit network change event, since session is not updated yet');
         } else {
