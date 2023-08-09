@@ -6,30 +6,12 @@ import PageHeader from '@/components/PageHeader';
 import RelayRegionPicker from '@/components/RelayRegionPicker';
 import SettingsStore from '@/store/SettingsStore';
 
-import packageJSON from '../../package.json';
-
 export default function SettingsPage() {
   const { wallet } = useSnapshot(SettingsStore.state);
 
   return (
     <Fragment>
       <PageHeader title="Settings" />
-
-      <Text h4 css={{ marginBottom: '$5' }}>
-        Packages
-      </Text>
-      <Row justify="space-between" align="center">
-        <Text color="$gray400">@walletconnect/web3wallet</Text>
-        <Text color="$gray400">{packageJSON.dependencies['@walletconnect/web3wallet']}</Text>
-      </Row>
-      <Row justify="space-between" align="center">
-        <Text color="$gray400">@walletconnect/utils</Text>
-        <Text color="$gray400">{packageJSON.dependencies['@walletconnect/utils']}</Text>
-      </Row>
-      <Row justify="space-between" align="center">
-        <Text color="$gray400">@walletconnect/types</Text>
-        <Text color="$gray400">{packageJSON.devDependencies['@walletconnect/types']}</Text>
-      </Row>
 
       <Divider y={2} />
 
