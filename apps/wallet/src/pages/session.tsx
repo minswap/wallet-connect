@@ -56,12 +56,11 @@ export default function SessionPage() {
 
       <Divider y={2} />
 
-      {Object.keys(namespaces).map(chain => {
+      {Object.keys(namespaces).map(namespace => {
         return (
-          <Fragment key={chain}>
-            <Text h4 css={{ marginBottom: '$5' }}>{`Review ${chain} permissions`}</Text>
-            <SessionChainCard namespace={namespaces[chain]} />
-            {/* {renderAccountSelection(chain)} */}
+          <Fragment key={namespace}>
+            <Text h4 css={{ marginBottom: '$5' }}>{`Review ${namespace} permissions`}</Text>
+            <SessionChainCard namespace={namespaces[namespace]} />
             <Divider y={2} />
           </Fragment>
         );

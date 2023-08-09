@@ -27,8 +27,8 @@ export function truncate(value: string, length: number) {
   return value.substring(0, frontLength) + separator + value.substring(value.length - backLength);
 }
 
-export function formatChainName(chainId: string) {
-  return CARDANO_CHAINS[chainId as CHAIN]?.name ?? chainId;
+export function formatChainName(chain: CHAIN) {
+  return CARDANO_CHAINS[chain]?.name;
 }
 
 export function sleep(ms: number) {
