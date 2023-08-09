@@ -183,9 +183,24 @@ export class CardanoWcConnector {
       const sessionHasNewChain = session.namespaces[CARDANO_NAMESPACE_NAME].accounts.some(account =>
         account.startsWith(newChain)
       );
-      if (!sessionHasNewChain) {
+      const sessionHasNewAccount = session.namespaces[CARDANO_NAMESPACE_NAME].accounts.some(
+        account => account === newAccount
+      );
+      if (!sessionHasNewChain || !sessionHasNewAccount) {
         const namespaces = session.namespaces;
         try {
+          // accounts update
+          const updatedAccounts = namespaces[CARDANO_NAMESPACE_NAME].accounts;
+          if (!sessionHasNewAccount) {
+            updatedAccounts.concat(newAccount);
+          }
+          // chains update
+          const updatedChains = namespaces[CARDANO_NAMESPACE_NAME].chains;
+          if (!sessionHasNewChain) {
+            if (updatedChains) {
+              updatedChains.concat(newAccount);
+            }
+          }
           // when dapp is offline and wallet cannot update session, so we timeout after 5s to put event to queue
           await timeoutPromise(
             this.web3wallet.updateSession({
@@ -195,10 +210,8 @@ export class CardanoWcConnector {
                 ...{
                   [CARDANO_NAMESPACE_NAME]: {
                     ...namespaces[CARDANO_NAMESPACE_NAME],
-                    accounts: namespaces[CARDANO_NAMESPACE_NAME].accounts.concat(newAccount),
-                    chains: namespaces[CARDANO_NAMESPACE_NAME].chains?.concat(newChain) ?? [
-                      newChain
-                    ]
+                    accounts: updatedAccounts,
+                    chains: updatedChains
                   }
                 }
               }
