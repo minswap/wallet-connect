@@ -180,9 +180,9 @@ export class CardanoWcConnector {
       const chainInOptionalChains =
         session.optionalNamespaces?.[CARDANO_NAMESPACE_NAME]?.chains?.includes(newChain);
       if (!chainInOptionalChains) continue;
-      const sessionHasNewChain = session.namespaces[CARDANO_NAMESPACE_NAME].accounts.some(account =>
-        account.startsWith(newChain)
-      );
+      const sessionHasNewChain =
+        session.namespaces[CARDANO_NAMESPACE_NAME].chains?.some(chain => chain === newChain) ??
+        false;
       const sessionHasNewAccount = session.namespaces[CARDANO_NAMESPACE_NAME].accounts.some(
         account => account === newAccount
       );
@@ -192,13 +192,13 @@ export class CardanoWcConnector {
           // accounts update
           const updatedAccounts = namespaces[CARDANO_NAMESPACE_NAME].accounts;
           if (!sessionHasNewAccount) {
-            updatedAccounts.concat(newAccount);
+            updatedAccounts.push(newAccount);
           }
           // chains update
           const updatedChains = namespaces[CARDANO_NAMESPACE_NAME].chains;
           if (!sessionHasNewChain) {
             if (updatedChains) {
-              updatedChains.concat(newAccount);
+              updatedChains.push(newChain);
             }
           }
           // when dapp is offline and wallet cannot update session, so we timeout after 5s to put event to queue

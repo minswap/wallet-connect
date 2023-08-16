@@ -134,7 +134,7 @@ export const onSessionProposal = async (
   if (requiresChainUpdate) {
     // Hack: Additional delay to give time for session to be established before we emit chain change
     // Unsafe bc session might not be established in 5s
-    await sleep(5000);
+    await sleep(2000);
     await onChainChange(wallet.chain, wcWallet, wallet);
   }
 };
