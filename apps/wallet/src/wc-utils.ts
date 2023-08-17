@@ -5,6 +5,7 @@ import {
   CHAIN,
   formatAccount
 } from '@minswap/wc-wallet';
+import { CARDANO_CHAINS } from '@minswap/wc-wallet';
 import {
   formatJsonRpcError,
   formatJsonRpcResult,
@@ -91,9 +92,20 @@ export const onSessionProposal = async (
   const accounts: string[] = [];
   let requiresChainUpdate = false;
   const namespaceNames = Object.keys(requiredNamespaces);
+  // If any other namespace other than cardano request then reject
   if (namespaceNames.some(namespaceName => namespaceName !== CARDANO_NAMESPACE_NAME)) {
     // TODO: Add support for multiple namespace
     await wcWallet.rejectSessionProposal(proposal, getSdkError('UNSUPPORTED_NAMESPACE_KEY'));
+    return;
+  }
+  // If any unsupported chain in cardano namespace then reject
+  if (
+    requiredNamespaces[CARDANO_NAMESPACE_NAME].chains?.some(
+      chain => !Object.values(CHAIN).includes(chain as CHAIN)
+    )
+  ) {
+    // TODO: Add support for multiple namespace
+    await wcWallet.rejectSessionProposal(proposal, getSdkError('UNSUPPORTED_CHAINS'));
     return;
   }
   for (const namespaceName of namespaceNames) {
