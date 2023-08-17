@@ -4,7 +4,7 @@ import { ICore, PairingTypes, SessionTypes, SignClientTypes } from '@walletconne
 import { getSdkError } from '@walletconnect/utils';
 import { IWeb3Wallet, Web3Wallet, Web3WalletTypes } from '@walletconnect/web3wallet';
 
-import { CARDANO_NAMESPACE_NAME, CHAIN, formatAccount, GENERIC_EVENTS } from './chain';
+import { CARDANO_NAMESPACE_NAME, CHAIN, CHAIN_EVENTS, formatAccount } from './chain';
 import { TIMEOUT_ERR_MESSAGE, timeoutPromise } from './utils';
 
 export interface ICardanoWcConnectorParams {
@@ -163,7 +163,7 @@ export class CardanoWcConnector {
       await this.web3wallet.emitSessionEvent({
         topic,
         event: {
-          name: GENERIC_EVENTS.ACCOUNT_CHANGE,
+          name: CHAIN_EVENTS.ACCOUNT_CHANGE,
           data: newAccount
         },
         chainId: chain
@@ -231,7 +231,7 @@ export class CardanoWcConnector {
         await this.web3wallet.emitSessionEvent({
           topic,
           event: {
-            name: GENERIC_EVENTS.NETWORK_CHANGE,
+            name: CHAIN_EVENTS.NETWORK_CHANGE,
             data: newAccount
           },
           chainId: newChain

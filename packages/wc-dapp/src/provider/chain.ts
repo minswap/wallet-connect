@@ -49,7 +49,8 @@ export enum CARDANO_WALLET_METHODS {
   CARDANO_GET_UNUSED_ADDRESSES = 'cardano_getUnusedAddresses',
   CARDANO_GET_USED_ADDRESSES = 'cardano_getUsedAddresses',
   CARDANO_GET_CHANGE_ADDRESSES = 'cardano_getChangeAddress',
-  CARDANO_GET_NETWORK_ID = 'cardano_getNetworkId'
+  CARDANO_GET_NETWORK_ID = 'cardano_getNetworkId',
+  CARDANO_GET_COLLATERAL = 'cardano_getCollateral'
 }
 
 export enum CARDANO_RPC_METHODS {

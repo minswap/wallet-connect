@@ -152,8 +152,8 @@ importers:
         specifier: 2.6.1
         version: 2.6.1(react@18.2.0)
       '@walletconnect/universal-provider':
-        specifier: ^2.9.2
-        version: 2.9.2
+        specifier: /Users/parichay/minswap/wc-monorepo/providers/universal-provider/walletconnect-universal-provider-2.19.2.tgz
+        version: file:../wc-monorepo/providers/universal-provider/walletconnect-universal-provider-2.19.2.tgz
       bs58:
         specifier: 5.0.0
         version: 5.0.0
@@ -2684,26 +2684,6 @@ packages:
     transitivePeerDependencies:
       - '@react-native-async-storage/async-storage'
       - lokijs
-
-  /@walletconnect/universal-provider@2.9.2:
-    resolution: {integrity: sha512-JmaolkO8D31UdRaQCHwlr8uIFUI5BYhBzqYFt54Mc6gbIa1tijGOmdyr6YhhFO70LPmS6gHIjljwOuEllmlrxw==}
-    dependencies:
-      '@walletconnect/jsonrpc-http-connection': 1.0.7
-      '@walletconnect/jsonrpc-provider': 1.0.13
-      '@walletconnect/jsonrpc-types': 1.0.3
-      '@walletconnect/jsonrpc-utils': 1.0.8
-      '@walletconnect/logger': 2.0.1
-      '@walletconnect/sign-client': 2.9.2
-      '@walletconnect/types': 2.9.2
-      '@walletconnect/utils': 2.9.2
-      events: 3.3.0
-    transitivePeerDependencies:
-      - '@react-native-async-storage/async-storage'
-      - bufferutil
-      - encoding
-      - lokijs
-      - utf-8-validate
-    dev: false
 
   /@walletconnect/utils@2.8.1:
     resolution: {integrity: sha512-d6p9OX3v70m6ijp+j4qvqiQZQU1vbEHN48G8HqXasyro3Z+N8vtcB5/gV4pTYsbWgLSDtPHj49mzbWQ0LdIdTw==}
@@ -7094,4 +7074,99 @@ packages:
 
   /zod@3.21.4:
     resolution: {integrity: sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==}
+    dev: false
+
+  file:../wc-monorepo/packages/core/walletconnect-core-2.10.3.tgz:
+    resolution: {integrity: sha512-HBitIMUeqRtSuPdb6IZFBwvBrMkIQprfnQxhzIVbo7o4IxE8FZoZIVaM+/JJTnjvJjLH00udv0gMg+0nWXOGDQ==, tarball: file:../wc-monorepo/packages/core/walletconnect-core-2.10.3.tgz}
+    name: '@walletconnect/core'
+    version: 2.10.3
+    dependencies:
+      '@walletconnect/heartbeat': 1.2.1
+      '@walletconnect/jsonrpc-provider': 1.0.13
+      '@walletconnect/jsonrpc-types': 1.0.3
+      '@walletconnect/jsonrpc-utils': 1.0.8
+      '@walletconnect/jsonrpc-ws-connection': 1.0.13
+      '@walletconnect/keyvaluestorage': 1.0.2
+      '@walletconnect/logger': 2.0.1
+      '@walletconnect/relay-api': 1.0.9
+      '@walletconnect/relay-auth': 1.0.4
+      '@walletconnect/safe-json': 1.0.2
+      '@walletconnect/time': 1.0.2
+      '@walletconnect/types': 2.9.2
+      '@walletconnect/utils': file:../wc-monorepo/packages/utils/walletconnect-utils-2.9.3.tgz
+      events: 3.3.0
+      lodash.isequal: 4.5.0
+      uint8arrays: 3.1.1
+    transitivePeerDependencies:
+      - '@react-native-async-storage/async-storage'
+      - bufferutil
+      - lokijs
+      - utf-8-validate
+    dev: false
+
+  file:../wc-monorepo/packages/sign-client/walletconnect-sign-client-2.19.2.tgz:
+    resolution: {integrity: sha512-uq5yBHrcCoAsj74hgP847OC4nHbiNqY2ZI0djE39Cz7xI2f3S8xC5nla9GG/ju8K2x32EWgNnxKW6VdNk5cO4w==, tarball: file:../wc-monorepo/packages/sign-client/walletconnect-sign-client-2.19.2.tgz}
+    name: '@walletconnect/sign-client'
+    version: 2.19.2
+    dependencies:
+      '@walletconnect/core': file:../wc-monorepo/packages/core/walletconnect-core-2.10.3.tgz
+      '@walletconnect/events': 1.0.1
+      '@walletconnect/heartbeat': 1.2.1
+      '@walletconnect/jsonrpc-utils': 1.0.8
+      '@walletconnect/logger': 2.0.1
+      '@walletconnect/time': 1.0.2
+      '@walletconnect/types': 2.9.2
+      '@walletconnect/utils': file:../wc-monorepo/packages/utils/walletconnect-utils-2.9.3.tgz
+      events: 3.3.0
+    transitivePeerDependencies:
+      - '@react-native-async-storage/async-storage'
+      - bufferutil
+      - lokijs
+      - utf-8-validate
+    dev: false
+
+  file:../wc-monorepo/packages/utils/walletconnect-utils-2.9.3.tgz:
+    resolution: {integrity: sha512-0C1b2FwMhnfklKE0jwg/qOqBSxxa3kl9Xn0ivR6LwfPfCpE5Td7XVZrQGXy0bITNlPcSI/M+IWGIb3hmgYo9Tg==, tarball: file:../wc-monorepo/packages/utils/walletconnect-utils-2.9.3.tgz}
+    name: '@walletconnect/utils'
+    version: 2.9.3
+    dependencies:
+      '@stablelib/chacha20poly1305': 1.0.1
+      '@stablelib/hkdf': 1.0.1
+      '@stablelib/random': 1.0.2
+      '@stablelib/sha256': 1.0.1
+      '@stablelib/x25519': 1.0.3
+      '@walletconnect/relay-api': 1.0.9
+      '@walletconnect/safe-json': 1.0.2
+      '@walletconnect/time': 1.0.2
+      '@walletconnect/types': 2.9.2
+      '@walletconnect/window-getters': 1.0.1
+      '@walletconnect/window-metadata': 1.0.1
+      detect-browser: 5.3.0
+      query-string: 7.1.3
+      uint8arrays: 3.1.1
+    transitivePeerDependencies:
+      - '@react-native-async-storage/async-storage'
+      - lokijs
+    dev: false
+
+  file:../wc-monorepo/providers/universal-provider/walletconnect-universal-provider-2.19.2.tgz:
+    resolution: {integrity: sha512-tjcgzI2rY5ktz/Vtxet8HvCdEZz6WO4/hpWQAM6xssIrYMn3+GwWMK5CyUYv3B5A3mDIVN/n2NpcQe42EpvUag==, tarball: file:../wc-monorepo/providers/universal-provider/walletconnect-universal-provider-2.19.2.tgz}
+    name: '@walletconnect/universal-provider'
+    version: 2.19.2
+    dependencies:
+      '@walletconnect/jsonrpc-http-connection': 1.0.7
+      '@walletconnect/jsonrpc-provider': 1.0.13
+      '@walletconnect/jsonrpc-types': 1.0.3
+      '@walletconnect/jsonrpc-utils': 1.0.8
+      '@walletconnect/logger': 2.0.1
+      '@walletconnect/sign-client': file:../wc-monorepo/packages/sign-client/walletconnect-sign-client-2.19.2.tgz
+      '@walletconnect/types': 2.9.2
+      '@walletconnect/utils': file:../wc-monorepo/packages/utils/walletconnect-utils-2.9.3.tgz
+      events: 3.3.0
+    transitivePeerDependencies:
+      - '@react-native-async-storage/async-storage'
+      - bufferutil
+      - encoding
+      - lokijs
+      - utf-8-validate
     dev: false

@@ -69,4 +69,5 @@ export interface EnabledWalletEmulatorParams {
   rpc: TRpc;
   stakeAddress: Cbor<'reward_addr'>;
   baseAddress: Cbor<'base_addr'>;
+  sam?: boolean;
 }

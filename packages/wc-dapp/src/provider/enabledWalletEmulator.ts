@@ -5,7 +5,9 @@ import EventEmitter from 'events';
 import { TRpc } from '../types';
 import type { Cbor, DataSignature, EnabledAPI, EnabledWalletEmulatorParams } from '../types/cip30';
 import {
+  CARDANO_RPC_METHODS,
   CARDANO_SIGNING_METHODS,
+  CARDANO_WALLET_METHODS,
   CHAIN,
   CHAIN_EVENTS,
   getNetworkIdFromChainId,
@@ -19,6 +21,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
   private _stakeAddress: string;
   private _rpc: TRpc;
   private _networkId: NetworkID;
+  private _sam: boolean | undefined;
   events: EventEmitter = new EventEmitter();
 
   constructor(params: EnabledWalletEmulatorParams) {
@@ -28,6 +31,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
     this._rpc = params.rpc;
     this._stakeAddress = params.stakeAddress;
     this._baseAddress = params.baseAddress;
+    this._sam = params.sam;
   }
 
   set chain(chain: CHAIN) {
@@ -48,13 +52,29 @@ export class EnabledWalletEmulator implements EnabledAPI {
   }
 
   async getUtxos() {
+    if (!this._sam) {
+      return this._provider.request<Cbor<'utxos'>[]>(
+        {
+          method: CARDANO_RPC_METHODS.CARDANO_GET_UTXOS
+        },
+        this._chain
+      );
+    }
     return this._rpc.getUtxos({
-      addr: this._stakeAddress,
+      addr: this._baseAddress,
       network: this._networkId
     });
   }
 
   async getBalance() {
+    if (!this._sam) {
+      return this._provider.request<Cbor<'balance'>>(
+        {
+          method: CARDANO_RPC_METHODS.CARDANO_GET_BALANCE
+        },
+        this._chain
+      );
+    }
     return this._rpc.getBalance({
       addr: this._stakeAddress,
       network: this._networkId
@@ -96,7 +116,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
     );
   }
 
-  async signData(addr: string, payload: string) {
+  async signData(addr: Cbor<'addr'>, payload: string) {
     return this._provider.request<DataSignature>(
       {
         method: CARDANO_SIGNING_METHODS.CARDANO_SIGN_DATA,
@@ -106,12 +126,28 @@ export class EnabledWalletEmulator implements EnabledAPI {
     );
   }
 
-  async submitTx(tx: string) {
+  async submitTx(tx: Cbor<'tx'>) {
+    if (!this._sam) {
+      return this._provider.request<Cbor<'tx_hash'>>(
+        {
+          method: CARDANO_RPC_METHODS.CARDANO_SUBMIT_TX,
+          params: [tx]
+        },
+        this._chain
+      );
+    }
     return this._rpc.submitTx({ tx, network: this._networkId });
   }
 
-  // collateral is not supported in wc
   async getCollateral() {
+    if (!this._sam) {
+      return this._provider.request<Cbor<'utxos'>[]>(
+        {
+          method: CARDANO_WALLET_METHODS.CARDANO_GET_COLLATERAL
+        },
+        this._chain
+      );
+    }
     return Promise.resolve([]);
   }
 

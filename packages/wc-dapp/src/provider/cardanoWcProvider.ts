@@ -24,21 +24,24 @@ export class CardanoWcProvider {
   private provider: UniversalProvider | undefined;
   private enabledApi: EnabledAPI | undefined;
   private qrcode: boolean;
+  private sam: boolean | undefined;
 
   private constructor({
     provider,
     qrcode,
     modal,
     chains,
-    rpc
+    rpc,
+    sam
   }: {
     provider: UniversalProvider;
-  } & Pick<CardanoWcProviderOpts, 'chains' | 'qrcode' | 'modal' | 'rpc'>) {
+  } & Omit<CardanoWcProviderOpts, 'projectId' | 'metadata' | 'relayerRegion'>) {
     this.chains = chains;
     this.provider = provider;
     this.modal = modal;
     this.qrcode = Boolean(qrcode);
     this.rpc = rpc;
+    this.sam = sam;
     this.registerEventListeners();
   }
 
@@ -59,7 +62,8 @@ export class CardanoWcProvider {
       provider,
       modal,
       chains: opts.chains,
-      rpc: opts.rpc
+      rpc: opts.rpc,
+      sam: opts.sam
     });
   }
 
@@ -130,7 +134,8 @@ export class CardanoWcProvider {
       chain: `${CARDANO_NAMESPACE_NAME}:${defaultChainId}` as CHAIN,
       rpc: this.rpc,
       stakeAddress,
-      baseAddress
+      baseAddress,
+      sam: this.sam
     });
     this.enabled = true;
   }
@@ -258,7 +263,7 @@ export class CardanoWcProvider {
   }
 }
 
-const getWeb3Modal = (projectId: string, chains: CHAIN[]) => {
+export const getWeb3Modal = (projectId: string, chains: CHAIN[]) => {
   try {
     return new WalletConnectModal({
       projectId,

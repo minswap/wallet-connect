@@ -38,7 +38,7 @@
   "dependencies": {
     "@minswap/tiny-invariant": "^1.2.0",
     "@walletconnect/modal": "2.6.1",
-    "@walletconnect/universal-provider": "^2.9.2",
+    "@walletconnect/universal-provider": "/Users/parichay/minswap/wc-monorepo/providers/universal-provider/walletconnect-universal-provider-2.19.2.tgz",
     "bs58": "5.0.0",
     "buffer": "^6.0.3",
     "events": "^3.3.0"

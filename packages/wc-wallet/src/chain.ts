@@ -42,11 +42,24 @@ export const CARDANO_CHAINS = { ...CARDANO_MAINNET_CHAINS, ...CARDANO_TEST_CHAIN
 
 export enum CARDANO_SIGNING_METHODS {
   CARDANO_SIGN_TRANSACTION = 'cardano_signTx',
-  CARDANO_SIGN_DATA = 'cardano_signData',
-  CARDANO_GET_USED_ADDRESSES = 'cardano_getUsedAddresses'
+  CARDANO_SIGN_DATA = 'cardano_signData'
 }
 
-export enum GENERIC_EVENTS {
+export enum CARDANO_WALLET_METHODS {
+  CARDANO_GET_UNUSED_ADDRESSES = 'cardano_getUnusedAddresses',
+  CARDANO_GET_USED_ADDRESSES = 'cardano_getUsedAddresses',
+  CARDANO_GET_CHANGE_ADDRESSES = 'cardano_getChangeAddress',
+  CARDANO_GET_NETWORK_ID = 'cardano_getNetworkId',
+  CARDANO_GET_COLLATERAL = 'cardano_getCollateral'
+}
+
+export enum CARDANO_RPC_METHODS {
+  CARDANO_GET_BALANCE = 'cardano_getBalance',
+  CARDANO_GET_UTXOS = 'cardano_getUtxos',
+  CARDANO_SUBMIT_TX = 'cardano_submitTx'
+}
+
+export enum CHAIN_EVENTS {
   NETWORK_CHANGE = 'chainChanged',
   ACCOUNT_CHANGE = 'accountsChanged'
 }
