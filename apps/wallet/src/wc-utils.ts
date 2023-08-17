@@ -109,27 +109,30 @@ export const onSessionProposal = async (
     return;
   }
   for (const namespaceName of namespaceNames) {
-    const chainIds = requiredNamespaces[namespaceName].chains as CHAIN[];
-    if (chainIds)
-      for (const chainId of chainIds) {
+    const chains = requiredNamespaces[namespaceName].chains as CHAIN[];
+    if (chains)
+      for (const chain of chains) {
         const chainInOptionalChains =
-          optionalNamespaces?.[CARDANO_NAMESPACE_NAME]?.chains?.includes(chainId);
+          optionalNamespaces?.[CARDANO_NAMESPACE_NAME]?.chains?.includes(chain);
         if (!chainInOptionalChains) {
           await wcWallet.rejectSessionProposal(proposal, {
             code: 1,
-            message: `${chainId} not in optional namespaces`
+            message: `${chain} not in optional namespaces`
           });
           return;
         }
-        const wallet = await createCardanoWallet(chainId, account); // derive wallet or can fetch from a store
+        const wallet = await createCardanoWallet(chain, account); // derive wallet or can fetch from a store
         const rewardAddress = wallet.getRewardAddress();
         const baseAddress = wallet.getBaseAddress();
-        accounts.push(formatAccount(chainId, rewardAddress, baseAddress));
+        accounts.push(formatAccount(chain, rewardAddress, baseAddress));
       }
-    if (!chainIds.includes(wallet.chain)) {
+    if (
+      !chains.includes(wallet.chain) &&
+      optionalNamespaces?.[CARDANO_NAMESPACE_NAME]?.chains?.includes(wallet.chain)
+    ) {
       // when chain is not in list of required chains, add it to list of chains
       requiresChainUpdate = true;
-      chainIds.push(wallet.chain);
+      chains.push(wallet.chain);
       const rewardAddress = wallet.getRewardAddress();
       const baseAddress = wallet.getBaseAddress();
       accounts.push(formatAccount(wallet.chain, rewardAddress, baseAddress));
@@ -138,7 +141,7 @@ export const onSessionProposal = async (
       accounts,
       methods: requiredNamespaces[namespaceName].methods,
       events: requiredNamespaces[namespaceName].events,
-      chains: chainIds
+      chains: chains
     };
   }
 
