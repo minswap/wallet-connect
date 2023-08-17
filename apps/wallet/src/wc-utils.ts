@@ -1,6 +1,8 @@
 import {
   CARDANO_NAMESPACE_NAME,
+  CARDANO_RPC_METHODS,
   CARDANO_SIGNING_METHODS,
+  CARDANO_WALLET_METHODS,
   CardanoWcConnector,
   CHAIN,
   formatAccount
@@ -61,7 +63,7 @@ export const onSessionRequest = async (
         response = formatJsonRpcResult(id, signedTx);
         break;
       }
-      case CARDANO_SIGNING_METHODS.CARDANO_GET_USED_ADDRESSES: {
+      case CARDANO_WALLET_METHODS.CARDANO_GET_USED_ADDRESSES: {
         response = formatJsonRpcResult(id, [wallet?.getBaseAddress()]);
         break;
       }
