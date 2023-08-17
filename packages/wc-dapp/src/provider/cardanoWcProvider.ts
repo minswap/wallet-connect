@@ -149,7 +149,7 @@ export class CardanoWcProvider {
     invariant(this.chains, 'Chain not set. Call init() first');
     const provider = this.getProvider();
     const cardanoNamespace = getRequiredCardanoNamespace(this.chains);
-    const cardanoOptionalNamespace = getOptionalCardanoNamespace();
+    const cardanoOptionalNamespace = getOptionalCardanoNamespace(this.chains);
     try {
       const session = await new Promise<SessionTypes.Struct | undefined>((resolve, reject) => {
         if (this.qrcode) {

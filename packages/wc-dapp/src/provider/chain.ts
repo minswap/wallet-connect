@@ -70,14 +70,10 @@ export const getNetworkIdFromChainId = (chainId: string): NetworkID => {
 
 export const SESSION_PROPOSAL_METHODS = [
   ...Object.values(CARDANO_SIGNING_METHODS),
-  CARDANO_WALLET_METHODS.CARDANO_GET_USED_ADDRESSES
+  ...Object.values(CARDANO_WALLET_METHODS),
+  ...Object.values(CARDANO_RPC_METHODS)
 ];
 
-export const SESSION_OPTIONAL_METHODS = [
-  ...Object.values(CARDANO_SIGNING_METHODS),
-  ...Object.values(CARDANO_RPC_METHODS),
-  ...Object.values(CARDANO_WALLET_METHODS)
-];
 export const SESSION_PROPOSAL_EVENTS = Object.values(CHAIN_EVENTS);
 
 export const getRequiredCardanoNamespace = (chains: CHAIN[]) => {
@@ -108,14 +104,13 @@ export const chainsToRpcMap = (chains: CHAIN[]): Record<string, string> => {
 };
 
 // Required for universal provider
-export const getOptionalCardanoNamespace = () => {
-  const cardanoNamespace = {
+export const getOptionalCardanoNamespace = (chains: CHAIN[]) => {
+  return {
     [CARDANO_NAMESPACE_NAME]: {
-      chains: Object.values(CHAIN),
-      methods: SESSION_OPTIONAL_METHODS,
+      chains: chains,
+      methods: SESSION_PROPOSAL_METHODS,
       events: SESSION_PROPOSAL_EVENTS,
-      rpcMap: chainsToRpcMap(Object.values(CHAIN))
+      rpcMap: chainsToRpcMap(chains)
     }
   };
-  return cardanoNamespace;
 };
