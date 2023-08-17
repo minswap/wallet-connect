@@ -5,7 +5,6 @@ import {
   CHAIN,
   formatAccount
 } from '@minswap/wc-wallet';
-import { CARDANO_CHAINS } from '@minswap/wc-wallet';
 import {
   formatJsonRpcError,
   formatJsonRpcResult,
@@ -148,8 +147,8 @@ export const onSessionProposal = async (
   await wcWallet?.approveSessionProposal(proposal, namespaces);
   if (requiresChainUpdate) {
     // Hack: Additional delay to give time for session to be established before we emit chain change
-    // Unsafe bc session might not be established in 5s
-    await sleep(2000);
+    // UNSAFE: bc session might not be established in 5s
+    await sleep(5000);
     await onChainChange(wallet.chain, wcWallet, wallet);
   }
 };
