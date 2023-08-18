@@ -47,6 +47,14 @@ export class EnabledWalletEmulator implements EnabledAPI {
     this._stakeAddress = stakeAddress;
   }
 
+  set setSam(sam: boolean | undefined) {
+    this._sam = sam;
+  }
+
+  get isSam() {
+    return this._sam;
+  }
+
   async getNetworkId() {
     return Promise.resolve(this._networkId as number);
   }

@@ -18,5 +18,4 @@ export type CardanoWcProviderOpts = {
   rpc: TRpc;
   qrcode?: boolean;
   modal?: WalletConnectModal;
-  sam?: boolean;
 };

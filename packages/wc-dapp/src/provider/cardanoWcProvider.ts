@@ -24,15 +24,13 @@ export class CardanoWcProvider {
   private provider: UniversalProvider | undefined;
   private enabledApi: EnabledAPI | undefined;
   private qrcode: boolean;
-  private sam: boolean | undefined;
 
   private constructor({
     provider,
     qrcode,
     modal,
     chains,
-    rpc,
-    sam
+    rpc
   }: {
     provider: UniversalProvider;
   } & Omit<CardanoWcProviderOpts, 'projectId' | 'metadata' | 'relayerRegion'>) {
@@ -41,7 +39,6 @@ export class CardanoWcProvider {
     this.modal = modal;
     this.qrcode = Boolean(qrcode);
     this.rpc = rpc;
-    this.sam = sam;
     this.registerEventListeners();
   }
 
@@ -62,12 +59,11 @@ export class CardanoWcProvider {
       provider,
       modal,
       chains: opts.chains,
-      rpc: opts.rpc,
-      sam: opts.sam
+      rpc: opts.rpc
     });
   }
 
-  async enable() {
+  async enable(sam?: boolean) {
     const session = this.provider?.session;
     // Edge Case: sometimes pairing is lost, so we disconnect session and reconnect
     const pairingTopic = session?.pairingTopic;
@@ -76,9 +72,9 @@ export class CardanoWcProvider {
       await this.disconnect();
     }
     if (!session) {
-      await this.connect();
+      await this.connect({ sam });
     } else {
-      await this.loadPersistedSession();
+      await this.loadPersistedSession(sam);
     }
     if (!this.provider) throw new Error('Provider not initialized');
     if (!this.enabledApi) throw new Error('Enabled API not initialized');
@@ -119,7 +115,7 @@ export class CardanoWcProvider {
     return Promise.resolve(this.enabled);
   }
 
-  private async loadPersistedSession() {
+  private async loadPersistedSession(sam?: boolean) {
     const provider = this.getProvider();
     invariant(provider.session, 'Provider not initialized. Call init() first');
     const defaultChainId = this.getDefaultChainId();
@@ -135,7 +131,7 @@ export class CardanoWcProvider {
       rpc: this.rpc,
       stakeAddress,
       baseAddress,
-      sam: this.sam
+      sam
     });
     this.enabled = true;
   }
@@ -145,7 +141,9 @@ export class CardanoWcProvider {
     return pairings?.find(pairing => pairing.topic === pairingTopic);
   }
 
-  private async connect(opts: { pairingTopic?: ConnectParams['pairingTopic'] } = {}) {
+  private async connect(
+    opts: { pairingTopic?: ConnectParams['pairingTopic']; sam?: boolean } = {}
+  ) {
     invariant(this.chains, 'Chain not set. Call init() first');
     const provider = this.getProvider();
     const cardanoNamespace = getRequiredCardanoNamespace(this.chains);
@@ -178,7 +176,7 @@ export class CardanoWcProvider {
           });
       });
       if (!session) return;
-      await this.loadPersistedSession();
+      await this.loadPersistedSession(opts.sam);
     } finally {
       if (this.modal) this.modal.closeModal();
     }
