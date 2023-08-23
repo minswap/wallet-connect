@@ -15,7 +15,7 @@
     "@minswap/wc-wallet": "workspace:*",
     "@nextui-org/react": "1.0.8-beta.5",
     "@walletconnect/jsonrpc-utils": "1.0.8",
-    "@walletconnect/utils": "2.8.1",
+    "@walletconnect/utils": "2.10.0",
     "bip39": "^3.1.0",
     "bs58": "5.0.0",
     "exponential-backoff": "^3.1.1",
@@ -31,6 +31,6 @@
     "@types/node": "^20.2.5",
     "@types/react": "^18.2.8",
     "@types/react-dom": "^18.2.4",
-    "@walletconnect/types": "2.7.6"
+    "@walletconnect/types": "2.10.0"
   }
 }

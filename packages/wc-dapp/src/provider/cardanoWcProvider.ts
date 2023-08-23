@@ -3,7 +3,7 @@ import { WalletConnectModal } from '@walletconnect/modal';
 import { PairingTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
-import { DEFAULT_LOGGER } from '../constants';
+import { ACCOUNT, DEFAULT_LOGGER, STORAGE } from '../constants';
 import { TRpc } from '../types';
 import { EnabledAPI } from '../types/cip30';
 import {
@@ -90,6 +90,16 @@ export class CardanoWcProvider {
     return chainId;
   }
 
+  async getDefaultAccount(): Promise<string> {
+    const provider = this.getProvider();
+    const storedAccount =
+      (await this.getFromStore(ACCOUNT)) ||
+      provider.session?.namespaces?.[CARDANO_NAMESPACE_NAME].accounts[0];
+
+    if (!storedAccount) throw new Error('No account set');
+    return storedAccount;
+  }
+
   getProvider(): UniversalProvider {
     if (!this.provider) throw new Error('Provider not initialized. Call init() first');
     return this.provider;
@@ -119,10 +129,8 @@ export class CardanoWcProvider {
     const provider = this.getProvider();
     invariant(provider.session, 'Provider not initialized. Call init() first');
     const defaultChainId = this.getDefaultChainId();
-    const addresses = provider.session.namespaces[CARDANO_NAMESPACE_NAME].accounts
-      .filter(account => account.includes(defaultChainId))[0]
-      .split(':')[2]
-      .split('-');
+    const defaultAccount = await this.getDefaultAccount();
+    const addresses = defaultAccount.split(':')[2].split('-');
     const stakeAddress = addresses[0];
     const baseAddress = addresses[1];
     this.enabledApi = new EnabledWalletEmulator({
@@ -221,6 +229,7 @@ export class CardanoWcProvider {
       (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
       (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
       (this.enabledApi as EnabledWalletEmulator).events.emit(CHAIN_EVENTS.ACCOUNT_CHANGE, account);
+      await this.persist(ACCOUNT, account);
     }
   };
 
@@ -235,6 +244,7 @@ export class CardanoWcProvider {
       (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
       (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
       (this.enabledApi as EnabledWalletEmulator).events.emit(CHAIN_EVENTS.NETWORK_CHANGE, account);
+      await this.persist(ACCOUNT, account);
     }
   };
 
@@ -258,6 +268,14 @@ export class CardanoWcProvider {
     provider.removeListener('session_delete', this.onSessionDelete);
     provider.removeListener('display_uri', this.onDisplayUri);
     provider.removeListener('session_update', this.onSessionUpdate);
+  }
+
+  private async persist(key: string, data: unknown): Promise<void> {
+    await this.provider?.client.core.storage.setItem(`${STORAGE}/${key}`, data);
+  }
+
+  private async getFromStore(key: string) {
+    return await this.provider?.client.core.storage.getItem(`${STORAGE}/${key}`);
   }
 }
 
