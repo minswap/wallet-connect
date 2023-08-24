@@ -1,6 +1,6 @@
 ## Minswap Wallet Connect Wallet
 
-This library provides a wrapper around `@wallet-connect/web3wallet` and `@wallet-connect/core`.
+This library provides a wrapper around `@wallet-connect/web3wallet` and `@wallet-connect/core`. It is just a POC to demonstrate working of `@minswap/wc-dapp`.
 
 ### Design Choices
 
@@ -13,7 +13,3 @@ This library provides a wrapper around `@wallet-connect/web3wallet` and `@wallet
 4. Designed to only support `signTx` and `signData` wallet connect methods. Other methods like `getUsedAddresses`, `getBalance`, `submitTx` should be handled by dApp itself or the RPC url provided.
 
 5. Wallet operates in single address mode only for read purposes. Yet it should support spending UTxOs from other addresses if provided during `signTx`.
-
-## Known Issue
-
-1. If the dApp is offline and there are multiple network/account change in wallet then the final state of dApp could be erroneous. This happens because sign client processes queued requests in reverse chronological order. Ref: https://github.com/orgs/WalletConnect/discussions/3258.
