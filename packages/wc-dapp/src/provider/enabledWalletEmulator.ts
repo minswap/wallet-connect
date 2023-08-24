@@ -56,6 +56,14 @@ export class EnabledWalletEmulator implements EnabledAPI {
   }
 
   async getNetworkId() {
+    if (!this._sam) {
+      return this._provider.request<number>(
+        {
+          method: CARDANO_WALLET_METHODS.CARDANO_GET_NETWORK_ID
+        },
+        this._chain
+      );
+    }
     return Promise.resolve(this._networkId as number);
   }
 
@@ -90,26 +98,66 @@ export class EnabledWalletEmulator implements EnabledAPI {
   }
 
   async getUsedAddresses() {
+    if (!this._sam) {
+      return this._provider.request<Cbor<'address'>[]>(
+        {
+          method: CARDANO_WALLET_METHODS.CARDANO_GET_USED_ADDRESSES
+        },
+        this._chain
+      );
+    }
     invariant(this._baseAddress, 'Base address must be defined');
     return Promise.resolve([this._baseAddress]);
   }
 
   async getUnusedAddresses() {
+    if (!this._sam) {
+      return this._provider.request<Cbor<'address'>[]>(
+        {
+          method: CARDANO_WALLET_METHODS.CARDANO_GET_UNUSED_ADDRESSES
+        },
+        this._chain
+      );
+    }
     invariant(this._baseAddress, 'Base address must be defined');
     return Promise.resolve([this._baseAddress]);
   }
 
   async getChangeAddress() {
+    if (!this._sam) {
+      return this._provider.request<Cbor<'address'>>(
+        {
+          method: CARDANO_WALLET_METHODS.CARDANO_GET_CHANGE_ADDRESSES
+        },
+        this._chain
+      );
+    }
     invariant(this._baseAddress, 'Base address must be defined');
     return Promise.resolve(this._baseAddress);
   }
 
   async getRewardAddress() {
+    if (!this._sam) {
+      return this._provider.request<Cbor<'address'>>(
+        {
+          method: CARDANO_WALLET_METHODS.CARDANO_GET_REWARD_ADDRESS
+        },
+        this._chain
+      );
+    }
     invariant(this._stakeAddress, 'Stake address must be defined');
     return Promise.resolve(this._stakeAddress);
   }
 
   async getRewardAddresses() {
+    if (!this._sam) {
+      return this._provider.request<Cbor<'address'>[]>(
+        {
+          method: CARDANO_WALLET_METHODS.CARDANO_GET_REWARD_ADDRESSES
+        },
+        this._chain
+      );
+    }
     invariant(this._stakeAddress, 'Stake address must be defined');
     return Promise.resolve([this._stakeAddress]);
   }

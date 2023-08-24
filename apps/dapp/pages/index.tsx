@@ -1,12 +1,12 @@
 import {
-  CARDANO_WALLET_METHODS,
   CardanoWcProvider,
   CHAIN,
   EnabledAPI,
+  EnabledWalletEmulator,
   REGIONALIZED_RELAYER_ENDPOINTS
 } from '@minswap/wc-dapp';
 import { Button, Input, Layout, Page } from '@vercel/examples-ui';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import styles from '../styles/index.module.css';
 import { WalletConnectRpc } from '../utils/rpc';
@@ -31,6 +31,13 @@ export default function Index() {
   const [baseAddr, setBaseAddr] = useState<string | null | undefined>(null);
   const [addressLoading, setAddressLoading] = useState(false);
   const [disconnectLoading, setDisconnectLoading] = useState(false);
+  const [sam, setSam] = useState(false);
+
+  const updateSam = useCallback(() => {
+    if (!enabledApi) return;
+    (enabledApi as unknown as EnabledWalletEmulator).setSam = !sam;
+    setSam(!sam);
+  }, [sam, setSam, enabledApi]);
 
   const [tx, setTx] = useState<string | undefined>(undefined);
 
@@ -49,7 +56,7 @@ export default function Index() {
         qrcode: true,
         rpc: new WalletConnectRpc()
       });
-      const localEnabledApi = await walletConnectConnector.enable();
+      const localEnabledApi = await walletConnectConnector.enable(sam);
       setWc(walletConnectConnector);
       setEnabledApi(localEnabledApi);
       setBaseAddr((await localEnabledApi.getUsedAddresses())[0]);
@@ -71,16 +78,12 @@ export default function Index() {
   };
 
   const getAddress = async () => {
-    if (!wc) return;
+    if (!enabledApi) return;
     setAddressLoading(true);
     console.info('[APP] fetching address');
-    const provider = wc.getProvider();
     await timeoutPromise(
-      provider
-        .request({
-          method: CARDANO_WALLET_METHODS.CARDANO_GET_USED_ADDRESSES,
-          params: []
-        })
+      enabledApi
+        .getUnusedAddresses()
         .then(addr => {
           console.info('[APP] addr', addr);
           return addr;
@@ -189,6 +192,16 @@ export default function Index() {
               }}
               className={styles.input}
             />
+            <div>
+              <label>DApp RPC (SAM)</label>
+              <Input
+                type="checkbox"
+                onChange={() => {
+                  updateSam();
+                }}
+                checked={sam}
+              />
+            </div>
             <Button className={styles.button} onClick={signTx}>
               Sign Tx
             </Button>
