@@ -3,7 +3,7 @@ import { WalletConnectModal } from '@walletconnect/modal';
 import { PairingTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
-import { ACCOUNT, DEFAULT_LOGGER, STORAGE } from '../constants';
+import { ACCOUNT, DEFAULT_LOGGER, STORAGE, SUPPORTED_EXPLORER_WALLETS } from '../constants';
 import { TRpc } from '../types';
 import { EnabledAPI } from '../types/cip30';
 import {
@@ -284,7 +284,9 @@ export const getWeb3Modal = (projectId: string, chains: CHAIN[]) => {
     return new WalletConnectModal({
       projectId,
       chains,
-      enableExplorer: false
+      enableExplorer: true,
+      explorerRecommendedWalletIds: SUPPORTED_EXPLORER_WALLETS,
+      explorerExcludedWalletIds: 'ALL'
     });
   } catch (e) {
     throw new Error(`Error instantiating web3Modal: ${JSON.stringify(e)}`);

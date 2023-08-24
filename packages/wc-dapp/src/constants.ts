@@ -14,3 +14,7 @@ export enum REGIONALIZED_RELAYER_ENDPOINTS {
   EU = 'wss://eu-central-1.relay.walletconnect.com/',
   APAC = 'wss://ap-southeast-1.relay.walletconnect.com/'
 }
+
+export const SUPPORTED_EXPLORER_WALLETS = [
+  '33c036d8075d28c9f3619d4d43075676a6d294047e3658fb103e5b3424337551'
+];
