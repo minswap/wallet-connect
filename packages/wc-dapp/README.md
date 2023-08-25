@@ -74,6 +74,15 @@ const enabledApi = await walletConnectConnector.enable(sam);
 
    x. `getNetworkId` - returns the network id from the `defaultChain` stored in universal provider namespace.
 
+## Comparision between 2 modes
+
+| Field     | dApp RPC                                            | Wallet RPC                                                                                                         |
+| --------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| utxos     | supports only utxos of the base address (like nami) | supports utxos provided by wallet (supports utxos from all owned addresses, locked utxos, pending utxos etc)       |
+| balance   | shows balance of base address only                  | shows balance from wallet (all addresses balance)                                                                  |
+| UX        | greatly improves UX with faster responses           | responses are comparatively slower and requires wallet to be connected in background every time dApp is being used |
+| Submit Tx | submit using minswap's node                         | submit using wallet's submit endpoint                                                                              |
+
 ## Acknowledgement
 
 This project was bootstrap from a fork of https://github.com/dcSpark/adalib.
