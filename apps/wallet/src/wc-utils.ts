@@ -1,10 +1,12 @@
 import {
   CARDANO_NAMESPACE_NAME,
+  CARDANO_RPC_METHODS,
   CARDANO_SIGNING_METHODS,
   CARDANO_WALLET_METHODS,
   CardanoWcConnector,
   CHAIN,
-  formatAccount
+  formatAccount,
+  getNetworkIdFromChainId
 } from '@minswap/wc-wallet';
 import {
   formatJsonRpcError,
@@ -65,6 +67,26 @@ export const onSessionRequest = async (
       case CARDANO_WALLET_METHODS.CARDANO_GET_USED_ADDRESSES:
       case CARDANO_WALLET_METHODS.CARDANO_GET_UNUSED_ADDRESSES: {
         response = formatJsonRpcResult(id, [wallet?.getBaseAddress()]);
+        break;
+      }
+      case CARDANO_WALLET_METHODS.CARDANO_GET_CHANGE_ADDRESSES: {
+        response = formatJsonRpcResult(id, wallet?.getBaseAddress());
+        break;
+      }
+      case CARDANO_WALLET_METHODS.CARDANO_GET_COLLATERAL: {
+        response = formatJsonRpcResult(id, []);
+        break;
+      }
+      case CARDANO_RPC_METHODS.CARDANO_GET_BALANCE: {
+        response = formatJsonRpcResult(id, '00');
+        break;
+      }
+      case CARDANO_RPC_METHODS.CARDANO_GET_UTXOS: {
+        response = formatJsonRpcResult(id, []);
+        break;
+      }
+      case CARDANO_WALLET_METHODS.CARDANO_GET_NETWORK_ID: {
+        response = formatJsonRpcResult(id, getNetworkIdFromChainId(wallet.chain));
         break;
       }
       default:
