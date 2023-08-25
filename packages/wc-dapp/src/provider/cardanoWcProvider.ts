@@ -62,7 +62,8 @@ export class CardanoWcProvider {
       provider,
       modal,
       chains: opts.chains,
-      rpc: opts.rpc
+      rpc: opts.rpc,
+      legacyMode: opts.legacyMode
     });
   }
 
