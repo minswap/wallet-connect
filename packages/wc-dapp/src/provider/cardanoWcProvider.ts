@@ -24,13 +24,15 @@ export class CardanoWcProvider {
   private provider: UniversalProvider | undefined;
   private enabledApi: EnabledAPI | undefined;
   private qrcode: boolean;
+  private legacyMode: boolean | undefined;
 
   private constructor({
     provider,
     qrcode,
     modal,
     chains,
-    rpc
+    rpc,
+    legacyMode
   }: {
     provider: UniversalProvider;
   } & Omit<CardanoWcProviderOpts, 'projectId' | 'metadata' | 'relayerRegion'>) {
@@ -40,6 +42,7 @@ export class CardanoWcProvider {
     this.qrcode = Boolean(qrcode);
     this.rpc = rpc;
     this.registerEventListeners();
+    this.legacyMode = legacyMode;
   }
 
   static async init(opts: CardanoWcProviderOpts) {
@@ -125,6 +128,7 @@ export class CardanoWcProvider {
     return Promise.resolve(this.enabled);
   }
 
+  // emulator api will never act in SAM if legacy mode is enabled
   private async loadPersistedSession(sam?: boolean) {
     const provider = this.getProvider();
     invariant(provider.session, 'Provider not initialized. Call init() first');
@@ -133,13 +137,14 @@ export class CardanoWcProvider {
     const addresses = defaultAccount.split(':')[2].split('-');
     const stakeAddress = addresses[0];
     const baseAddress = addresses[1];
+    const overrideSam = this.legacyMode ? false : sam;
     this.enabledApi = new EnabledWalletEmulator({
       provider: provider,
       chain: `${CARDANO_NAMESPACE_NAME}:${defaultChainId}` as CHAIN,
       rpc: this.rpc,
       stakeAddress,
       baseAddress,
-      sam
+      sam: overrideSam
     });
     this.enabled = true;
   }
