@@ -167,9 +167,21 @@ export default function Index() {
         )}
         <div className={styles.buttonContainer}>
           {!wc && (
-            <button className={styles.button} onClick={initWc}>
-              Init
-            </button>
+            <>
+              <button className={styles.button} onClick={initWc}>
+                Init
+              </button>
+              <div className="mt-2">
+                <label>Legacy Mode</label>
+                <Input
+                  type="checkbox"
+                  onChange={() => {
+                    setLegacyMode(!legacyMode);
+                  }}
+                  checked={legacyMode}
+                />
+              </div>
+            </>
           )}
           {wc && (
             <>

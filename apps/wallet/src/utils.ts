@@ -3,7 +3,7 @@ import { CARDANO_CHAINS, CHAIN } from '@minswap/wc-wallet';
 import { CardanoWallet } from './cardanoWallet';
 
 export async function createCardanoWallet(chain: CHAIN, account: number) {
-  const mnemonic = localStorage.getItem(`CIP34_MNEMONIC_${account}`) || undefined;
+  const mnemonic = localStorage.getItem(`CIP34_MNEMONIC_${account}`) ?? undefined;
   const wallet = await CardanoWallet.init({
     chain,
     mnemonic

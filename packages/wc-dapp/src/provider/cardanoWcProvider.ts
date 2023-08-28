@@ -129,7 +129,6 @@ export class CardanoWcProvider {
     return Promise.resolve(this.enabled);
   }
 
-  // emulator api will never act in SAM if legacy mode is enabled
   private async loadPersistedSession(sam?: boolean) {
     const provider = this.getProvider();
     invariant(provider.session, 'Provider not initialized. Call init() first');
@@ -138,7 +137,7 @@ export class CardanoWcProvider {
     const addresses = defaultAccount.split(':')[2].split('-');
     const stakeAddress = addresses[0];
     const baseAddress = addresses[1];
-    const overrideSam = this.legacyMode ? false : sam;
+    const overrideSam = this.legacyMode ? false : sam; // emulator api will never act in SAM if legacy mode is enabled
     this.enabledApi = new EnabledWalletEmulator({
       provider: provider,
       chain: `${CARDANO_NAMESPACE_NAME}:${defaultChainId}` as CHAIN,
@@ -160,8 +159,8 @@ export class CardanoWcProvider {
   ) {
     invariant(this.chains, 'Chain not set. Call init() first');
     const provider = this.getProvider();
-    const cardanoNamespace = getRequiredCardanoNamespace(this.chains);
-    const cardanoOptionalNamespace = getOptionalCardanoNamespace(this.chains);
+    const cardanoNamespace = getRequiredCardanoNamespace(this.chains, this.legacyMode);
+    const cardanoOptionalNamespace = getOptionalCardanoNamespace(this.chains, this.legacyMode);
     try {
       const session = await new Promise<SessionTypes.Struct | undefined>((resolve, reject) => {
         if (this.qrcode) {
