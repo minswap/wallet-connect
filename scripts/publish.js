@@ -85,9 +85,9 @@ fs.readFile(packagePath, 'utf8', async (err, data) => {
       console.info('Tag version');
       await executeCommand(`git tag v${packageObj.version}`);
 
-      // console.info('Push to remote');
-      // await executeCommand('git push origin main');
-      // await executeCommand(`git push origin v${packageObj.version}`);
+      console.info('Push to remote');
+      await executeCommand('git push origin main');
+      await executeCommand(`git push origin v${packageObj.version}`);
     } catch (error) {
       console.error(`An error occurred while executing a command: ${error}`);
     }
