@@ -6,7 +6,7 @@ const { exec } = require('child_process');
 const specifiedVersion = process.argv[2];
 
 // Define the path to the package.json file
-const packagePath = path.join(__dirname, 'packages', 'wc-dapp', 'package.json');
+const packagePath = path.join(__dirname, '..', 'packages', 'wc-dapp', 'package.json');
 
 // Function to execute shell commands
 function executeCommand(command) {
@@ -50,7 +50,7 @@ fs.readFile(packagePath, 'utf8', async (err, data) => {
       return;
     }
 
-    versionComponents[2] = parseInt(versionComponents[2], 10) + 1;
+    versionComponents[1] = parseInt(versionComponents[1], 10) + 1;
     packageObj.version = versionComponents.join('.');
   }
 
@@ -64,10 +64,10 @@ fs.readFile(packagePath, 'utf8', async (err, data) => {
 
     try {
       console.info('Build');
-      await executeCommand('npm run build');
+      await executeCommand('pnpm build --filter wc-dapp');
 
       console.info('Publish');
-      await executeCommand('npm publish');
+      await executeCommand('pnpm publish --filter wc-dapp');
 
       console.info('Commit new version');
       await executeCommand(`git add ${packagePath} package-lock.json`);
