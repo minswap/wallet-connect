@@ -24,13 +24,15 @@ export class CardanoWcProvider {
   private provider: UniversalProvider | undefined;
   private enabledApi: EnabledAPI | undefined;
   private qrcode: boolean;
+  private legacyMode: boolean | undefined;
 
   private constructor({
     provider,
     qrcode,
     modal,
     chains,
-    rpc
+    rpc,
+    legacyMode
   }: {
     provider: UniversalProvider;
   } & Omit<CardanoWcProviderOpts, 'projectId' | 'metadata' | 'relayerRegion'>) {
@@ -40,6 +42,7 @@ export class CardanoWcProvider {
     this.qrcode = Boolean(qrcode);
     this.rpc = rpc;
     this.registerEventListeners();
+    this.legacyMode = legacyMode;
   }
 
   static async init(opts: CardanoWcProviderOpts) {
@@ -59,7 +62,8 @@ export class CardanoWcProvider {
       provider,
       modal,
       chains: opts.chains,
-      rpc: opts.rpc
+      rpc: opts.rpc,
+      legacyMode: opts.legacyMode
     });
   }
 
@@ -133,13 +137,14 @@ export class CardanoWcProvider {
     const addresses = defaultAccount.split(':')[2].split('-');
     const stakeAddress = addresses[0];
     const baseAddress = addresses[1];
+    const overrideSam = this.legacyMode ? false : sam; // emulator api will never act in SAM if legacy mode is enabled
     this.enabledApi = new EnabledWalletEmulator({
       provider: provider,
       chain: `${CARDANO_NAMESPACE_NAME}:${defaultChainId}` as CHAIN,
       rpc: this.rpc,
       stakeAddress,
       baseAddress,
-      sam
+      sam: overrideSam
     });
     this.enabled = true;
   }
@@ -154,8 +159,8 @@ export class CardanoWcProvider {
   ) {
     invariant(this.chains, 'Chain not set. Call init() first');
     const provider = this.getProvider();
-    const cardanoNamespace = getRequiredCardanoNamespace(this.chains);
-    const cardanoOptionalNamespace = getOptionalCardanoNamespace(this.chains);
+    const cardanoNamespace = getRequiredCardanoNamespace(this.chains, this.legacyMode);
+    const cardanoOptionalNamespace = getOptionalCardanoNamespace(this.chains, this.legacyMode);
     try {
       const session = await new Promise<SessionTypes.Struct | undefined>((resolve, reject) => {
         if (this.qrcode) {

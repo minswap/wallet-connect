@@ -78,12 +78,12 @@ export const SESSION_PROPOSAL_METHODS = [
 
 export const SESSION_PROPOSAL_EVENTS = Object.values(CHAIN_EVENTS);
 
-export const getRequiredCardanoNamespace = (chains: CHAIN[]) => {
+export const getRequiredCardanoNamespace = (chains: CHAIN[], legacyMode?: boolean) => {
   const cardanoNamespace = {
     [CARDANO_NAMESPACE_NAME]: {
       chains,
       methods: SESSION_PROPOSAL_METHODS,
-      events: SESSION_PROPOSAL_EVENTS,
+      events: legacyMode ? [] : SESSION_PROPOSAL_EVENTS,
       // TODO: Fix this in universal provider
       // Hack: since universal provider doesn't allow addition of new rpc url when a new chain selection
       rpcMap: chainsToRpcMap(Object.keys(CARDANO_CHAINS) as CHAIN[])
@@ -106,12 +106,12 @@ export const chainsToRpcMap = (chains: CHAIN[]): Record<string, string> => {
 };
 
 // Required for universal provider
-export const getOptionalCardanoNamespace = (chains: CHAIN[]) => {
+export const getOptionalCardanoNamespace = (chains: CHAIN[], legacyMode?: boolean) => {
   return {
     [CARDANO_NAMESPACE_NAME]: {
       chains: chains,
       methods: SESSION_PROPOSAL_METHODS,
-      events: SESSION_PROPOSAL_EVENTS,
+      events: legacyMode ? [] : SESSION_PROPOSAL_EVENTS,
       rpcMap: chainsToRpcMap(chains)
     }
   };

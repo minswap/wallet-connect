@@ -33,6 +33,8 @@ export default function Index() {
   const [disconnectLoading, setDisconnectLoading] = useState(false);
   const [sam, setSam] = useState(false);
 
+  const [legacyMode, setLegacyMode] = useState(true);
+
   const updateSam = useCallback(() => {
     if (!enabledApi) return;
     (enabledApi as unknown as EnabledWalletEmulator).setSam = !sam;
@@ -54,7 +56,8 @@ export default function Index() {
           url: process.env['NEXT_PUBLIC_URL'] ?? 'https://app.minswap.org'
         },
         qrcode: true,
-        rpc: new WalletConnectRpc()
+        rpc: new WalletConnectRpc(),
+        legacyMode
       });
       const localEnabledApi = await walletConnectConnector.enable(sam);
       setWc(walletConnectConnector);
@@ -62,10 +65,10 @@ export default function Index() {
       setBaseAddr((await localEnabledApi.getUsedAddresses())[0]);
       setChain(walletConnectConnector.getDefaultChainId());
       await localEnabledApi.onAccountChange((account: string) => {
-        setBaseAddr(account.split(':')[2].split('-')[1]);
+        setBaseAddr(account.split(':')[2].split('-')[0]);
       });
       await localEnabledApi.onNetworkChange((account: string) => {
-        setBaseAddr(account.split(':')[2].split('-')[1]);
+        setBaseAddr(account.split(':')[2].split('-')[0]);
         setChain(account.split(':')[1]);
       });
       const provider = walletConnectConnector.getProvider();
@@ -164,9 +167,21 @@ export default function Index() {
         )}
         <div className={styles.buttonContainer}>
           {!wc && (
-            <button className={styles.button} onClick={initWc}>
-              Init
-            </button>
+            <>
+              <button className={styles.button} onClick={initWc}>
+                Init
+              </button>
+              <div className="mt-2">
+                <label>Legacy Mode</label>
+                <Input
+                  type="checkbox"
+                  onChange={() => {
+                    setLegacyMode(!legacyMode);
+                  }}
+                  checked={legacyMode}
+                />
+              </div>
+            </>
           )}
           {wc && (
             <>
@@ -192,16 +207,18 @@ export default function Index() {
               }}
               className={styles.input}
             />
-            <div>
-              <label>DApp RPC (SAM)</label>
-              <Input
-                type="checkbox"
-                onChange={() => {
-                  updateSam();
-                }}
-                checked={sam}
-              />
-            </div>
+            {!legacyMode && (
+              <div>
+                <label>DApp RPC (SAM)</label>
+                <Input
+                  type="checkbox"
+                  onChange={() => {
+                    updateSam();
+                  }}
+                  checked={sam}
+                />
+              </div>
+            )}
             <Button className={styles.button} onClick={signTx}>
               Sign Tx
             </Button>

@@ -15,7 +15,8 @@
     "lint": "turbo run lint",
     "clean": "turbo run clean",
     "prettier": "prettier --check .",
-    "format": "prettier --check . -w"
+    "format": "prettier --check . -w",
+    "publish:wc-dapp": "node scripts/publish.js"
   },
   "devDependencies": {
     "eslint": "^8.42.0",
