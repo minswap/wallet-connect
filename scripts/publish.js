@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
+const { exec, execSync } = require('child_process');
 
 // Grab the version argument from the command line if provided
 const specifiedVersion = process.argv[2];
