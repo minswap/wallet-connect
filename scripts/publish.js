@@ -21,6 +21,15 @@ function executeCommand(command) {
   });
 }
 
+// Function to execute shell commands synchronously
+function executeCommandSync(command) {
+  try {
+    execSync(command, { stdio: 'inherit' });
+  } catch (error) {
+    console.error(`An error occurred while executing a command: ${error}`);
+  }
+}
+
 // Read and update the package.json file
 fs.readFile(packagePath, 'utf8', async (err, data) => {
   if (err) {
@@ -67,10 +76,10 @@ fs.readFile(packagePath, 'utf8', async (err, data) => {
       await executeCommand('pnpm build --filter wc-dapp');
 
       console.info('Publish');
-      await executeCommand('pnpm publish --filter wc-dapp');
+      executeCommandSync('pnpm publish --filter wc-dapp --no-git-checks');
 
       console.info('Commit new version');
-      await executeCommand(`git add ${packagePath} package-lock.json`);
+      await executeCommand(`git add ${packagePath}`);
       await executeCommand(`git commit -m "chore: publish version v${packageObj.version}"`);
 
       console.info('Tag version');
