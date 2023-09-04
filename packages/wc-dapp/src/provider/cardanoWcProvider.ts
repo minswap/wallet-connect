@@ -70,11 +70,6 @@ export class CardanoWcProvider {
   async enable(sam?: boolean) {
     const session = this.provider?.session;
     // Edge Case: sometimes pairing is lost, so we disconnect session and reconnect
-    const pairingTopic = session?.pairingTopic;
-    const hasPairing = this.getSessionPair(pairingTopic);
-    if (!hasPairing && session) {
-      await this.disconnect();
-    }
     if (!session) {
       await this.connect({ sam });
     } else {

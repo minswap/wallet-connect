@@ -86,7 +86,7 @@ export default function Index() {
     console.info('[APP] fetching address');
     await timeoutPromise(
       enabledApi
-        .getUnusedAddresses()
+        .getUtxos()
         .then(addr => {
           console.info('[APP] addr', addr);
           return addr;

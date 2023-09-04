@@ -3,7 +3,13 @@ import UniversalProvider from '@walletconnect/universal-provider';
 import EventEmitter from 'events';
 
 import { TRpc } from '../types';
-import type { Cbor, DataSignature, EnabledAPI, EnabledWalletEmulatorParams } from '../types/cip30';
+import type {
+  Cbor,
+  DataSignature,
+  EnabledAPI,
+  EnabledWalletEmulatorParams,
+  Paginate
+} from '../types/cip30';
 import {
   CARDANO_RPC_METHODS,
   CARDANO_SIGNING_METHODS,
@@ -67,11 +73,12 @@ export class EnabledWalletEmulator implements EnabledAPI {
     return Promise.resolve(this._networkId as number);
   }
 
-  async getUtxos() {
+  async getUtxos(amount?: Cbor<'Value'>, paginate?: Paginate) {
     if (!this._sam) {
       return this._provider.request<Cbor<'utxos'>[]>(
         {
-          method: CARDANO_RPC_METHODS.CARDANO_GET_UTXOS
+          method: CARDANO_RPC_METHODS.CARDANO_GET_UTXOS,
+          params: [amount, paginate]
         },
         this._chain
       );
