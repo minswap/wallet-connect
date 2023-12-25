@@ -1,6 +1,6 @@
 import invariant from '@minswap/tiny-invariant';
 import { WalletConnectModal } from '@walletconnect/modal';
-import { PairingTypes, SessionTypes, SignClientTypes } from '@walletconnect/types';
+import { SessionTypes, SignClientTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
 import { ACCOUNT, DEFAULT_LOGGER, STORAGE, SUPPORTED_EXPLORER_WALLETS } from '../constants';
@@ -142,11 +142,6 @@ export class CardanoWcProvider {
       sam: overrideSam
     });
     this.enabled = true;
-  }
-
-  private getSessionPair(pairingTopic: string | undefined): PairingTypes.Struct | undefined {
-    const pairings = this.getProvider()?.client?.pairing.getAll({ active: true });
-    return pairings?.find(pairing => pairing.topic === pairingTopic);
   }
 
   private async connect(
