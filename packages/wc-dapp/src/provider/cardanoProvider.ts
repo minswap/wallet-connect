@@ -16,30 +16,27 @@ import {
 import { EnabledWalletEmulator } from './enabledWalletEmulator';
 import { CardanoWcProviderOpts } from './types';
 
-export class CardanoWcProvider {
+export class CardanoProvider {
   private modal: WalletConnectModal | undefined;
   private enabled = false;
   private chains: CHAIN[] | undefined;
   private rpc: TRpc;
   private provider: UniversalProvider | undefined;
   private enabledApi: EnabledAPI | undefined;
-  private qrcode: boolean;
   private legacyMode: boolean | undefined;
 
   private constructor({
     provider,
-    qrcode,
     modal,
     chains,
     rpc,
     legacyMode
   }: {
     provider: UniversalProvider;
-  } & Omit<CardanoWcProviderOpts, 'projectId' | 'metadata' | 'relayerRegion'>) {
+  } & Omit<CardanoWcProviderOpts, 'projectId' | 'metadata' | 'relayerRegion' | 'qrCode'>) {
     this.chains = chains;
     this.provider = provider;
     this.modal = modal;
-    this.qrcode = Boolean(qrcode);
     this.rpc = rpc;
     this.registerEventListeners();
     this.legacyMode = legacyMode;
@@ -54,16 +51,16 @@ export class CardanoWcProvider {
       metadata: opts.metadata
     });
     let modal: WalletConnectModal | undefined;
-    if (opts.qrcode) {
+    const { qrcode, chains, legacyMode, rpc } = opts;
+    if (qrcode) {
       modal = getWeb3Modal(opts.projectId, opts.chains);
     }
-    return new CardanoWcProvider({
-      qrcode: opts.qrcode,
+    return new CardanoProvider({
       provider,
       modal,
-      chains: opts.chains,
-      rpc: opts.rpc,
-      legacyMode: opts.legacyMode
+      chains,
+      rpc,
+      legacyMode
     });
   }
 
@@ -153,17 +150,15 @@ export class CardanoWcProvider {
     const cardanoOptionalNamespace = getOptionalCardanoNamespace(this.chains, this.legacyMode);
     try {
       const session = await new Promise<SessionTypes.Struct | undefined>((resolve, reject) => {
-        if (this.qrcode) {
-          this.modal?.subscribeModal(async state => {
-            if (!state.open && !provider.session) {
-              // the modal was closed so reject the promise
-              provider.abortPairingAttempt();
-              await provider.cleanupPendingPairings({ deletePairings: true });
-              this.reset();
-              reject(new Error('Connection aborted by user.'));
-            }
-          });
-        }
+        this.modal?.subscribeModal(async state => {
+          if (!state.open && !provider.session) {
+            // the modal was closed so reject the promise
+            provider.abortPairingAttempt();
+            await provider.cleanupPendingPairings({ deletePairings: true });
+            this.reset();
+            reject(new Error('Connection aborted by user.'));
+          }
+        });
         provider
           ?.connect({
             namespaces: { ...cardanoNamespace },
@@ -193,10 +188,8 @@ export class CardanoWcProvider {
 
   private onDisplayUri = (uri: string) => {
     console.info('pairing uri', uri);
-    if (this.qrcode) {
-      this.modal?.closeModal();
-      void this.modal?.openModal({ uri });
-    }
+    this.modal?.closeModal();
+    void this.modal?.openModal({ uri });
   };
 
   private onSessionDelete = () => {

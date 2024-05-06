@@ -2,7 +2,7 @@ import { NetworkID } from '../provider';
 import { Cbor } from './cip30';
 
 export type UtxoRequest = {
-  addr: Cbor<'address'>; // stake or base address
+  address: Cbor<'address'>; // stake or base address
   network: NetworkID;
 };
 
@@ -24,3 +24,9 @@ export type TRpc = {
   getBalance(params: BalanceRequest): Promise<BalanceResponse>;
   submitTx(params: SubmitTxRequest): Promise<SubmitTxResponse>;
 };
+
+export enum ENDPOINTS {
+  UTXO_BY_ADDRESS = '/wallet/utxo/address',
+  BALANCE_BY_ADDRESS = '/wallet/balance/address',
+  SUBMIT_TX = '/wallet/submitTx'
+}

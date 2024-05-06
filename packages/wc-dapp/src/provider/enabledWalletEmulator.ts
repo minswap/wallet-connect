@@ -19,6 +19,7 @@ import {
   getNetworkIdFromChainId,
   NetworkID
 } from './chain';
+import { DAppRpc } from './dappRpc';
 
 export class EnabledWalletEmulator implements EnabledAPI {
   private _provider: UniversalProvider;
@@ -43,6 +44,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
   set chain(chain: CHAIN) {
     this._chain = chain;
     this._networkId = getNetworkIdFromChainId(chain);
+    (this._rpc as DAppRpc).changeNetwork = this._networkId;
   }
 
   set baseAddress(baseAddress: string | undefined) {
@@ -84,7 +86,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
       );
     }
     return this._rpc.getUtxos({
-      addr: this._baseAddress,
+      address: this._baseAddress,
       network: this._networkId
     });
   }
@@ -99,7 +101,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
       );
     }
     return this._rpc.getBalance({
-      addr: this._stakeAddress,
+      address: this._stakeAddress,
       network: this._networkId
     });
   }
