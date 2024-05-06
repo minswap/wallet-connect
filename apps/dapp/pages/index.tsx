@@ -1,5 +1,5 @@
 import {
-  CardanoWcProvider,
+  CardanoProvider,
   CHAIN,
   EnabledAPI,
   EnabledWalletEmulator,
@@ -25,7 +25,7 @@ const sleep = (ms: number) => {
 };
 
 export default function Index() {
-  const [wc, setWc] = useState<CardanoWcProvider | null>(null);
+  const [wc, setWc] = useState<CardanoProvider | null>(null);
   const [chain, setChain] = useState<string | undefined>(undefined);
   const [enabledApi, setEnabledApi] = useState<EnabledAPI | null>(null);
   const [baseAddr, setBaseAddr] = useState<string | null | undefined>(null);
@@ -45,7 +45,7 @@ export default function Index() {
 
   const initWc = async () => {
     try {
-      const walletConnectConnector = await CardanoWcProvider.init({
+      const walletConnectConnector = await CardanoProvider.init({
         chains: [CHAIN.MAINNET],
         projectId: process.env['NEXT_PUBLIC_WC_PROJECT_ID'] ?? '97b4dbc5d1f1492a20c9e5d4d7047d63',
         relayerRegion: REGIONALIZED_RELAYER_ENDPOINTS.DEFAULT,

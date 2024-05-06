@@ -10,7 +10,7 @@ export interface WalletConnectdAppMetadata {
   icons: string[];
 }
 
-export type CardanoWcProviderOpts = {
+export type CardanoProviderOpts = {
   chains: CHAIN[];
   projectId: string;
   relayerRegion: string;

@@ -14,7 +14,7 @@ import {
   getRequiredCardanoNamespace
 } from './chain';
 import { EnabledWalletEmulator } from './enabledWalletEmulator';
-import { CardanoWcProviderOpts } from './types';
+import { CardanoProviderOpts } from './types';
 
 export class CardanoProvider {
   private modal: WalletConnectModal | undefined;
@@ -33,7 +33,7 @@ export class CardanoProvider {
     legacyMode
   }: {
     provider: UniversalProvider;
-  } & Omit<CardanoWcProviderOpts, 'projectId' | 'metadata' | 'relayerRegion' | 'qrCode'>) {
+  } & Omit<CardanoProviderOpts, 'projectId' | 'metadata' | 'relayerRegion' | 'qrCode'>) {
     this.chains = chains;
     this.provider = provider;
     this.modal = modal;
@@ -42,7 +42,7 @@ export class CardanoProvider {
     this.legacyMode = legacyMode;
   }
 
-  static async init(opts: CardanoWcProviderOpts) {
+  static async init(opts: CardanoProviderOpts) {
     invariant(opts.projectId.length > 0, 'Wallet Connect project ID not set');
     const provider = await UniversalProvider.init({
       logger: DEFAULT_LOGGER,
