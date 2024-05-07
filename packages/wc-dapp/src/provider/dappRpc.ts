@@ -67,7 +67,7 @@ export class DAppRpc implements TRpc {
         address
       })
     });
-    return JSON.parse(res);
+    return res;
   }
 
   async submitTx({ tx }: SubmitTxRequest): Promise<string> {
