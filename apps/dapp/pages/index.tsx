@@ -2,7 +2,6 @@ import {
   CardanoProvider,
   CHAIN,
   EnabledAPI,
-  EnabledWalletEmulator,
   REGIONALIZED_RELAYER_ENDPOINTS
 } from '@minswap/wc-dapp';
 import { Button, Input, Layout, Page } from '@vercel/examples-ui';
@@ -37,7 +36,7 @@ export default function Index() {
 
   const updateSam = useCallback(() => {
     if (!enabledApi) return;
-    (enabledApi as unknown as EnabledWalletEmulator).setSam = !sam;
+    enabledApi.setSam = !sam;
     setSam(!sam);
   }, [sam, setSam, enabledApi]);
 
