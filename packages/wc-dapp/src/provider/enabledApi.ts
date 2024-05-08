@@ -3,13 +3,8 @@ import UniversalProvider from '@walletconnect/universal-provider';
 import EventEmitter from 'events';
 
 import { TRpc } from '../types';
-import type {
-  Cbor,
-  DataSignature,
-  EnabledAPI,
-  EnabledWalletEmulatorParams,
-  Paginate
-} from '../types/cip30';
+import type { Cbor, DataSignature, EnabledAPIParams, IEnabledAPI, Paginate } from '../types/cip30';
+import { DAppRpc } from './dappRpc';
 import {
   CARDANO_RPC_METHODS,
   CARDANO_SIGNING_METHODS,
@@ -18,9 +13,9 @@ import {
   CHAIN_EVENTS,
   getNetworkIdFromChainId,
   NetworkID
-} from './chain';
+} from './utils';
 
-export class EnabledWalletEmulator implements EnabledAPI {
+export class EnabledAPI implements IEnabledAPI {
   private _provider: UniversalProvider;
   private _chain: CHAIN;
   private _baseAddress: string;
@@ -30,7 +25,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
   private _sam: boolean | undefined;
   events: EventEmitter = new EventEmitter();
 
-  constructor(params: EnabledWalletEmulatorParams) {
+  constructor(params: EnabledAPIParams) {
     this._provider = params.provider;
     this._chain = params.chain;
     this._networkId = getNetworkIdFromChainId(params.chain);
@@ -43,6 +38,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
   set chain(chain: CHAIN) {
     this._chain = chain;
     this._networkId = getNetworkIdFromChainId(chain);
+    (this._rpc as DAppRpc).changeNetwork = this._networkId;
   }
 
   set baseAddress(baseAddress: string | undefined) {
@@ -84,7 +80,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
       );
     }
     return this._rpc.getUtxos({
-      addr: this._baseAddress,
+      address: this._baseAddress,
       network: this._networkId
     });
   }
@@ -99,7 +95,7 @@ export class EnabledWalletEmulator implements EnabledAPI {
       );
     }
     return this._rpc.getBalance({
-      addr: this._stakeAddress,
+      address: this._stakeAddress,
       network: this._networkId
     });
   }

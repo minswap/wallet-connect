@@ -1,7 +1,8 @@
+import { WalletConnectModal } from '@walletconnect/modal';
 import UniversalProvider from '@walletconnect/universal-provider/dist/types/UniversalProvider';
 
 import { CHAIN } from '../provider';
-import { TRpc } from './rpc';
+import { TRpc } from '../types';
 
 // Fake types just to make the API more readable
 type HexString = string;
@@ -23,8 +24,6 @@ export interface DataSignature {
   key: Cbor<'CoseKey'>;
 }
 
-export type InjectAsWallet = [] | [string];
-
 export type InitAPI = {
   enable(): Promise<unknown>;
   isEnabled(): Promise<boolean>;
@@ -33,7 +32,7 @@ export type InitAPI = {
   icon: string;
 };
 
-export interface EnabledAPI {
+export interface IEnabledAPI {
   getNetworkId: () => Promise<number>;
   getUtxos: (
     amount?: Cbor<'Value'>,
@@ -63,7 +62,7 @@ export interface EnabledAPI {
   ) => Promise<void>;
 }
 
-export interface EnabledWalletEmulatorParams {
+export interface EnabledAPIParams {
   provider: UniversalProvider;
   chain: CHAIN;
   rpc: TRpc;
@@ -71,3 +70,21 @@ export interface EnabledWalletEmulatorParams {
   baseAddress: Cbor<'base_addr'>;
   sam?: boolean;
 }
+
+export interface WalletConnectdAppMetadata {
+  name: string;
+  description: string;
+  url: string;
+  icons: string[];
+}
+
+export type CardanoProviderOpts = {
+  chains: CHAIN[];
+  projectId: string;
+  relayerRegion: string;
+  metadata: WalletConnectdAppMetadata;
+  rpc: TRpc;
+  qrcode?: boolean;
+  modal?: WalletConnectModal;
+  legacyMode?: boolean;
+};

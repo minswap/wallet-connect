@@ -1,8 +1,7 @@
 import {
-  CardanoWcProvider,
+  CardanoProvider,
   CHAIN,
   EnabledAPI,
-  EnabledWalletEmulator,
   REGIONALIZED_RELAYER_ENDPOINTS
 } from '@minswap/wc-dapp';
 import { Button, Input, Layout, Page } from '@vercel/examples-ui';
@@ -25,11 +24,13 @@ const sleep = (ms: number) => {
 };
 
 export default function Index() {
-  const [wc, setWc] = useState<CardanoWcProvider | null>(null);
+  const [wc, setWc] = useState<CardanoProvider | null>(null);
   const [chain, setChain] = useState<string | undefined>(undefined);
   const [enabledApi, setEnabledApi] = useState<EnabledAPI | null>(null);
   const [baseAddr, setBaseAddr] = useState<string | null | undefined>(null);
+  const [utxos, setUtxos] = useState<string[] | null | undefined>(null);
   const [addressLoading, setAddressLoading] = useState(false);
+  const [utxosLoading, setUtxosLoading] = useState(false);
   const [disconnectLoading, setDisconnectLoading] = useState(false);
   const [sam, setSam] = useState(false);
 
@@ -37,7 +38,7 @@ export default function Index() {
 
   const updateSam = useCallback(() => {
     if (!enabledApi) return;
-    (enabledApi as unknown as EnabledWalletEmulator).setSam = !sam;
+    enabledApi.setSam = !sam;
     setSam(!sam);
   }, [sam, setSam, enabledApi]);
 
@@ -45,7 +46,7 @@ export default function Index() {
 
   const initWc = async () => {
     try {
-      const walletConnectConnector = await CardanoWcProvider.init({
+      const walletConnectConnector = await CardanoProvider.init({
         chains: [CHAIN.MAINNET],
         projectId: process.env['NEXT_PUBLIC_WC_PROJECT_ID'] ?? '97b4dbc5d1f1492a20c9e5d4d7047d63',
         relayerRegion: REGIONALIZED_RELAYER_ENDPOINTS.DEFAULT,
@@ -86,7 +87,7 @@ export default function Index() {
     console.info('[APP] fetching address');
     await timeoutPromise(
       enabledApi
-        .getUtxos()
+        .getUnusedAddresses()
         .then(addr => {
           console.info('[APP] addr', addr);
           return addr;
@@ -109,6 +110,37 @@ export default function Index() {
       });
     await sleep(1000); // not required just for demo
     setAddressLoading(false);
+  };
+
+  const getUtxos = async () => {
+    if (!enabledApi) return;
+    setUtxosLoading(true);
+    console.info('[APP] fetching utxos');
+    await timeoutPromise(
+      enabledApi
+        .getUtxos()
+        .then(utxos => {
+          console.info('[APP] utxos', utxos);
+          return utxos;
+        })
+        .catch((err: unknown) => {
+          // when request times out, client throws an error with empty message. we should ignore it as we are timing out the request ourselves.
+          console.info('[APP] get utxos error', err);
+          if ((err as Error).message) {
+            throw err;
+          }
+        })
+    )
+      .then(utxos => {
+        setUtxos(utxos as string[]);
+      })
+      .catch(err => {
+        if (err === TIMEOUT_ERR_MESSAGE) {
+          console.info(TIMEOUT_ERR_MESSAGE);
+        }
+      });
+    await sleep(1000); // not required just for demo
+    setUtxosLoading(false);
   };
 
   const signTx = async () => {
@@ -165,6 +197,7 @@ export default function Index() {
             <div className={styles.baseAddr}>{baseAddr}</div>
           </>
         )}
+
         <div className={styles.buttonContainer}>
           {!wc && (
             <>
@@ -190,6 +223,9 @@ export default function Index() {
               </button>
               <button className={styles.button} onClick={getAddress} disabled={addressLoading}>
                 Unused Addresses
+              </button>
+              <button className={styles.button} onClick={getUtxos} disabled={utxosLoading}>
+                Utxos
               </button>
               <button className={styles.button} onClick={disconnectWc} disabled={disconnectLoading}>
                 Disconnect
@@ -223,6 +259,12 @@ export default function Index() {
               Sign Tx
             </Button>
           </div>
+        )}
+        {utxos && (
+          <>
+            <div className={styles.addrLabel}>Utxos:</div>
+            <div className={styles.baseAddr}>{utxos}</div>
+          </>
         )}
       </div>
     </Page>

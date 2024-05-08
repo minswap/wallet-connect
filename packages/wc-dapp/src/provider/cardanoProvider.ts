@@ -4,48 +4,42 @@ import { SessionTypes, SignClientTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
 import { ACCOUNT, DEFAULT_LOGGER, STORAGE, SUPPORTED_EXPLORER_WALLETS } from '../constants';
-import { TRpc } from '../types';
-import { EnabledAPI } from '../types/cip30';
+import { CardanoProviderOpts, TRpc } from '../types';
+import { EnabledAPI } from './enabledApi';
 import {
   CARDANO_NAMESPACE_NAME,
   CHAIN,
   CHAIN_EVENTS,
   getOptionalCardanoNamespace,
   getRequiredCardanoNamespace
-} from './chain';
-import { EnabledWalletEmulator } from './enabledWalletEmulator';
-import { CardanoWcProviderOpts } from './types';
+} from './utils';
 
-export class CardanoWcProvider {
+export class CardanoProvider {
   private modal: WalletConnectModal | undefined;
-  private enabled = false;
   private chains: CHAIN[] | undefined;
   private rpc: TRpc;
   private provider: UniversalProvider | undefined;
   private enabledApi: EnabledAPI | undefined;
-  private qrcode: boolean;
   private legacyMode: boolean | undefined;
 
   private constructor({
     provider,
-    qrcode,
     modal,
     chains,
     rpc,
     legacyMode
   }: {
     provider: UniversalProvider;
-  } & Omit<CardanoWcProviderOpts, 'projectId' | 'metadata' | 'relayerRegion'>) {
+  } & Omit<CardanoProviderOpts, 'projectId' | 'metadata' | 'relayerRegion' | 'qrCode'>) {
     this.chains = chains;
     this.provider = provider;
     this.modal = modal;
-    this.qrcode = Boolean(qrcode);
     this.rpc = rpc;
     this.registerEventListeners();
     this.legacyMode = legacyMode;
   }
 
-  static async init(opts: CardanoWcProviderOpts) {
+  static async init(opts: CardanoProviderOpts) {
     invariant(opts.projectId.length > 0, 'Wallet Connect project ID not set');
     const provider = await UniversalProvider.init({
       logger: DEFAULT_LOGGER,
@@ -54,22 +48,21 @@ export class CardanoWcProvider {
       metadata: opts.metadata
     });
     let modal: WalletConnectModal | undefined;
-    if (opts.qrcode) {
+    const { qrcode, chains, legacyMode, rpc } = opts;
+    if (qrcode) {
       modal = getWeb3Modal(opts.projectId, opts.chains);
     }
-    return new CardanoWcProvider({
-      qrcode: opts.qrcode,
+    return new CardanoProvider({
       provider,
       modal,
-      chains: opts.chains,
-      rpc: opts.rpc,
-      legacyMode: opts.legacyMode
+      chains,
+      rpc,
+      legacyMode
     });
   }
 
   async enable(sam?: boolean) {
     const session = this.provider?.session;
-    // Edge Case: sometimes pairing is lost, so we disconnect session and reconnect
     if (!session) {
       await this.connect({ sam });
     } else {
@@ -121,7 +114,7 @@ export class CardanoWcProvider {
   }
 
   private async isEnabled(): Promise<boolean> {
-    return Promise.resolve(this.enabled);
+    return Promise.resolve(Boolean(this.enabledApi));
   }
 
   private async loadPersistedSession(sam?: boolean) {
@@ -132,8 +125,9 @@ export class CardanoWcProvider {
     const addresses = defaultAccount.split(':')[2].split('-');
     const stakeAddress = addresses[0];
     const baseAddress = addresses[1];
-    const overrideSam = this.legacyMode ? false : sam; // emulator api will never act in SAM if legacy mode is enabled
-    this.enabledApi = new EnabledWalletEmulator({
+    // enabled api will never act in SAM if legacy mode is enabled
+    const overrideSam = this.legacyMode ? false : sam;
+    this.enabledApi = new EnabledAPI({
       provider: provider,
       chain: `${CARDANO_NAMESPACE_NAME}:${defaultChainId}` as CHAIN,
       rpc: this.rpc,
@@ -141,7 +135,6 @@ export class CardanoWcProvider {
       baseAddress,
       sam: overrideSam
     });
-    this.enabled = true;
   }
 
   private async connect(
@@ -153,17 +146,15 @@ export class CardanoWcProvider {
     const cardanoOptionalNamespace = getOptionalCardanoNamespace(this.chains, this.legacyMode);
     try {
       const session = await new Promise<SessionTypes.Struct | undefined>((resolve, reject) => {
-        if (this.qrcode) {
-          this.modal?.subscribeModal(async state => {
-            if (!state.open && !provider.session) {
-              // the modal was closed so reject the promise
-              provider.abortPairingAttempt();
-              await provider.cleanupPendingPairings({ deletePairings: true });
-              this.reset();
-              reject(new Error('Connection aborted by user.'));
-            }
-          });
-        }
+        this.modal?.subscribeModal(async state => {
+          if (!state.open && !provider.session) {
+            // the modal was closed so reject the promise
+            provider.abortPairingAttempt();
+            await provider.cleanupPendingPairings({ deletePairings: true });
+            this.reset();
+            reject(new Error('Connection aborted by user.'));
+          }
+        });
         provider
           ?.connect({
             namespaces: { ...cardanoNamespace },
@@ -187,16 +178,13 @@ export class CardanoWcProvider {
 
   private reset() {
     this.provider = undefined;
-    this.enabled = false;
     this.enabledApi = undefined;
   }
 
   private onDisplayUri = (uri: string) => {
     console.info('pairing uri', uri);
-    if (this.qrcode) {
-      this.modal?.closeModal();
-      void this.modal?.openModal({ uri });
-    }
+    this.modal?.closeModal();
+    void this.modal?.openModal({ uri });
   };
 
   private onSessionDelete = () => {
@@ -219,11 +207,12 @@ export class CardanoWcProvider {
   private onAccountChange = async (account: string) => {
     const isEnabled = await this.isEnabled();
     if (isEnabled) {
+      invariant(this.enabledApi, 'Enabled API not initialized');
       const stakeAddress = account.split(':')[2].split('-')[0];
       const baseAddress = account.split(':')[2].split('-')[1];
-      (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
-      (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
-      (this.enabledApi as EnabledWalletEmulator).events.emit(CHAIN_EVENTS.ACCOUNT_CHANGE, account);
+      this.enabledApi.baseAddress = baseAddress;
+      this.enabledApi.stakeAddress = stakeAddress;
+      this.enabledApi.events.emit(CHAIN_EVENTS.ACCOUNT_CHANGE, account);
       await this.persist(ACCOUNT, account);
     }
   };
@@ -231,14 +220,14 @@ export class CardanoWcProvider {
   private onChainChange = async (account: string) => {
     const isEnabled = await this.isEnabled();
     if (isEnabled) {
+      invariant(this.enabledApi, 'Enabled API not initialized');
       const chainId = account.split(':')[1];
       const stakeAddress = account.split(':')[2].split('-')[0];
       const baseAddress = account.split(':')[2].split('-')[1];
-      (this.enabledApi as EnabledWalletEmulator).chain =
-        `${CARDANO_NAMESPACE_NAME}:${chainId}` as CHAIN;
-      (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
-      (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
-      (this.enabledApi as EnabledWalletEmulator).events.emit(CHAIN_EVENTS.NETWORK_CHANGE, account);
+      this.enabledApi.chain = `${CARDANO_NAMESPACE_NAME}:${chainId}` as CHAIN;
+      this.enabledApi.baseAddress = baseAddress;
+      this.enabledApi.stakeAddress = stakeAddress;
+      this.enabledApi.events.emit(CHAIN_EVENTS.NETWORK_CHANGE, account);
       await this.persist(ACCOUNT, account);
     }
   };
