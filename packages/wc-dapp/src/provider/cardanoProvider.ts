@@ -66,7 +66,6 @@ export class CardanoProvider {
 
   async enable(sam?: boolean) {
     const session = this.provider?.session;
-    // Edge Case: sometimes pairing is lost, so we disconnect session and reconnect
     if (!session) {
       await this.connect({ sam });
     } else {

@@ -1,8 +1,7 @@
-/* eslint-disable unused-imports/no-unused-vars */
-import { SubmitTxRequest, TRpc, UtxoRequest, UtxoResponse } from '@minswap/wc-dapp';
+import { TRpc, UtxoResponse } from '@minswap/wc-dapp';
 
 export class WalletConnectRpc implements TRpc {
-  getUtxos(params: UtxoRequest): Promise<UtxoResponse> {
+  getUtxos(): Promise<UtxoResponse> {
     return Promise.resolve([
       '828258201664a8e468b30b6ea2c00c11f9a9dda64a6814d66ccbd9bfc73c940aaf6af8bf0082583901e9a5e9be2940740d33efc004e9a3835766c9ef4c422ed00cf7c4bfa1e45c4c8895ff4da15c38d4cf0d90bae5f0a7df717dc5e912878590c21a07459280',
       '828258201b3d8c6990e5e218f12dc98297bb909bb8b026bc48e2bdcb8f32a3a8abef955e008258390101986a78d618f446f3da79835e795078a7250becfdfd2bd266675012e45c4c8895ff4da15c38d4cf0d90bae5f0a7df717dc5e912878590c21a2929d915',
@@ -26,12 +25,12 @@ export class WalletConnectRpc implements TRpc {
       '82825820fd701ad912a1e180c0258c11d1431c1779ef798692240af3879fe40dbd0b97c40082583901f081f6eaae55a2b0077fc125f16f91451aa59473562d86c470ed5150e45c4c8895ff4da15c38d4cf0d90bae5f0a7df717dc5e912878590c21a59851764'
     ]);
   }
-  getBalance(params: UtxoRequest): Promise<string> {
+  getBalance(): Promise<string> {
     return Promise.resolve(
       '821b000000011a11d035a7581c0ece814aa1cc2c98981c7690083dbcb51c5bb1279ae408873d8c8762a158205976683677342b4f7a62492f64613050624361637841514b316a626f4566363901581c29d222ce763455e3d7a09a665ce554f00ac89d2e99a1a83d267170c6a1434d494e1b00000069751f3890581c54ef11805333453c8c3d6fbaa0d4496ddeb94857e1d7f3411bb79489a143414452192710581c5653fadee9993813f02f37a9af55ca78e78bc89e6a7d9b38df1ffa5aa14642554e4348411b00000574fbde6000581cefd7bd84c73fa01400d3c892365ce90b203981aab678bcffb6f3406aa14931373730333038393101581cf0ff48bbb7bbe9d59a40f1ce90e9e9d0ff5002ec48f232b49ca0fb9aa14c6275796d65637279702e746f01581cf66d78b4a3cb3d37afa0ec36461e51ecbde00f26c8f0a68f94b69880a144695553441a002c0eab'
     );
   }
-  submitTx(params: SubmitTxRequest): Promise<string> {
+  submitTx(): Promise<string> {
     return Promise.resolve('xyz');
   }
 }
