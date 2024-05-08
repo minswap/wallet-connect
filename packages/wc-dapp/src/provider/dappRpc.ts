@@ -1,5 +1,5 @@
 import { BalanceRequest, ENDPOINTS, SubmitTxRequest, TRpc, UtxoRequest } from '../types';
-import { NetworkID } from './chain';
+import { NetworkID } from './utils';
 
 export class DAppRpc implements TRpc {
   private readonly url: Record<NetworkID, string>;

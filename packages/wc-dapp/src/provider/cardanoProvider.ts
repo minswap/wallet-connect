@@ -4,21 +4,18 @@ import { SessionTypes, SignClientTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
 import { ACCOUNT, DEFAULT_LOGGER, STORAGE, SUPPORTED_EXPLORER_WALLETS } from '../constants';
-import { TRpc } from '../types';
-import { EnabledAPI } from '../types/cip30';
+import { CardanoProviderOpts, TRpc } from '../types';
+import { EnabledAPI } from './enabledApi';
 import {
   CARDANO_NAMESPACE_NAME,
   CHAIN,
   CHAIN_EVENTS,
   getOptionalCardanoNamespace,
   getRequiredCardanoNamespace
-} from './chain';
-import { EnabledWalletEmulator } from './enabledWalletEmulator';
-import { CardanoProviderOpts } from './types';
+} from './utils';
 
 export class CardanoProvider {
   private modal: WalletConnectModal | undefined;
-  private enabled = false;
   private chains: CHAIN[] | undefined;
   private rpc: TRpc;
   private provider: UniversalProvider | undefined;
@@ -117,7 +114,7 @@ export class CardanoProvider {
   }
 
   private async isEnabled(): Promise<boolean> {
-    return Promise.resolve(this.enabled);
+    return Promise.resolve(Boolean(this.enabledApi));
   }
 
   private async loadPersistedSession(sam?: boolean) {
@@ -128,8 +125,9 @@ export class CardanoProvider {
     const addresses = defaultAccount.split(':')[2].split('-');
     const stakeAddress = addresses[0];
     const baseAddress = addresses[1];
-    const overrideSam = this.legacyMode ? false : sam; // emulator api will never act in SAM if legacy mode is enabled
-    this.enabledApi = new EnabledWalletEmulator({
+    // enabled api will never act in SAM if legacy mode is enabled
+    const overrideSam = this.legacyMode ? false : sam;
+    this.enabledApi = new EnabledAPI({
       provider: provider,
       chain: `${CARDANO_NAMESPACE_NAME}:${defaultChainId}` as CHAIN,
       rpc: this.rpc,
@@ -137,7 +135,6 @@ export class CardanoProvider {
       baseAddress,
       sam: overrideSam
     });
-    this.enabled = true;
   }
 
   private async connect(
@@ -181,7 +178,6 @@ export class CardanoProvider {
 
   private reset() {
     this.provider = undefined;
-    this.enabled = false;
     this.enabledApi = undefined;
   }
 
@@ -211,11 +207,12 @@ export class CardanoProvider {
   private onAccountChange = async (account: string) => {
     const isEnabled = await this.isEnabled();
     if (isEnabled) {
+      invariant(this.enabledApi, 'Enabled API not initialized');
       const stakeAddress = account.split(':')[2].split('-')[0];
       const baseAddress = account.split(':')[2].split('-')[1];
-      (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
-      (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
-      (this.enabledApi as EnabledWalletEmulator).events.emit(CHAIN_EVENTS.ACCOUNT_CHANGE, account);
+      this.enabledApi.baseAddress = baseAddress;
+      this.enabledApi.stakeAddress = stakeAddress;
+      this.enabledApi.events.emit(CHAIN_EVENTS.ACCOUNT_CHANGE, account);
       await this.persist(ACCOUNT, account);
     }
   };
@@ -223,14 +220,14 @@ export class CardanoProvider {
   private onChainChange = async (account: string) => {
     const isEnabled = await this.isEnabled();
     if (isEnabled) {
+      invariant(this.enabledApi, 'Enabled API not initialized');
       const chainId = account.split(':')[1];
       const stakeAddress = account.split(':')[2].split('-')[0];
       const baseAddress = account.split(':')[2].split('-')[1];
-      (this.enabledApi as EnabledWalletEmulator).chain =
-        `${CARDANO_NAMESPACE_NAME}:${chainId}` as CHAIN;
-      (this.enabledApi as EnabledWalletEmulator).baseAddress = baseAddress;
-      (this.enabledApi as EnabledWalletEmulator).stakeAddress = stakeAddress;
-      (this.enabledApi as EnabledWalletEmulator).events.emit(CHAIN_EVENTS.NETWORK_CHANGE, account);
+      this.enabledApi.chain = `${CARDANO_NAMESPACE_NAME}:${chainId}` as CHAIN;
+      this.enabledApi.baseAddress = baseAddress;
+      this.enabledApi.stakeAddress = stakeAddress;
+      this.enabledApi.events.emit(CHAIN_EVENTS.NETWORK_CHANGE, account);
       await this.persist(ACCOUNT, account);
     }
   };
