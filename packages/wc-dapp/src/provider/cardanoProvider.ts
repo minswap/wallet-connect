@@ -4,6 +4,14 @@ import { SessionTypes, SignClientTypes } from '@walletconnect/types';
 import UniversalProvider, { ConnectParams } from '@walletconnect/universal-provider';
 
 import { ACCOUNT, DEFAULT_LOGGER, STORAGE, SUPPORTED_EXPLORER_WALLETS } from '../constants';
+import {
+  AccountNotSetError,
+  ConnectionAbortedByUserError,
+  DefaultChainNotSetError,
+  EnabledApiNotFoundError,
+  ProviderNotInitialisedError,
+  Web3ModalInitError
+} from '../errors';
 import { CardanoProviderOpts, TRpc } from '../types';
 import { EnabledAPI } from './enabledApi';
 import {
@@ -68,8 +76,8 @@ export class CardanoProvider {
     } else {
       await this.loadPersistedSession(sam);
     }
-    if (!this.provider) throw new Error('Provider not initialized');
-    if (!this.enabledApi) throw new Error('Enabled API not initialized');
+    if (!this.provider) throw new ProviderNotInitialisedError('Provider not initialized');
+    if (!this.enabledApi) throw new EnabledApiNotFoundError('Enabled API not initialized');
     return this.enabledApi;
   }
 
@@ -78,7 +86,7 @@ export class CardanoProvider {
     const chainId =
       provider.namespaces?.[CARDANO_NAMESPACE_NAME].defaultChain ||
       provider.namespaces?.[CARDANO_NAMESPACE_NAME].chains[0].split(':')[1];
-    if (!chainId) throw new Error('Default chain not set');
+    if (!chainId) throw new DefaultChainNotSetError('Default chain not set');
     return chainId;
   }
 
@@ -88,12 +96,13 @@ export class CardanoProvider {
       (await this.getFromStore(ACCOUNT)) ||
       provider.session?.namespaces?.[CARDANO_NAMESPACE_NAME].accounts[0];
 
-    if (!storedAccount) throw new Error('No account set');
+    if (!storedAccount) throw new AccountNotSetError('No account set');
     return storedAccount;
   }
 
   getProvider(): UniversalProvider {
-    if (!this.provider) throw new Error('Provider not initialized. Call init() first');
+    if (!this.provider)
+      throw new ProviderNotInitialisedError('Provider not initialized. Call init() first');
     return this.provider;
   }
 
@@ -152,7 +161,7 @@ export class CardanoProvider {
             provider.abortPairingAttempt();
             await provider.cleanupPendingPairings({ deletePairings: true });
             this.reset();
-            reject(new Error('Connection aborted by user.'));
+            reject(new ConnectionAbortedByUserError('Connection aborted by user.'));
           }
         });
         provider
@@ -273,6 +282,6 @@ export const getWeb3Modal = (projectId: string, chains: CHAIN[]) => {
       explorerExcludedWalletIds: 'ALL'
     });
   } catch (e) {
-    throw new Error(`Error instantiating web3Modal: ${JSON.stringify(e)}`);
+    throw new Web3ModalInitError(`Error instantiating web3Modal: ${JSON.stringify(e)}`);
   }
 };
