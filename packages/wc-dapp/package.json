@@ -1,7 +1,7 @@
 {
   "name": "@minswap/wc-dapp",
   "description": "Wallet connect integration for Cardano dApps",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "author": "Parichay <parichay@minswap.org>",
   "homepage": "https://github.com/minswap/wallet-connect/",
   "repository": {
