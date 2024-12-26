@@ -1,35 +1,33 @@
 {
-  "repository": "https://github.com/minswap/wallet-connect.git",
-  "license": "MIT",
-  "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "dapp": "turbo run --filter dapp --filter wc-dapp dev",
-    "wallet": "turbo run --filter wallet --filter wc-wallet dev",
-    "start": "turbo run start",
-    "lint": "turbo run lint",
-    "clean": "turbo run clean",
-    "prettier": "prettier --check .",
-    "format": "prettier --check . -w",
-    "publish:wc-dapp": "node scripts/publish.js"
-  },
-  "devDependencies": {
-    "eslint": "^8.42.0",
-    "eslint-config-turbo": "latest",
-    "turbo": "^1.10.1",
-    "prettier": "2.8.8",
-    "typescript": "^5.0.4",
-    "@typescript-eslint/eslint-plugin": "^5.59.8",
-    "@typescript-eslint/parser": "^5.59.8",
-    "eslint-config-next": "^13.4.4",
-    "eslint-plugin-formatjs": "^4.10.1",
-    "eslint-plugin-simple-import-sort": "^10.0.0",
-    "eslint-plugin-unicorn": "^47.0.0",
-    "eslint-plugin-unused-imports": "^2.0.0"
-  }
+	"repository": "https://github.com/minswap/wallet-connect.git",
+	"license": "MIT",
+	"private": true,
+	"workspaces": ["apps/*", "packages/*"],
+	"scripts": {
+		"build": "turbo run build",
+		"dev": "turbo run dev",
+		"dapp": "turbo run --filter dapp --filter wc-dapp dev",
+		"wallet": "turbo run --filter wallet --filter wc-wallet dev",
+		"start": "turbo run start",
+		"lint": "turbo run lint",
+		"clean": "turbo run clean",
+		"prettier": "prettier --check .",
+		"format": "prettier --check . -w",
+		"publish:wc-dapp": "node scripts/publish.js"
+	},
+	"devDependencies": {
+		"eslint": "^8.42.0",
+		"eslint-config-turbo": "latest",
+		"turbo": "^1.10.1",
+		"prettier": "2.8.8",
+		"typescript": "^5.0.4",
+		"@typescript-eslint/eslint-plugin": "^5.59.8",
+		"@typescript-eslint/parser": "^5.59.8",
+		"eslint-config-next": "^13.4.4",
+		"eslint-plugin-formatjs": "^4.10.1",
+		"eslint-plugin-simple-import-sort": "^10.0.0",
+		"eslint-plugin-unicorn": "^47.0.0",
+		"eslint-plugin-unused-imports": "^2.0.0"
+	},
+	"packageManager": "pnpm@9.15.0"
 }
