@@ -1,12 +1,12 @@
-import { Col, Divider, Row, Text } from '@nextui-org/react'
-import { Fragment, ReactNode } from 'react'
+import { Col, Divider, Row, Text } from '@nextui-org/react';
+import { Fragment, ReactNode } from 'react';
 
 /**
  * Types
  */
 interface Props {
-  children?: ReactNode | ReactNode[]
-  title: string
+  children?: ReactNode | ReactNode[];
+  title: string;
 }
 
 /**
@@ -32,5 +32,5 @@ export default function PageHeader({ title, children }: Props) {
 
       <Divider css={{ marginBottom: '$10' }} />
     </Fragment>
-  )
+  );
 }

@@ -1,42 +1,42 @@
-import { Button, Loading } from '@nextui-org/react'
-import dynamic from 'next/dynamic'
-import Image from 'next/image'
-import { Fragment, useState } from 'react'
+import { Button, Loading } from '@nextui-org/react';
+import dynamic from 'next/dynamic';
+import Image from 'next/image';
+import { Fragment, useState } from 'react';
 
 /**
  * You can use normal import if you are not within next / ssr environment
  * @info https://nextjs.org/docs/advanced-features/dynamic-import
  */
-const ReactQrReader = dynamic(() => import('react-qr-reader-es6'), { ssr: false })
+const ReactQrReader = dynamic(() => import('react-qr-reader-es6'), { ssr: false });
 
 /**
  * Types
  */
 interface IProps {
-  onConnect: (uri: string) => Promise<void>
+  onConnect: (uri: string) => Promise<void>;
 }
 
 /**
  * Component
  */
 export default function QrReader({ onConnect }: IProps) {
-  const [show, setShow] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   function onError() {
-    setShow(false)
+    setShow(false);
   }
 
   async function onScan(data: string | null) {
     if (data) {
-      await onConnect(data)
-      setShow(false)
+      await onConnect(data);
+      setShow(false);
     }
   }
 
   function onShowScanner() {
-    setLoading(true)
-    setShow(true)
+    setLoading(true);
+    setShow(true);
   }
 
   return (
@@ -73,5 +73,5 @@ export default function QrReader({ onConnect }: IProps) {
         </div>
       )}
     </div>
-  )
+  );
 }
