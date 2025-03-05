@@ -28,8 +28,8 @@ export class CardanoWallet {
     const entropy = mnemonicToEntropy(this.mnemonic);
     const rustSDK = await loadCSL();
     const rootKey = rustSDK.Bip32PrivateKey.from_bip39_entropy(
-      Buffer.from(entropy, 'hex'),
-      Buffer.from('')
+      new Uint8Array(Buffer.from(entropy, 'hex')),
+      new Uint8Array(Buffer.from(''))
     );
     const xpub = rootKey.derive(harden(1852)).derive(harden(1815)).derive(harden(0)).to_public();
     await this.generateRewardAddress(xpub);
@@ -43,8 +43,8 @@ export class CardanoWallet {
     const CSLRewardAddress = rustSDK.RewardAddress.new(
       networkId === NetworkID.MAINNET
         ? rustSDK.NetworkInfo.mainnet().network_id()
-        : rustSDK.NetworkInfo.testnet().network_id(),
-      rustSDK.StakeCredential.from_keyhash(stakeKeyHash)
+        : rustSDK.NetworkInfo.testnet_preprod().network_id(),
+      rustSDK.Credential.from_keyhash(stakeKeyHash)
     );
     const CSLAddress = CSLRewardAddress.to_address();
     this.rewardAddress = CSLAddress.to_hex();
@@ -61,9 +61,9 @@ export class CardanoWallet {
     const CSLBaseAddress = rustSDK.BaseAddress.new(
       networkId === NetworkID.MAINNET
         ? rustSDK.NetworkInfo.mainnet().network_id()
-        : rustSDK.NetworkInfo.testnet().network_id(),
-      rustSDK.StakeCredential.from_keyhash(paymentKeyHash),
-      rustSDK.StakeCredential.from_keyhash(stakeKeyHash)
+        : rustSDK.NetworkInfo.testnet_preprod().network_id(),
+      rustSDK.Credential.from_keyhash(paymentKeyHash),
+      rustSDK.Credential.from_keyhash(stakeKeyHash)
     );
     const CSLAddress = CSLBaseAddress.to_address();
     this.baseAddress = CSLAddress.to_hex();
